@@ -1,0 +1,9 @@
+ninja: Entering directory `/home/xinniw/Development/THESIS-sustainable_computing-dev/multitouch-string-synth/droid-project/app/.cxx/Debug/4r1o6u5c/arm64-v8a'
+[1/2] Building CXX object src/CMakeFiles/main.dir/home/xinniw/Development/THESIS-sustainable_computing-dev/multitouch-string-synth/main.cpp.o
+In file included from /home/xinniw/Development/THESIS-sustainable_computing-dev/multitouch-string-synth/main.cpp:12:
+/home/xinniw/Development/THESIS-sustainable_computing-dev/multitouch-string-synth/droid-project/app/jni/algae/src/algae.h:11:16: warning: nested namespace definition is a C++17 extension; define each namespace separately [-Wc++17-extensions]
+namespace algae::dsp {
+               ^~~~~
+                { namespace dsp
+1 warning generated.
+[2/2] Linking CXX shared library /home/xinniw/Development/THESIS-sustainable_computing-dev/multitouch-string-synth/droid-project/app/build/intermediates/cxx/Debug/4r1o6u5c/obj/arm64-v8a/libmain.so

@@ -1,0 +1,3155 @@
+The target system is: Android - 1 - aarch64
+The host system is: Linux - 6.2.0-2-rt3-MANJARO - x86_64
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_11b22 && [1/2] Building C object CMakeFiles/cmTC_11b22.dir/CMakeCCompilerABI.c.o
+Android (7019983 based on r365631c3) clang version 9.0.9 (https://android.googlesource.com/toolchain/llvm-project a2a1e703c0edb03ba29944e529ccbf457742737b) (based on LLVM 9.0.9svn)
+Target: aarch64-none-linux-android21
+Thread model: posix
+InstalledDir: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/bin
+Found candidate GCC installation: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x
+Selected GCC installation: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x
+Candidate multilib: .;@m64
+Selected multilib: .;@m64
+Found CUDA installation: /opt/cuda, version 7.0
+ "/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/bin/clang" -cc1 -triple aarch64-none-linux-android21 -emit-obj -mrelax-all -mnoexecstack -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -pic-is-pie -mthread-model posix -mdisable-fp-elim -masm-verbose -mconstructor-aliases -munwind-tables -fuse-init-array -target-cpu generic -target-feature +neon -target-abi aapcs -mllvm -aarch64-fix-cortex-a53-835769=1 -fallow-half-arguments-and-returns -dwarf-column-info -debug-info-kind=limited -dwarf-version=4 -debugger-tuning=gdb -v -ffunction-sections -fdata-sections -coverage-notes-file /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CMakeFiles/cmTC_11b22.dir/CMakeCCompilerABI.c.gcno -resource-dir /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9 -dependency-file CMakeFiles/cmTC_11b22.dir/CMakeCCompilerABI.c.o.d -sys-header-deps -MT CMakeFiles/cmTC_11b22.dir/CMakeCCompilerABI.c.o -D ANDROID -D _FORTIFY_SOURCE=2 -isysroot /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot -internal-isystem /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/local/include -internal-isystem /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/include -internal-externc-isystem /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android -internal-externc-isystem /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/include -internal-externc-isystem /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include -Wformat -fdebug-compilation-dir /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp -ferror-limit 19 -fmessage-length 0 -stack-protector 2 -fno-signed-char -fobjc-runtime=gcc -fdiagnostics-show-option -o CMakeFiles/cmTC_11b22.dir/CMakeCCompilerABI.c.o -x c /home/xinniw/Android/Sdk/cmake/3.22.1/share/cmake-3.22/Modules/CMakeCCompilerABI.c
+clang -cc1 version 9.0.9 based upon LLVM 9.0.9svn default target x86_64-unknown-linux-gnu
+ignoring nonexistent directory "/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/include"
+#include "..." search starts here:
+#include <...> search starts here:
+ /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/local/include
+ /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/include
+ /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android
+ /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include
+End of search list.
+[2/2] Linking C executable cmTC_11b22
+Android (7019983 based on r365631c3) clang version 9.0.9 (https://android.googlesource.com/toolchain/llvm-project a2a1e703c0edb03ba29944e529ccbf457742737b) (based on LLVM 9.0.9svn)
+Target: aarch64-none-linux-android21
+Thread model: posix
+InstalledDir: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/bin
+Found candidate GCC installation: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x
+Selected GCC installation: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x
+Candidate multilib: .;@m64
+Selected multilib: .;@m64
+Found CUDA installation: /opt/cuda, version 7.0
+ "/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/bin/ld" --sysroot=/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot -pie -z noexecstack -EL --fix-cortex-a53-843419 --warn-shared-textrel -z now -z relro -z max-page-size=4096 --hash-style=both --enable-new-dtags --eh-frame-hdr -m aarch64linux -dynamic-linker /system/bin/linker64 -o cmTC_11b22 /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21/crtbegin_dynamic.o -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/lib/linux/aarch64 -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/lib/../lib64 -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21 -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/lib -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib --exclude-libs libgcc.a --exclude-libs libgcc_real.a --exclude-libs libatomic.a --build-id --fatal-warnings --no-undefined --gc-sections CMakeFiles/cmTC_11b22.dir/CMakeCCompilerABI.c.o -lgcc -ldl -lc -lgcc -ldl /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21/crtend_android.o
+
+
+
+Parsed C implicit include dir info from above output: rv=done
+  found start of include info
+  found start of implicit include info
+    add: [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/local/include]
+    add: [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/include]
+    add: [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android]
+    add: [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include]
+  end of search list found
+  collapse include dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/local/include] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/local/include]
+  collapse include dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/include] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/include]
+  collapse include dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android]
+  collapse include dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include]
+  implicit include dirs: [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/local/include;/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/include;/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android;/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include]
+
+
+Parsed C implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld\.lld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_11b22 && [1/2] Building C object CMakeFiles/cmTC_11b22.dir/CMakeCCompilerABI.c.o]
+  ignore line: [Android (7019983 based on r365631c3) clang version 9.0.9 (https://android.googlesource.com/toolchain/llvm-project a2a1e703c0edb03ba29944e529ccbf457742737b) (based on LLVM 9.0.9svn)]
+  ignore line: [Target: aarch64-none-linux-android21]
+  ignore line: [Thread model: posix]
+  ignore line: [InstalledDir: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/bin]
+  ignore line: [Found candidate GCC installation: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x]
+  ignore line: [Selected GCC installation: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x]
+  ignore line: [Candidate multilib: .]
+  ignore line: [@m64]
+  ignore line: [Selected multilib: .]
+  ignore line: [@m64]
+  ignore line: [Found CUDA installation: /opt/cuda  version 7.0]
+  ignore line: [ "/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/bin/clang" -cc1 -triple aarch64-none-linux-android21 -emit-obj -mrelax-all -mnoexecstack -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -pic-is-pie -mthread-model posix -mdisable-fp-elim -masm-verbose -mconstructor-aliases -munwind-tables -fuse-init-array -target-cpu generic -target-feature +neon -target-abi aapcs -mllvm -aarch64-fix-cortex-a53-835769=1 -fallow-half-arguments-and-returns -dwarf-column-info -debug-info-kind=limited -dwarf-version=4 -debugger-tuning=gdb -v -ffunction-sections -fdata-sections -coverage-notes-file /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CMakeFiles/cmTC_11b22.dir/CMakeCCompilerABI.c.gcno -resource-dir /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9 -dependency-file CMakeFiles/cmTC_11b22.dir/CMakeCCompilerABI.c.o.d -sys-header-deps -MT CMakeFiles/cmTC_11b22.dir/CMakeCCompilerABI.c.o -D ANDROID -D _FORTIFY_SOURCE=2 -isysroot /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot -internal-isystem /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/local/include -internal-isystem /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/include -internal-externc-isystem /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android -internal-externc-isystem /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/include -internal-externc-isystem /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include -Wformat -fdebug-compilation-dir /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp -ferror-limit 19 -fmessage-length 0 -stack-protector 2 -fno-signed-char -fobjc-runtime=gcc -fdiagnostics-show-option -o CMakeFiles/cmTC_11b22.dir/CMakeCCompilerABI.c.o -x c /home/xinniw/Android/Sdk/cmake/3.22.1/share/cmake-3.22/Modules/CMakeCCompilerABI.c]
+  ignore line: [clang -cc1 version 9.0.9 based upon LLVM 9.0.9svn default target x86_64-unknown-linux-gnu]
+  ignore line: [ignoring nonexistent directory "/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/include"]
+  ignore line: [#include "..." search starts here:]
+  ignore line: [#include <...> search starts here:]
+  ignore line: [ /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/local/include]
+  ignore line: [ /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/include]
+  ignore line: [ /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android]
+  ignore line: [ /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include]
+  ignore line: [End of search list.]
+  ignore line: [[2/2] Linking C executable cmTC_11b22]
+  ignore line: [Android (7019983 based on r365631c3) clang version 9.0.9 (https://android.googlesource.com/toolchain/llvm-project a2a1e703c0edb03ba29944e529ccbf457742737b) (based on LLVM 9.0.9svn)]
+  ignore line: [Target: aarch64-none-linux-android21]
+  ignore line: [Thread model: posix]
+  ignore line: [InstalledDir: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/bin]
+  ignore line: [Found candidate GCC installation: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x]
+  ignore line: [Selected GCC installation: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x]
+  ignore line: [Candidate multilib: .]
+  ignore line: [@m64]
+  ignore line: [Selected multilib: .]
+  ignore line: [@m64]
+  ignore line: [Found CUDA installation: /opt/cuda  version 7.0]
+  link line: [ "/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/bin/ld" --sysroot=/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot -pie -z noexecstack -EL --fix-cortex-a53-843419 --warn-shared-textrel -z now -z relro -z max-page-size=4096 --hash-style=both --enable-new-dtags --eh-frame-hdr -m aarch64linux -dynamic-linker /system/bin/linker64 -o cmTC_11b22 /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21/crtbegin_dynamic.o -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/lib/linux/aarch64 -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/lib/../lib64 -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21 -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/lib -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib --exclude-libs libgcc.a --exclude-libs libgcc_real.a --exclude-libs libatomic.a --build-id --fatal-warnings --no-undefined --gc-sections CMakeFiles/cmTC_11b22.dir/CMakeCCompilerABI.c.o -lgcc -ldl -lc -lgcc -ldl /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21/crtend_android.o]
+    arg [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/bin/ld] ==> ignore
+    arg [--sysroot=/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot] ==> ignore
+    arg [-pie] ==> ignore
+    arg [-znoexecstack] ==> ignore
+    arg [-EL] ==> ignore
+    arg [--fix-cortex-a53-843419] ==> ignore
+    arg [--warn-shared-textrel] ==> ignore
+    arg [-znow] ==> ignore
+    arg [-zrelro] ==> ignore
+    arg [-zmax-page-size=4096] ==> ignore
+    arg [--hash-style=both] ==> ignore
+    arg [--enable-new-dtags] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [-m] ==> ignore
+    arg [aarch64linux] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/system/bin/linker64] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTC_11b22] ==> ignore
+    arg [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21/crtbegin_dynamic.o] ==> obj [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21/crtbegin_dynamic.o]
+    arg [-L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/lib/linux/aarch64] ==> dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/lib/linux/aarch64]
+    arg [-L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x] ==> dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x]
+    arg [-L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/lib/../lib64] ==> dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/lib/../lib64]
+    arg [-L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21] ==> dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21]
+    arg [-L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android] ==> dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android]
+    arg [-L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/lib] ==> dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/lib]
+    arg [-L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib] ==> dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib]
+    arg [--exclude-libs] ==> ignore
+    arg [libgcc.a] ==> ignore
+    arg [--exclude-libs] ==> ignore
+    arg [libgcc_real.a] ==> ignore
+    arg [--exclude-libs] ==> ignore
+    arg [libatomic.a] ==> ignore
+    arg [--build-id] ==> ignore
+    arg [--fatal-warnings] ==> ignore
+    arg [--no-undefined] ==> ignore
+    arg [--gc-sections] ==> ignore
+    arg [CMakeFiles/cmTC_11b22.dir/CMakeCCompilerABI.c.o] ==> ignore
+    arg [-lgcc] ==> lib [gcc]
+    arg [-ldl] ==> lib [dl]
+    arg [-lc] ==> lib [c]
+    arg [-lgcc] ==> lib [gcc]
+    arg [-ldl] ==> lib [dl]
+    arg [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21/crtend_android.o] ==> obj [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21/crtend_android.o]
+  collapse library dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/lib/linux/aarch64] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/lib/linux/aarch64]
+  collapse library dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x]
+  collapse library dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/lib/../lib64] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/aarch64-linux-android/lib64]
+  collapse library dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21]
+  collapse library dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android]
+  collapse library dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/lib] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/aarch64-linux-android/lib]
+  collapse library dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib]
+  implicit libs: [gcc;dl;c;gcc;dl]
+  implicit objs: [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21/crtbegin_dynamic.o;/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21/crtend_android.o]
+  implicit dirs: [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/lib/linux/aarch64;/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x;/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/aarch64-linux-android/lib64;/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21;/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android;/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/aarch64-linux-android/lib;/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib]
+  implicit fwks: []
+
+
+Detecting CXX compiler ABI info compiled with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_0084b && [1/2] Building CXX object CMakeFiles/cmTC_0084b.dir/CMakeCXXCompilerABI.cpp.o
+Android (7019983 based on r365631c3) clang version 9.0.9 (https://android.googlesource.com/toolchain/llvm-project a2a1e703c0edb03ba29944e529ccbf457742737b) (based on LLVM 9.0.9svn)
+Target: aarch64-none-linux-android21
+Thread model: posix
+InstalledDir: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/bin
+Found candidate GCC installation: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x
+Selected GCC installation: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x
+Candidate multilib: .;@m64
+Selected multilib: .;@m64
+Found CUDA installation: /opt/cuda, version 7.0
+ "/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++" -cc1 -triple aarch64-none-linux-android21 -emit-obj -mrelax-all -mnoexecstack -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -pic-is-pie -mthread-model posix -mdisable-fp-elim -masm-verbose -mconstructor-aliases -munwind-tables -fuse-init-array -target-cpu generic -target-feature +neon -target-abi aapcs -mllvm -aarch64-fix-cortex-a53-835769=1 -fallow-half-arguments-and-returns -dwarf-column-info -debug-info-kind=limited -dwarf-version=4 -debugger-tuning=gdb -v -ffunction-sections -fdata-sections -coverage-notes-file /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CMakeFiles/cmTC_0084b.dir/CMakeCXXCompilerABI.cpp.gcno -resource-dir /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9 -dependency-file CMakeFiles/cmTC_0084b.dir/CMakeCXXCompilerABI.cpp.o.d -sys-header-deps -MT CMakeFiles/cmTC_0084b.dir/CMakeCXXCompilerABI.cpp.o -D ANDROID -D _FORTIFY_SOURCE=2 -isysroot /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot -internal-isystem /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1 -internal-isystem /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/local/include -internal-isystem /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/include -internal-externc-isystem /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android -internal-externc-isystem /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/include -internal-externc-isystem /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include -Wformat -fdeprecated-macro -fdebug-compilation-dir /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp -ferror-limit 19 -fmessage-length 0 -stack-protector 2 -fno-signed-char -fobjc-runtime=gcc -fcxx-exceptions -fexceptions -fdiagnostics-show-option -o CMakeFiles/cmTC_0084b.dir/CMakeCXXCompilerABI.cpp.o -x c++ /home/xinniw/Android/Sdk/cmake/3.22.1/share/cmake-3.22/Modules/CMakeCXXCompilerABI.cpp
+clang -cc1 version 9.0.9 based upon LLVM 9.0.9svn default target x86_64-unknown-linux-gnu
+ignoring nonexistent directory "/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/include"
+#include "..." search starts here:
+#include <...> search starts here:
+ /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1
+ /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/local/include
+ /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/include
+ /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android
+ /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include
+End of search list.
+[2/2] Linking CXX executable cmTC_0084b
+Android (7019983 based on r365631c3) clang version 9.0.9 (https://android.googlesource.com/toolchain/llvm-project a2a1e703c0edb03ba29944e529ccbf457742737b) (based on LLVM 9.0.9svn)
+Target: aarch64-none-linux-android21
+Thread model: posix
+InstalledDir: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/bin
+Found candidate GCC installation: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x
+Selected GCC installation: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x
+Candidate multilib: .;@m64
+Selected multilib: .;@m64
+Found CUDA installation: /opt/cuda, version 7.0
+ "/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/bin/ld" --sysroot=/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot -pie -z noexecstack -EL --fix-cortex-a53-843419 --warn-shared-textrel -z now -z relro -z max-page-size=4096 --hash-style=both --enable-new-dtags --eh-frame-hdr -m aarch64linux -dynamic-linker /system/bin/linker64 -o cmTC_0084b /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21/crtbegin_dynamic.o -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/lib/linux/aarch64 -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/lib/../lib64 -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21 -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/lib -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib --exclude-libs libgcc.a --exclude-libs libgcc_real.a --exclude-libs libatomic.a --build-id --fatal-warnings --no-undefined --gc-sections CMakeFiles/cmTC_0084b.dir/CMakeCXXCompilerABI.cpp.o -Bstatic -lc++ -Bdynamic -lm -lgcc -ldl -lc -lgcc -ldl /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21/crtend_android.o
+
+
+
+Parsed CXX implicit include dir info from above output: rv=done
+  found start of include info
+  found start of implicit include info
+    add: [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1]
+    add: [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/local/include]
+    add: [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/include]
+    add: [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android]
+    add: [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include]
+  end of search list found
+  collapse include dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1]
+  collapse include dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/local/include] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/local/include]
+  collapse include dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/include] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/include]
+  collapse include dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android]
+  collapse include dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include]
+  implicit include dirs: [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1;/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/local/include;/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/include;/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android;/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include]
+
+
+Parsed CXX implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld\.lld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_0084b && [1/2] Building CXX object CMakeFiles/cmTC_0084b.dir/CMakeCXXCompilerABI.cpp.o]
+  ignore line: [Android (7019983 based on r365631c3) clang version 9.0.9 (https://android.googlesource.com/toolchain/llvm-project a2a1e703c0edb03ba29944e529ccbf457742737b) (based on LLVM 9.0.9svn)]
+  ignore line: [Target: aarch64-none-linux-android21]
+  ignore line: [Thread model: posix]
+  ignore line: [InstalledDir: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/bin]
+  ignore line: [Found candidate GCC installation: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x]
+  ignore line: [Selected GCC installation: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x]
+  ignore line: [Candidate multilib: .]
+  ignore line: [@m64]
+  ignore line: [Selected multilib: .]
+  ignore line: [@m64]
+  ignore line: [Found CUDA installation: /opt/cuda  version 7.0]
+  ignore line: [ "/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++" -cc1 -triple aarch64-none-linux-android21 -emit-obj -mrelax-all -mnoexecstack -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -pic-is-pie -mthread-model posix -mdisable-fp-elim -masm-verbose -mconstructor-aliases -munwind-tables -fuse-init-array -target-cpu generic -target-feature +neon -target-abi aapcs -mllvm -aarch64-fix-cortex-a53-835769=1 -fallow-half-arguments-and-returns -dwarf-column-info -debug-info-kind=limited -dwarf-version=4 -debugger-tuning=gdb -v -ffunction-sections -fdata-sections -coverage-notes-file /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CMakeFiles/cmTC_0084b.dir/CMakeCXXCompilerABI.cpp.gcno -resource-dir /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9 -dependency-file CMakeFiles/cmTC_0084b.dir/CMakeCXXCompilerABI.cpp.o.d -sys-header-deps -MT CMakeFiles/cmTC_0084b.dir/CMakeCXXCompilerABI.cpp.o -D ANDROID -D _FORTIFY_SOURCE=2 -isysroot /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot -internal-isystem /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1 -internal-isystem /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/local/include -internal-isystem /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/include -internal-externc-isystem /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android -internal-externc-isystem /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/include -internal-externc-isystem /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include -Wformat -fdeprecated-macro -fdebug-compilation-dir /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp -ferror-limit 19 -fmessage-length 0 -stack-protector 2 -fno-signed-char -fobjc-runtime=gcc -fcxx-exceptions -fexceptions -fdiagnostics-show-option -o CMakeFiles/cmTC_0084b.dir/CMakeCXXCompilerABI.cpp.o -x c++ /home/xinniw/Android/Sdk/cmake/3.22.1/share/cmake-3.22/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [clang -cc1 version 9.0.9 based upon LLVM 9.0.9svn default target x86_64-unknown-linux-gnu]
+  ignore line: [ignoring nonexistent directory "/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/include"]
+  ignore line: [#include "..." search starts here:]
+  ignore line: [#include <...> search starts here:]
+  ignore line: [ /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1]
+  ignore line: [ /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/local/include]
+  ignore line: [ /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/include]
+  ignore line: [ /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android]
+  ignore line: [ /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include]
+  ignore line: [End of search list.]
+  ignore line: [[2/2] Linking CXX executable cmTC_0084b]
+  ignore line: [Android (7019983 based on r365631c3) clang version 9.0.9 (https://android.googlesource.com/toolchain/llvm-project a2a1e703c0edb03ba29944e529ccbf457742737b) (based on LLVM 9.0.9svn)]
+  ignore line: [Target: aarch64-none-linux-android21]
+  ignore line: [Thread model: posix]
+  ignore line: [InstalledDir: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/bin]
+  ignore line: [Found candidate GCC installation: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x]
+  ignore line: [Selected GCC installation: /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x]
+  ignore line: [Candidate multilib: .]
+  ignore line: [@m64]
+  ignore line: [Selected multilib: .]
+  ignore line: [@m64]
+  ignore line: [Found CUDA installation: /opt/cuda  version 7.0]
+  link line: [ "/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/bin/ld" --sysroot=/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot -pie -z noexecstack -EL --fix-cortex-a53-843419 --warn-shared-textrel -z now -z relro -z max-page-size=4096 --hash-style=both --enable-new-dtags --eh-frame-hdr -m aarch64linux -dynamic-linker /system/bin/linker64 -o cmTC_0084b /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21/crtbegin_dynamic.o -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/lib/linux/aarch64 -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/lib/../lib64 -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21 -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/lib -L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib --exclude-libs libgcc.a --exclude-libs libgcc_real.a --exclude-libs libatomic.a --build-id --fatal-warnings --no-undefined --gc-sections CMakeFiles/cmTC_0084b.dir/CMakeCXXCompilerABI.cpp.o -Bstatic -lc++ -Bdynamic -lm -lgcc -ldl -lc -lgcc -ldl /home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21/crtend_android.o]
+    arg [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/bin/ld] ==> ignore
+    arg [--sysroot=/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot] ==> ignore
+    arg [-pie] ==> ignore
+    arg [-znoexecstack] ==> ignore
+    arg [-EL] ==> ignore
+    arg [--fix-cortex-a53-843419] ==> ignore
+    arg [--warn-shared-textrel] ==> ignore
+    arg [-znow] ==> ignore
+    arg [-zrelro] ==> ignore
+    arg [-zmax-page-size=4096] ==> ignore
+    arg [--hash-style=both] ==> ignore
+    arg [--enable-new-dtags] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [-m] ==> ignore
+    arg [aarch64linux] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/system/bin/linker64] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTC_0084b] ==> ignore
+    arg [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21/crtbegin_dynamic.o] ==> obj [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21/crtbegin_dynamic.o]
+    arg [-L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/lib/linux/aarch64] ==> dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/lib/linux/aarch64]
+    arg [-L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x] ==> dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x]
+    arg [-L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/lib/../lib64] ==> dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/lib/../lib64]
+    arg [-L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21] ==> dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21]
+    arg [-L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android] ==> dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android]
+    arg [-L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/lib] ==> dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/lib]
+    arg [-L/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib] ==> dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib]
+    arg [--exclude-libs] ==> ignore
+    arg [libgcc.a] ==> ignore
+    arg [--exclude-libs] ==> ignore
+    arg [libgcc_real.a] ==> ignore
+    arg [--exclude-libs] ==> ignore
+    arg [libatomic.a] ==> ignore
+    arg [--build-id] ==> ignore
+    arg [--fatal-warnings] ==> ignore
+    arg [--no-undefined] ==> ignore
+    arg [--gc-sections] ==> ignore
+    arg [CMakeFiles/cmTC_0084b.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+    arg [-Bstatic] ==> search static
+    arg [-lc++] ==> lib [c++]
+    arg [-Bdynamic] ==> search dynamic
+    arg [-lm] ==> lib [m]
+    arg [-lgcc] ==> lib [gcc]
+    arg [-ldl] ==> lib [dl]
+    arg [-lc] ==> lib [c]
+    arg [-lgcc] ==> lib [gcc]
+    arg [-ldl] ==> lib [dl]
+    arg [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21/crtend_android.o] ==> obj [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21/crtend_android.o]
+  collapse library dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/lib/linux/aarch64] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/lib/linux/aarch64]
+  collapse library dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x]
+  collapse library dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/lib/../lib64] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/aarch64-linux-android/lib64]
+  collapse library dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21]
+  collapse library dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android]
+  collapse library dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x/../../../../aarch64-linux-android/lib] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/aarch64-linux-android/lib]
+  collapse library dir [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib] ==> [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib]
+  implicit libs: [c++;m;gcc;dl;c;gcc;dl]
+  implicit objs: [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21/crtbegin_dynamic.o;/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21/crtend_android.o]
+  implicit dirs: [/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/9.0.9/lib/linux/aarch64;/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/lib/gcc/aarch64-linux-android/4.9.x;/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/aarch64-linux-android/lib64;/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/21;/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android;/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/aarch64-linux-android/lib;/home/xinniw/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib]
+  implicit fwks: []
+
+
+Performing C SOURCE FILE Test CHECK_CPU_ARCHITECTURE_ARM64 succeeded with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_d80ef && [1/2] Building C object CMakeFiles/cmTC_d80ef.dir/src.c.o
+[2/2] Linking C executable cmTC_d80ef
+
+
+Source file was:
+
+int main(int argc, char *argv[]) {
+#if defined(__aarch64__) || defined(_M_ARM64)
+  return 0;
+#else
+  choke
+#endif
+}
+
+Performing C SOURCE FILE Test HAVE_GCC_WALL succeeded with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_bc532 && [1/2] Building C object CMakeFiles/cmTC_bc532.dir/src.c.o
+[2/2] Linking C executable cmTC_bc532
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test HAVE_GCC_NO_STRICT_ALIASING succeeded with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_1f4b7 && [1/2] Building C object CMakeFiles/cmTC_1f4b7.dir/src.c.o
+[2/2] Linking C executable cmTC_1f4b7
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test HAVE_GCC_WDECLARATION_AFTER_STATEMENT succeeded with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_aeb7b && [1/2] Building C object CMakeFiles/cmTC_aeb7b.dir/src.c.o
+[2/2] Linking C executable cmTC_aeb7b
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test HAVE_GCC_ATOMICS succeeded with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_26c13 && [1/2] Building C object CMakeFiles/cmTC_26c13.dir/src.c.o
+[2/2] Linking C executable cmTC_26c13
+
+
+Source file was:
+int main(int argc, char **argv) {
+        int a;
+        void *x, *y, *z;
+        __sync_lock_test_and_set(&a, 4);
+        __sync_lock_test_and_set(&x, y);
+        __sync_fetch_and_add(&a, 1);
+        __sync_bool_compare_and_swap(&a, 5, 10);
+        __sync_bool_compare_and_swap(&x, y, z);
+        return 0; }
+Performing C SOURCE FILE Test HAVE_GCC_FVISIBILITY succeeded with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_97b53 && [1/2] Building C object CMakeFiles/cmTC_97b53.dir/src.c.o
+[2/2] Linking C executable cmTC_97b53
+
+
+Source file was:
+
+      #if !defined(__GNUC__) || __GNUC__ < 4
+      #error SDL only uses visibility attributes in GCC 4 or newer
+      #endif
+      int main(int argc, char **argv) { return 0; }
+Performing C SOURCE FILE Test HAVE_GCC_WSHADOW succeeded with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_47b8f && [1/2] Building C object CMakeFiles/cmTC_47b8f.dir/src.c.o
+[2/2] Linking C executable cmTC_47b8f
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test HAVE_GCC_WUNUSED_LOCAL_TYPEDEFS succeeded with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_4cef4 && [1/2] Building C object CMakeFiles/cmTC_4cef4.dir/src.c.o
+[2/2] Linking C executable cmTC_4cef4
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test HAVE_NO_UNDEFINED succeeded with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_0541e && [1/2] Building C object CMakeFiles/cmTC_0541e.dir/src.c.o
+clang: warning: -Wl,--no-undefined: 'linker' input unused [-Wunused-command-line-argument]
+[2/2] Linking C executable cmTC_0541e
+
+
+Source file was:
+int main(void) { return 0; }
+Determining if the include file ctype.h exists passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_a254d && [1/2] Building C object CMakeFiles/cmTC_a254d.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_a254d
+
+
+
+Determining if the include file float.h exists passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_ac6e0 && [1/2] Building C object CMakeFiles/cmTC_ac6e0.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_ac6e0
+
+
+
+Determining if the include file iconv.h exists passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_644df && [1/2] Building C object CMakeFiles/cmTC_644df.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_644df
+
+
+
+Determining if the include file inttypes.h exists passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_b6002 && [1/2] Building C object CMakeFiles/cmTC_b6002.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_b6002
+
+
+
+Determining if the include file limits.h exists passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_a8b82 && [1/2] Building C object CMakeFiles/cmTC_a8b82.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_a8b82
+
+
+
+Determining if the include file malloc.h exists passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_37dbc && [1/2] Building C object CMakeFiles/cmTC_37dbc.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_37dbc
+
+
+
+Determining if the include file math.h exists passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_784e5 && [1/2] Building C object CMakeFiles/cmTC_784e5.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_784e5
+
+
+
+Determining if the include file memory.h exists passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_62f11 && [1/2] Building C object CMakeFiles/cmTC_62f11.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_62f11
+
+
+
+Determining if the include file signal.h exists passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_518da && [1/2] Building C object CMakeFiles/cmTC_518da.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_518da
+
+
+
+Determining if the include file stdarg.h exists passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_a8feb && [1/2] Building C object CMakeFiles/cmTC_a8feb.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_a8feb
+
+
+
+Determining if the include file stddef.h exists passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_3ba15 && [1/2] Building C object CMakeFiles/cmTC_3ba15.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_3ba15
+
+
+
+Determining if the include file stdint.h exists passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_bfd95 && [1/2] Building C object CMakeFiles/cmTC_bfd95.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_bfd95
+
+
+
+Determining if the include file stdio.h exists passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_39091 && [1/2] Building C object CMakeFiles/cmTC_39091.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_39091
+
+
+
+Determining if the include file stdlib.h exists passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_b4373 && [1/2] Building C object CMakeFiles/cmTC_b4373.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_b4373
+
+
+
+Determining if the include file string.h exists passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_944e4 && [1/2] Building C object CMakeFiles/cmTC_944e4.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_944e4
+
+
+
+Determining if the include file strings.h exists passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_d9bc1 && [1/2] Building C object CMakeFiles/cmTC_d9bc1.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_d9bc1
+
+
+
+Determining if the include file sys/types.h exists passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_8edc7 && [1/2] Building C object CMakeFiles/cmTC_8edc7.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_8edc7
+
+
+
+Determining if the include file wchar.h exists passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_bb26c && [1/2] Building C object CMakeFiles/cmTC_bb26c.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_bb26c
+
+
+
+Determining if the include file linux/input.h exists passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_14bcc && [1/2] Building C object CMakeFiles/cmTC_14bcc.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_14bcc
+
+
+
+Determining if files stddef.h;stdarg.h;stdlib.h;string.h;stdio.h;wchar.h;float.h exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_833a9 && [1/2] Building C object CMakeFiles/cmTC_833a9.dir/STDC_HEADERS.c.o
+[2/2] Linking C executable cmTC_833a9
+
+
+
+Determining if the M_PI exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_f3992 && [1/2] Building C object CMakeFiles/cmTC_f3992.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_f3992
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef M_PI
+  return ((int*)(&M_PI))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Performing C SOURCE FILE Test HAVE_MPROTECT succeeded with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_6e6b3 && [1/2] Building C object CMakeFiles/cmTC_6e6b3.dir/src.c.o
+[2/2] Linking C executable cmTC_6e6b3
+
+
+Source file was:
+#include <sys/types.h>
+                             #include <sys/mman.h>
+                             int main(void) { return 0; }
+Determining if the strtod exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_ea53e && [1/2] Building C object CMakeFiles/cmTC_ea53e.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_ea53e
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strtod
+  return ((int*)(&strtod))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the malloc exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_6befb && [1/2] Building C object CMakeFiles/cmTC_6befb.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_6befb
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef malloc
+  return ((int*)(&malloc))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the calloc exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_3b6cb && [1/2] Building C object CMakeFiles/cmTC_3b6cb.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_3b6cb
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef calloc
+  return ((int*)(&calloc))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the realloc exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_aa315 && [1/2] Building C object CMakeFiles/cmTC_aa315.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_aa315
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef realloc
+  return ((int*)(&realloc))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the free exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_2869f && [1/2] Building C object CMakeFiles/cmTC_2869f.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_2869f
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef free
+  return ((int*)(&free))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the getenv exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_c677a && [1/2] Building C object CMakeFiles/cmTC_c677a.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_c677a
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef getenv
+  return ((int*)(&getenv))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the setenv exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_39e09 && [1/2] Building C object CMakeFiles/cmTC_39e09.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_39e09
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef setenv
+  return ((int*)(&setenv))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the putenv exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_37bab && [1/2] Building C object CMakeFiles/cmTC_37bab.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_37bab
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef putenv
+  return ((int*)(&putenv))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the unsetenv exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_7e1f4 && [1/2] Building C object CMakeFiles/cmTC_7e1f4.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_7e1f4
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef unsetenv
+  return ((int*)(&unsetenv))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the bsearch exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_31d5a && [1/2] Building C object CMakeFiles/cmTC_31d5a.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_31d5a
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef bsearch
+  return ((int*)(&bsearch))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the qsort exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_9bdd1 && [1/2] Building C object CMakeFiles/cmTC_9bdd1.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_9bdd1
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef qsort
+  return ((int*)(&qsort))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the abs exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_c3a8e && [1/2] Building C object CMakeFiles/cmTC_c3a8e.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_c3a8e
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef abs
+  return ((int*)(&abs))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the bcopy exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_50b2a && [1/2] Building C object CMakeFiles/cmTC_50b2a.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_50b2a
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef bcopy
+  return ((int*)(&bcopy))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the memset exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_98c4d && [1/2] Building C object CMakeFiles/cmTC_98c4d.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_98c4d
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef memset
+  return ((int*)(&memset))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the memcpy exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_da84c && [1/2] Building C object CMakeFiles/cmTC_da84c.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_da84c
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef memcpy
+  return ((int*)(&memcpy))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the memmove exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_15519 && [1/2] Building C object CMakeFiles/cmTC_15519.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_15519
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef memmove
+  return ((int*)(&memmove))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the memcmp exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_55b41 && [1/2] Building C object CMakeFiles/cmTC_55b41.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_55b41
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef memcmp
+  return ((int*)(&memcmp))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the strlen exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_b557e && [1/2] Building C object CMakeFiles/cmTC_b557e.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_b557e
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strlen
+  return ((int*)(&strlen))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the strlcpy exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_80000 && [1/2] Building C object CMakeFiles/cmTC_80000.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_80000
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strlcpy
+  return ((int*)(&strlcpy))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the strlcat exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_26722 && [1/2] Building C object CMakeFiles/cmTC_26722.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_26722
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strlcat
+  return ((int*)(&strlcat))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the strchr exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_1dfa7 && [1/2] Building C object CMakeFiles/cmTC_1dfa7.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_1dfa7
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strchr
+  return ((int*)(&strchr))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the strrchr exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_3089f && [1/2] Building C object CMakeFiles/cmTC_3089f.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_3089f
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strrchr
+  return ((int*)(&strrchr))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the strstr exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_8ed32 && [1/2] Building C object CMakeFiles/cmTC_8ed32.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_8ed32
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strstr
+  return ((int*)(&strstr))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the strtok_r exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_61ce8 && [1/2] Building C object CMakeFiles/cmTC_61ce8.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_61ce8
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strtok_r
+  return ((int*)(&strtok_r))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the strtol exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_97c50 && [1/2] Building C object CMakeFiles/cmTC_97c50.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_97c50
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strtol
+  return ((int*)(&strtol))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the strtoul exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_8bb4a && [1/2] Building C object CMakeFiles/cmTC_8bb4a.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_8bb4a
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strtoul
+  return ((int*)(&strtoul))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the strtoll exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_b39d0 && [1/2] Building C object CMakeFiles/cmTC_b39d0.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_b39d0
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strtoll
+  return ((int*)(&strtoll))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the strtoull exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_dda40 && [1/2] Building C object CMakeFiles/cmTC_dda40.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_dda40
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strtoull
+  return ((int*)(&strtoull))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the atoi exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_163d1 && [1/2] Building C object CMakeFiles/cmTC_163d1.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_163d1
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef atoi
+  return ((int*)(&atoi))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the atof exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_1aada && [1/2] Building C object CMakeFiles/cmTC_1aada.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_1aada
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef atof
+  return ((int*)(&atof))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the strcmp exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_5a8cc && [1/2] Building C object CMakeFiles/cmTC_5a8cc.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_5a8cc
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strcmp
+  return ((int*)(&strcmp))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the strncmp exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_30970 && [1/2] Building C object CMakeFiles/cmTC_30970.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_30970
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strncmp
+  return ((int*)(&strncmp))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the strcasecmp exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_4fdff && [1/2] Building C object CMakeFiles/cmTC_4fdff.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_4fdff
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strcasecmp
+  return ((int*)(&strcasecmp))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the strncasecmp exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_e4f06 && [1/2] Building C object CMakeFiles/cmTC_e4f06.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_e4f06
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strncasecmp
+  return ((int*)(&strncasecmp))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the strcasestr exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_c2ab8 && [1/2] Building C object CMakeFiles/cmTC_c2ab8.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_c2ab8
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strcasestr
+  return ((int*)(&strcasestr))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the wcscmp exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_4c317 && [1/2] Building C object CMakeFiles/cmTC_4c317.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_4c317
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef wcscmp
+  return ((int*)(&wcscmp))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the wcsdup exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_40202 && [1/2] Building C object CMakeFiles/cmTC_40202.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_40202
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef wcsdup
+  return ((int*)(&wcsdup))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the wcslcat exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_a9f7e && [1/2] Building C object CMakeFiles/cmTC_a9f7e.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_a9f7e
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef wcslcat
+  return ((int*)(&wcslcat))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the wcslcpy exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_3283c && [1/2] Building C object CMakeFiles/cmTC_3283c.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_3283c
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef wcslcpy
+  return ((int*)(&wcslcpy))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the wcslen exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_e2e12 && [1/2] Building C object CMakeFiles/cmTC_e2e12.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_e2e12
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef wcslen
+  return ((int*)(&wcslen))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the wcsncmp exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_66f55 && [1/2] Building C object CMakeFiles/cmTC_66f55.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_66f55
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef wcsncmp
+  return ((int*)(&wcsncmp))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the wcsstr exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_1ddf8 && [1/2] Building C object CMakeFiles/cmTC_1ddf8.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_1ddf8
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef wcsstr
+  return ((int*)(&wcsstr))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the wcscasecmp exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_78743 && [1/2] Building C object CMakeFiles/cmTC_78743.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_78743
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef wcscasecmp
+  return ((int*)(&wcscasecmp))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the wcsncasecmp exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_90e4f && [1/2] Building C object CMakeFiles/cmTC_90e4f.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_90e4f
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef wcsncasecmp
+  return ((int*)(&wcsncasecmp))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the sscanf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_582d1 && [1/2] Building C object CMakeFiles/cmTC_582d1.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_582d1
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef sscanf
+  return ((int*)(&sscanf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the vsscanf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_18846 && [1/2] Building C object CMakeFiles/cmTC_18846.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_18846
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef vsscanf
+  return ((int*)(&vsscanf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the vsnprintf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_50afa && [1/2] Building C object CMakeFiles/cmTC_50afa.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_50afa
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef vsnprintf
+  return ((int*)(&vsnprintf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the fseeko exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_6d24f && [1/2] Building C object CMakeFiles/cmTC_6d24f.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_6d24f
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef fseeko
+  return ((int*)(&fseeko))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the _Exit exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_bd77f && [1/2] Building C object CMakeFiles/cmTC_bd77f.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_bd77f
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <wchar.h>
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef _Exit
+  return ((int*)(&_Exit))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the sigaction exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_4a11d && [1/2] Building C object CMakeFiles/cmTC_4a11d.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_4a11d
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <signal.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef sigaction
+  return ((int*)(&sigaction))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the setjmp exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_870a2 && [1/2] Building C object CMakeFiles/cmTC_870a2.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_870a2
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <setjmp.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef setjmp
+  return ((int*)(&setjmp))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the nanosleep exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_ecd58 && [1/2] Building C object CMakeFiles/cmTC_ecd58.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_ecd58
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <time.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef nanosleep
+  return ((int*)(&nanosleep))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the sysconf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_78e76 && [1/2] Building C object CMakeFiles/cmTC_78e76.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_78e76
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <unistd.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef sysconf
+  return ((int*)(&sysconf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the getauxval exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_44cbf && [1/2] Building C object CMakeFiles/cmTC_44cbf.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_44cbf
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <sys/auxv.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef getauxval
+  return ((int*)(&getauxval))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the poll exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_ced3d && [1/2] Building C object CMakeFiles/cmTC_ced3d.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_ced3d
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <poll.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef poll
+  return ((int*)(&poll))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the function pow exists in the m passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_545e6 && [1/2] Building C object CMakeFiles/cmTC_545e6.dir/CheckFunctionExists.c.o
+/home/xinniw/Android/Sdk/cmake/3.22.1/share/cmake-3.22/Modules/CheckFunctionExists.c:7:3: warning: incompatible redeclaration of library function 'pow' [-Wincompatible-library-redeclaration]
+  CHECK_FUNCTION_EXISTS(void);
+  ^
+<command line>:3:31: note: expanded from here
+#define CHECK_FUNCTION_EXISTS pow
+                              ^
+/home/xinniw/Android/Sdk/cmake/3.22.1/share/cmake-3.22/Modules/CheckFunctionExists.c:7:3: note: 'pow' is a builtin with type 'double (double, double)'
+<command line>:3:31: note: expanded from here
+#define CHECK_FUNCTION_EXISTS pow
+                              ^
+1 warning generated.
+[2/2] Linking C executable cmTC_545e6
+
+
+
+Determining if the atan exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_441de && [1/2] Building C object CMakeFiles/cmTC_441de.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_441de
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef atan
+  return ((int*)(&atan))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the atan2 exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_64471 && [1/2] Building C object CMakeFiles/cmTC_64471.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_64471
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef atan2
+  return ((int*)(&atan2))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the atanf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_857b2 && [1/2] Building C object CMakeFiles/cmTC_857b2.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_857b2
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef atanf
+  return ((int*)(&atanf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the atan2f exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_cec3e && [1/2] Building C object CMakeFiles/cmTC_cec3e.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_cec3e
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef atan2f
+  return ((int*)(&atan2f))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the ceil exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_3cadf && [1/2] Building C object CMakeFiles/cmTC_3cadf.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_3cadf
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef ceil
+  return ((int*)(&ceil))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the ceilf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_1e88d && [1/2] Building C object CMakeFiles/cmTC_1e88d.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_1e88d
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef ceilf
+  return ((int*)(&ceilf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the copysign exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_a7c90 && [1/2] Building C object CMakeFiles/cmTC_a7c90.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_a7c90
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef copysign
+  return ((int*)(&copysign))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the copysignf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_c3d80 && [1/2] Building C object CMakeFiles/cmTC_c3d80.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_c3d80
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef copysignf
+  return ((int*)(&copysignf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the cos exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_a37d0 && [1/2] Building C object CMakeFiles/cmTC_a37d0.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_a37d0
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef cos
+  return ((int*)(&cos))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the cosf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_ec4d1 && [1/2] Building C object CMakeFiles/cmTC_ec4d1.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_ec4d1
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef cosf
+  return ((int*)(&cosf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the exp exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_65d89 && [1/2] Building C object CMakeFiles/cmTC_65d89.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_65d89
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef exp
+  return ((int*)(&exp))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the expf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_972b2 && [1/2] Building C object CMakeFiles/cmTC_972b2.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_972b2
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef expf
+  return ((int*)(&expf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the fabs exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_8799d && [1/2] Building C object CMakeFiles/cmTC_8799d.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_8799d
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef fabs
+  return ((int*)(&fabs))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the fabsf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_539f6 && [1/2] Building C object CMakeFiles/cmTC_539f6.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_539f6
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef fabsf
+  return ((int*)(&fabsf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the floor exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_575a5 && [1/2] Building C object CMakeFiles/cmTC_575a5.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_575a5
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef floor
+  return ((int*)(&floor))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the floorf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_9f317 && [1/2] Building C object CMakeFiles/cmTC_9f317.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_9f317
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef floorf
+  return ((int*)(&floorf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the fmod exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_39694 && [1/2] Building C object CMakeFiles/cmTC_39694.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_39694
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef fmod
+  return ((int*)(&fmod))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the fmodf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_5e2fb && [1/2] Building C object CMakeFiles/cmTC_5e2fb.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_5e2fb
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef fmodf
+  return ((int*)(&fmodf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the log exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_a88dd && [1/2] Building C object CMakeFiles/cmTC_a88dd.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_a88dd
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef log
+  return ((int*)(&log))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the logf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_48be8 && [1/2] Building C object CMakeFiles/cmTC_48be8.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_48be8
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef logf
+  return ((int*)(&logf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the log10 exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_3c8fb && [1/2] Building C object CMakeFiles/cmTC_3c8fb.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_3c8fb
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef log10
+  return ((int*)(&log10))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the log10f exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_97536 && [1/2] Building C object CMakeFiles/cmTC_97536.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_97536
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef log10f
+  return ((int*)(&log10f))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the lround exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_44947 && [1/2] Building C object CMakeFiles/cmTC_44947.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_44947
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef lround
+  return ((int*)(&lround))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the lroundf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_bb73a && [1/2] Building C object CMakeFiles/cmTC_bb73a.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_bb73a
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef lroundf
+  return ((int*)(&lroundf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the pow exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_5c4c0 && [1/2] Building C object CMakeFiles/cmTC_5c4c0.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_5c4c0
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pow
+  return ((int*)(&pow))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the powf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_0f6ce && [1/2] Building C object CMakeFiles/cmTC_0f6ce.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_0f6ce
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef powf
+  return ((int*)(&powf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the round exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_0f2ee && [1/2] Building C object CMakeFiles/cmTC_0f2ee.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_0f2ee
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef round
+  return ((int*)(&round))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the roundf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_73f94 && [1/2] Building C object CMakeFiles/cmTC_73f94.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_73f94
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef roundf
+  return ((int*)(&roundf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the scalbn exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_56ff6 && [1/2] Building C object CMakeFiles/cmTC_56ff6.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_56ff6
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef scalbn
+  return ((int*)(&scalbn))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the scalbnf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_9a64a && [1/2] Building C object CMakeFiles/cmTC_9a64a.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_9a64a
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef scalbnf
+  return ((int*)(&scalbnf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the sin exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_251e3 && [1/2] Building C object CMakeFiles/cmTC_251e3.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_251e3
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef sin
+  return ((int*)(&sin))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the sinf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_f4ff3 && [1/2] Building C object CMakeFiles/cmTC_f4ff3.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_f4ff3
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef sinf
+  return ((int*)(&sinf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the sqrt exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_fe8f4 && [1/2] Building C object CMakeFiles/cmTC_fe8f4.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_fe8f4
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef sqrt
+  return ((int*)(&sqrt))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the sqrtf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_e44ed && [1/2] Building C object CMakeFiles/cmTC_e44ed.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_e44ed
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef sqrtf
+  return ((int*)(&sqrtf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the tan exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_f2ce5 && [1/2] Building C object CMakeFiles/cmTC_f2ce5.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_f2ce5
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef tan
+  return ((int*)(&tan))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the tanf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_85cfc && [1/2] Building C object CMakeFiles/cmTC_85cfc.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_85cfc
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef tanf
+  return ((int*)(&tanf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the acos exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_7f62c && [1/2] Building C object CMakeFiles/cmTC_7f62c.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_7f62c
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef acos
+  return ((int*)(&acos))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the acosf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_9f659 && [1/2] Building C object CMakeFiles/cmTC_9f659.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_9f659
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef acosf
+  return ((int*)(&acosf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the asin exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_902fa && [1/2] Building C object CMakeFiles/cmTC_902fa.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_902fa
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef asin
+  return ((int*)(&asin))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the asinf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_dee9e && [1/2] Building C object CMakeFiles/cmTC_dee9e.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_dee9e
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef asinf
+  return ((int*)(&asinf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the trunc exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_1009c && [1/2] Building C object CMakeFiles/cmTC_1009c.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_1009c
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef trunc
+  return ((int*)(&trunc))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the truncf exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_a7517 && [1/2] Building C object CMakeFiles/cmTC_a7517.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_a7517
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef truncf
+  return ((int*)(&truncf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the include file alloca.h exists passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_f4578 && [1/2] Building C object CMakeFiles/cmTC_f4578.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_f4578
+
+
+
+Determining if the alloca exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_263d3 && [1/2] Building C object CMakeFiles/cmTC_263d3.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_263d3
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <alloca.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef alloca
+  return ((int*)(&alloca))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the alloca exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_3af76 && [1/2] Building C object CMakeFiles/cmTC_3af76.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_3af76
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stdlib.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef alloca
+  return ((int*)(&alloca))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Performing C SOURCE FILE Test HAVE_SA_SIGACTION succeeded with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_4bd05 && [1/2] Building C object CMakeFiles/cmTC_4bd05.dir/src.c.o
+[2/2] Linking C executable cmTC_4bd05
+
+
+Source file was:
+
+#include <signal.h>
+
+int main()
+{
+  (void)sizeof(((struct sigaction *)0)->sa_sigaction);
+  return 0;
+}
+
+Determining if the dlopen exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_f2010 && [1/2] Building C object CMakeFiles/cmTC_f2010.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_f2010
+
+
+File /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <dlfcn.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef dlopen
+  return ((int*)(&dlopen))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Performing C SOURCE FILE Test HAVE_O_CLOEXEC succeeded with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_7e5a3 && [1/2] Building C object CMakeFiles/cmTC_7e5a3.dir/src.c.o
+[2/2] Linking C executable cmTC_7e5a3
+
+
+Source file was:
+
+    #include <fcntl.h>
+    int flag = O_CLOEXEC;
+    int main(int argc, char **argv) { return 0; }
+Performing C SOURCE FILE Test VULKAN_PASSED_ANDROID_CHECKS succeeded with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_ac86c && [1/2] Building C object CMakeFiles/cmTC_ac86c.dir/src.c.o
+[2/2] Linking C executable cmTC_ac86c
+
+
+Source file was:
+
+      #if defined(__ARM_ARCH) && __ARM_ARCH < 7
+      #error Vulkan doesn't work on this configuration
+      #endif
+      int main(int argc, char **argv) { return 0; }
+      
+Performing C SOURCE FILE Test HAVE_PTHREADS succeeded with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_0097d && [1/2] Building C object CMakeFiles/cmTC_0097d.dir/src.c.o
+[2/2] Linking C executable cmTC_0097d
+
+
+Source file was:
+
+      #include <pthread.h>
+      int main(int argc, char** argv) {
+        pthread_attr_t type;
+        pthread_attr_init(&type);
+        return 0;
+      }
+Performing C SOURCE FILE Test HAVE_RECURSIVE_MUTEXES succeeded with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_ae772 && [1/2] Building C object CMakeFiles/cmTC_ae772.dir/src.c.o
+[2/2] Linking C executable cmTC_ae772
+
+
+Source file was:
+
+        #include <pthread.h>
+        int main(int argc, char **argv) {
+          pthread_mutexattr_t attr;
+          pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+          return 0;
+        }
+Performing C SOURCE FILE Test HAVE_PTHREADS_SEM succeeded with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_29922 && [1/2] Building C object CMakeFiles/cmTC_29922.dir/src.c.o
+[2/2] Linking C executable cmTC_29922
+
+
+Source file was:
+#include <pthread.h>
+                                 #include <semaphore.h>
+                                 int main(int argc, char **argv) { return 0; }
+Performing C SOURCE FILE Test HAVE_SEM_TIMEDWAIT succeeded with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_bd962 && [1/2] Building C object CMakeFiles/cmTC_bd962.dir/src.c.o
+[2/2] Linking C executable cmTC_bd962
+
+
+Source file was:
+
+              #include <pthread.h>
+              #include <semaphore.h>
+              int main(int argc, char **argv) {
+                  sem_timedwait(NULL, NULL);
+                  return 0;
+              }
+Determining if files pthread.h exist passed with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_c6766 && [1/2] Building C object CMakeFiles/cmTC_c6766.dir/HAVE_PTHREAD_H.c.o
+[2/2] Linking C executable cmTC_c6766
+
+
+
+Performing C SOURCE FILE Test HAVE_PTHREAD_SETNAME_NP succeeded with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_c44b4 && [1/2] Building C object CMakeFiles/cmTC_c44b4.dir/src.c.o
+[2/2] Linking C executable cmTC_c44b4
+
+
+Source file was:
+
+            #include <pthread.h>
+            int main(int argc, char **argv) {
+              #ifdef __APPLE__
+              pthread_setname_np("");
+              #else
+              pthread_setname_np(pthread_self(),"");
+              #endif
+              return 0;
+            }
+Performing C SOURCE FILE Test HAVE_WL_NO_UNDEFINED succeeded with the following output:
+Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_67921 && [1/2] Building C object CMakeFiles/cmTC_67921.dir/src.c.o
+[2/2] Linking C executable cmTC_67921
+
+
+Source file was:
+int main() { return 0; }

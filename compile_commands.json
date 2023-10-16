@@ -1,0 +1,17 @@
+[
+    {
+        "arguments": [
+            "/usr/bin/c++",
+            "-I/usr/include/SDL2",
+            "-std=c++17",
+            "-g",
+            "-c",
+            "-o",
+            "CMakeFiles/framework.dir/main.cpp.o",
+            "/home/xinniw/Development/learning-sdl2/main.cpp"
+        ],
+        "directory": "/home/xinniw/Development/learning-sdl2/build",
+        "file": "/home/xinniw/Development/learning-sdl2/main.cpp",
+        "output": "/home/xinniw/Development/learning-sdl2/build/CMakeFiles/framework.dir/main.cpp.o"
+    }
+]

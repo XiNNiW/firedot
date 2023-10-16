@@ -1,0 +1,10 @@
+Executable : /home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja
+arguments : 
+-C
+/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a
+SDL2
+SDL2_image
+algae
+main
+jvmArgs : 
+

@@ -1,0 +1,10 @@
+Executable : /home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja
+arguments : 
+-C
+/home/xinniw/Development/THESIS-sustainable_computing-dev/subtractive-joystick-demo/droid-project/app/.cxx/Debug/3y6l645h/arm64-v8a
+SDL2
+SDL2_image
+algae
+main
+jvmArgs : 
+

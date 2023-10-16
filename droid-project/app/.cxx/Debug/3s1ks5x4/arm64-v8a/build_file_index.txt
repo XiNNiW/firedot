@@ -1,0 +1,14 @@
+/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/CMakeLists.txt
+/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/CMakeLists.txt
+/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/cmake/CheckCPUArchitecture.cmake
+/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/cmake/macros.cmake
+/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/cmake/sdlchecks.cmake
+/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/cmake/sdlfind.cmake
+/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/cmake/sdlplatform.cmake
+/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/cmake_uninstall.cmake.in
+/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/include/SDL_config.h.cmake
+/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/include/SDL_revision.h.cmake
+/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2_image/CMakeLists.txt
+/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2_image/cmake/PrivateSdlFunctions.cmake
+/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/algae/CMakeLists.txt
+/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/src/CMakeLists.txt

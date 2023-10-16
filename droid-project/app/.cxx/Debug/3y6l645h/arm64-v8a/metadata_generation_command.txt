@@ -1,0 +1,25 @@
+                    Executable : /home/xinniw/Android/Sdk/cmake/3.22.1/bin/cmake
+arguments : 
+-H/home/xinniw/Development/THESIS-sustainable_computing-dev/subtractive-joystick-demo/droid-project/app/jni
+-DCMAKE_SYSTEM_NAME=Android
+-DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+-DCMAKE_SYSTEM_VERSION=16
+-DANDROID_PLATFORM=android-16
+-DANDROID_ABI=arm64-v8a
+-DCMAKE_ANDROID_ARCH_ABI=arm64-v8a
+-DANDROID_NDK=/home/xinniw/Android/Sdk/ndk/21.4.7075529
+-DCMAKE_ANDROID_NDK=/home/xinniw/Android/Sdk/ndk/21.4.7075529
+-DCMAKE_TOOLCHAIN_FILE=/home/xinniw/Android/Sdk/ndk/21.4.7075529/build/cmake/android.toolchain.cmake
+-DCMAKE_MAKE_PROGRAM=/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja
+-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=/home/xinniw/Development/THESIS-sustainable_computing-dev/subtractive-joystick-demo/droid-project/app/build/intermediates/cxx/Debug/3y6l645h/obj/arm64-v8a
+-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=/home/xinniw/Development/THESIS-sustainable_computing-dev/subtractive-joystick-demo/droid-project/app/build/intermediates/cxx/Debug/3y6l645h/obj/arm64-v8a
+-DCMAKE_BUILD_TYPE=Debug
+-B/home/xinniw/Development/THESIS-sustainable_computing-dev/subtractive-joystick-demo/droid-project/app/.cxx/Debug/3y6l645h/arm64-v8a
+-GNinja
+-DANDROID_APP_PLATFORM=android-16
+-DANDROID_STL=c++_static
+jvmArgs : 
+
+
+                    Build command args: []
+                    Version: 2
