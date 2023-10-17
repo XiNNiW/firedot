@@ -21,6 +21,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <functional>
 #include <math.h>
 #include <memory>
@@ -292,8 +293,8 @@ struct OrientedBoundingBox {
   OrientedBoundingBox(vec2f_t pos, vec2f_t size, float rotation)
       : position(pos) {
     halfSize = vec2f_t{.x = size.x / float(2.0), .y = size.y / float(2.0)};
-    axisX = vec2f_t{.x = cos(rotation), .y = sin(rotation)};
-    axisY = vec2f_t{.x = -sin(rotation), .y = cos(rotation)};
+    axisX = vec2f_t{.x = cos(rotation), .y = sin(rotation)}.norm();
+    axisY = vec2f_t{.x = -sin(rotation), .y = cos(rotation)}.norm();
   }
   inline const std::array<vec2f_t, 4> vertices() const {
     auto xProj = position.dot(axisX);
@@ -323,21 +324,15 @@ struct OrientedBoundingBox {
     }
     return vec2f_t{.x = minProjBox2On1x, .y = maxProjBox2On1x};
   }
-  inline bool isInBounds(int width, int height) {
-    return (position.x <= width) && (position.x >= 0) &&
-           (position.y <= height) && (position.y >= 0);
-  }
 };
 
 struct Particle {
   vec2f_t velocity = vec2f_t{.x = 0, .y = 0};
-  int size = 50;
-  OrientedBoundingBox collider;
+  CircleCollider collider;
 
   Particle() {}
-  Particle(float x, float y, float size, float rotation = 0) {
-    collider = OrientedBoundingBox(vec2f_t{.x = x, .y = y},
-                                   vec2f_t{.x = size, .y = size}, rotation);
+  Particle(float x, float y, float size) {
+    collider = CircleCollider{.position = vec2f_t{.x = x, .y = y}, .r = size};
   }
   inline void update(const float &deltaTimeSeconds,
                      const float &pixelsPerMeter) {
@@ -348,6 +343,7 @@ struct Particle {
 
 struct Wall {
   OrientedBoundingBox collider;
+  std::array<float, 4> notes = {36 + 24, 40 + 24, 43 + 24, 47 + 24};
   Wall(float x, float y, float w, float h, float rotation = 0)
       : collider(OrientedBoundingBox(vec2f_t{.x = x, .y = y},
                                      vec2f_t{.x = w, .y = h}, rotation)) {}
@@ -384,6 +380,55 @@ public:
   }
 
   const std::vector<collision_t> &getCollisions() { return collisions; }
+  static inline std::optional<vec2f_t>
+  intersection(const CircleCollider &circle1, const CircleCollider &circle2) {
+    auto seperationVector = circle1.position.subtract(circle2.position);
+    auto distance = seperationVector.length();
+    auto sumOfRadii = (circle1.r + circle2.r);
+    if (distance > sumOfRadii) {
+      return std::nullopt;
+    }
+    auto overlap = distance - sumOfRadii;
+    auto minTranslationVector = seperationVector.norm().scale(overlap);
+    return minTranslationVector;
+  }
+  static inline std::optional<vec2f_t>
+  intersection(const CircleCollider &circle, const OrientedBoundingBox &box) {
+    auto boxVertices = box.vertices();
+    auto axes = std::array<vec2f_t, 2>({box.axisX, box.axisY});
+
+    float minOverlap = MAXFLOAT;
+    vec2f_t minAxis;
+
+    // for each axis project all vertices and detect overlap
+    for (auto &axis : axes) {
+
+      auto toEdge = axis.scale(circle.r);
+      auto circleEdgePoint1 = circle.position.add(toEdge);
+      auto circleEdgePoint2 = circle.position.subtract(toEdge);
+      auto proj1 = circleEdgePoint1.dot(axis);
+      auto proj2 = circleEdgePoint2.dot(axis);
+      auto circleProjection = projection_t{.minimum = std::min(proj1, proj2),
+                                           .maximum = std::max(proj1, proj2)};
+
+      auto boxProjection = projection_t{.minimum = FLT_MAX, .maximum = FLT_MIN};
+      for (auto &vertex : boxVertices) {
+        auto proj = vertex.dot(axis);
+        boxProjection.minimum = std::min(boxProjection.minimum, proj);
+        boxProjection.maximum = std::max(boxProjection.maximum, proj);
+      }
+      auto overlap = circleProjection.overlap(boxProjection);
+
+      if (overlap == 0) {
+        return std::nullopt;
+      } else if (overlap < minOverlap) {
+        minOverlap = overlap;
+        minAxis = axis;
+      }
+    }
+    auto minTranslationVector = minAxis.scale(minOverlap);
+    return minTranslationVector;
+  }
 
   static inline std::optional<vec2f_t>
   intersection(const OrientedBoundingBox &box1,
@@ -414,10 +459,6 @@ public:
       for (size_t i = 1; i < NUM_VERTICES; i++) {
         auto projection1 = axis.dot(box1Vertices[i]);
         auto projection2 = axis.dot(box2Vertices[i]);
-        // minBox1Projection = std::min(minBox1Projection, projection1);
-        // maxBox1Projection = std::max(maxBox1Projection, projection1);
-        // minBox2Projection = std::min(minBox2Projection, projection2);
-        // maxBox2Projection = std::max(maxBox2Projection, projection2);
         box1Projection.minimum = std::min(box1Projection.minimum, projection1);
         box1Projection.maximum = std::max(box1Projection.maximum, projection1);
         box2Projection.minimum = std::min(box2Projection.minimum, projection2);
@@ -426,18 +467,10 @@ public:
 
       auto overlap = box1Projection.overlap(box2Projection);
 
-      //      if ((maxBox2Projection < minBox1Projection) ||
-      //          maxBox1Projection < minBox2Projection) {
-      //        return std::nullopt;
-      //      }
-
       if (overlap == 0) {
         // no overlap! found seperating axis... these shapes are not touching
         return std::nullopt;
       }
-      // auto overlap = abs(std::min(maxBox1Projection, maxBox2Projection) -
-      //                    std::max(minBox2Projection, minBox2Projection));
-
       if (overlap < minOverlap) {
         minOverlap = overlap;
         minTranslationVector = axis;
@@ -465,32 +498,22 @@ private:
     // move them outside one another
     auto xi1 = p1->collider.position;
     auto xi2 = p2->collider.position;
+
     p1->collider.position =
-        p1->collider.position.subtract(minTranslationVector);
-    // p1->collider.position =
-    //     p1->collider.position.subtract(minTranslationVector.scale(0.5));
-    // p2->collider.position =
-    //     p2->collider.position.add(minTranslationVector.scale(0.5));
+        p1->collider.position.subtract(minTranslationVector.scale(0.5));
+    p2->collider.position =
+        p2->collider.position.add(minTranslationVector.scale(0.5));
 
     // figure out transfer of momentuum
     const auto density = 1.0;
-    double m1 = density * (double(p1->size));
-    double m2 = density * (double(p2->size));
+    double m1 = density * (double(p1->collider.r));
+    double m2 = density * (double(p2->collider.r));
     double massSum = m1 + m2;
     auto v1 = p1->velocity;
     auto v2 = p2->velocity;
     auto x1 = p1->collider.position;
     auto x2 = p2->collider.position;
     auto x1_minus_x2 = x1.subtract(x2).scale(1.0 / pixelPerMeter);
-    std::stringstream ss;
-    ss << "\n";
-    ss << "mtv: " << minTranslationVector.x << "," << minTranslationVector.y
-       << "\n";
-    ss << "p1: " << xi1.x << "," << xi1.y << "\n";
-    ss << "p2: " << xi2.x << "," << xi2.y << "\n";
-
-    ss << "v1: " << v1.x << "," << v1.y << "\n";
-    ss << "v2: " << v2.x << "," << v2.y << "\n";
     p1->velocity = v1.subtract(x1_minus_x2.scale(
         (2.0 * m2 / massSum) *
         (v1.subtract(v2).dot(x1_minus_x2) / x1_minus_x2.length())));
@@ -498,11 +521,6 @@ private:
     p2->velocity = v2.subtract(x2_minus_x1.scale(
         (2.0 * m1 / massSum) * v2.subtract(v1).dot(x2_minus_x1) /
         x2_minus_x1.length()));
-    ss << "p1: " << x1.x << "," << x1.y << "\n";
-    ss << "p2: " << x2.x << "," << x2.y << "\n";
-    ss << "v1': " << p1->velocity.x << "," << p1->velocity.y << "\n";
-    ss << "v2': " << p2->velocity.x << "," << p2->velocity.y << "\n";
-    SDL_Log("%s", ss.str().c_str());
   }
   void interact(Particle *p1, Wall *w2, const vec2f_t &minTranslationVector) {
 
@@ -638,18 +656,6 @@ private:
         }
       }
     }
-    // for (auto &c1 : collisions) {
-    //   for (std::vector<collision_t>::iterator cit = collisions.begin();
-    //        cit != collisions.end();) {
-    //     auto c2 = (*cit);
-    //     if (((c1.object1 == c2.object1) && (c1.object2 == c2.object2)) ||
-    //         ((c1.object1 == c2.object2) && (c1.object2 == c2.object1))) {
-    //       cit = collisions.erase(cit);
-    //     } else {
-    //       ++cit;
-    //     }
-    //   }
-    // }
   }
 };
 
@@ -878,8 +884,11 @@ public:
             vec2f_t{.x = float(event.motion.x), .y = float(event.motion.y)};
 
         auto particleSize = mUp.subtract(mDown).length();
-        gameObjects.push_back(
-            new GameObject(Particle(mDown.x, mDown.y, particleSize)));
+        particleSize = (particleSize > MAX_PARTICLE_SIZE)   ? MAX_PARTICLE_SIZE
+                       : (particleSize < MIN_PARTICLE_SIZE) ? MIN_PARTICLE_SIZE
+                                                            : particleSize;
+        auto particle = Particle(mDown.x, mDown.y, particleSize);
+        gameObjects.push_back(new GameObject(particle));
 
         break;
       }
@@ -944,12 +953,11 @@ public:
       case SDL_SENSORUPDATE: {
         // float data[6];
         // SDL_SensorGetData()
-        std::ostringstream ss;
+        std::stringstream ss;
         auto sensor = SDL_SensorFromInstanceID(event.sensor.which);
         auto sensorName = SDL_SensorGetName(sensor);
         ss << "sensor: " << sensorName << " " << event.sensor.data;
-        std::string message = ss.str();
-        SDL_Log("%s", message.c_str());
+        SDL_Log("%s", ss.str().c_str());
         break;
       }
       }
@@ -976,15 +984,23 @@ public:
         case GameObject::PARTICLE: {
           auto p1 = obj1->object.particle;
           auto p2 = obj2->object.particle;
-          if (p2.velocity.subtract(p1.velocity).length() > 1)
-            synth.noiseNoteOn(72);
+          if (p2.velocity.subtract(p1.velocity).length() > 1) {
+            synth.noiseNoteOn(algae::dsp::math::lerp<float>(
+                88, 12, p1.collider.r / MAX_PARTICLE_SIZE));
+            synth.noiseNoteOn(algae::dsp::math::lerp<float>(
+                88, 12, p2.collider.r / MAX_PARTICLE_SIZE));
+          }
           break;
         }
         case GameObject::WALL: {
-          auto w1 = obj1->object.wall;
+          auto w1 = obj2->object.wall;
           auto p2 = obj1->object.particle;
           if (p2.velocity.length() > 1) {
-            synth.stringNoteOn(60);
+            synth.noiseNoteOn(algae::dsp::math::lerp<float>(
+                88, 12, p2.collider.r / MAX_PARTICLE_SIZE));
+            int randIndex = rand() % (w1.notes.size() - 1);
+            auto note = w1.notes[randIndex];
+            synth.stringNoteOn(note + 24);
           }
           break;
         }
@@ -992,12 +1008,17 @@ public:
         break;
       }
       case GameObject::WALL: {
+
         switch (obj2->type) {
         case GameObject::PARTICLE: {
-
+          auto w1 = obj1->object.wall;
           auto p2 = obj1->object.particle;
           if (p2.velocity.length() > 1) {
-            synth.stringNoteOn(60);
+            synth.noiseNoteOn(algae::dsp::math::lerp<float>(
+                88, 12, p2.collider.r / MAX_PARTICLE_SIZE));
+            int randIndex = rand() % (w1.notes.size() - 1);
+            auto note = w1.notes[randIndex];
+            synth.stringNoteOn(note + 24);
           }
 
           break;
@@ -1016,8 +1037,14 @@ public:
          objectIterator != gameObjects.end();) {
       switch ((*objectIterator)->type) {
       case GameObject::PARTICLE: {
-        if (!(*objectIterator)
-                 ->object.particle.collider.isInBounds(width, height)) {
+        auto particle = &(*objectIterator)->object.particle;
+        auto twiceSize = particle->collider.r * 2 * 2;
+        auto pos = particle->collider.position;
+        bool isInBounds =
+            (pos.x < (width + twiceSize)) && (pos.x > (-twiceSize)) &&
+            (pos.y < (height + twiceSize)) && (pos.y > (-twiceSize));
+
+        if (!isInBounds) {
           objectIterator = gameObjects.erase(objectIterator);
         } else {
           ++objectIterator;
@@ -1044,16 +1071,15 @@ public:
 
       switch (object->type) {
       case GameObject::PARTICLE: {
+
         auto particle = object->object.particle;
         auto destRect = SDL_Rect();
-        destRect.x =
-            particle.collider.position.x - particle.collider.halfSize.x;
-        destRect.y =
-            particle.collider.position.y - particle.collider.halfSize.y;
-        destRect.w = 2 * particle.collider.halfSize.x;
-        destRect.h = 2 * particle.collider.halfSize.y;
-        double angle =
-            atan(particle.collider.axisX.y / particle.collider.axisX.x);
+        destRect.x = particle.collider.position.x - particle.collider.r;
+        destRect.y = particle.collider.position.y - particle.collider.r;
+        destRect.w = 2 * particle.collider.r;
+        destRect.h = 2 * particle.collider.r;
+        double angle = 0;
+        // atan(particle.collider.axisX.y / particle.collider.axisX.x);
         SDL_Point center = SDL_Point();
         center.x = particle.collider.position.x;
         center.y = particle.collider.position.y;
@@ -1093,6 +1119,8 @@ private:
   const int JOYSTICK_DEAD_ZONE = 8000;
   const int JOYSTICK_MAX_VALUE = 32767;
   const int JOYSTICK_MIN_VALUE = -32768;
+  const double MIN_PARTICLE_SIZE = 5;
+  const double MAX_PARTICLE_SIZE = 500;
   int height;                    // Height of the window
   int width;                     // Width of the window
   SDL_Renderer *renderer = NULL; // Pointer for the renderer
