@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <functional>
@@ -202,6 +203,7 @@ template <typename sample_t> struct NoisePercVoice {
   WhiteNoise<sample_t> noise;
   ADEnvelope<sample_t> env;
   ResonantBandpass2ndOrderIIR<sample_t, sample_t> filter;
+  Onepole<sample_t, sample_t> highpass;
   Pan<sample_t> panner;
   // parameters
   Parameter<sample_t> filterFreq;
@@ -213,6 +215,7 @@ template <typename sample_t> struct NoisePercVoice {
   NoisePercVoice<sample_t>(const sample_t sr) : samplerate(sr) { init(); }
   void init() {
     filterFreq.set(800, 30, samplerate);
+    highpass.lowpass(1200, samplerate);
     env.set(1, 15, samplerate);
     panner.setPosition(0.5);
   }
@@ -234,7 +237,8 @@ template <typename sample_t> struct NoisePercVoice {
     out *= e * e;
     filter.bandpass(filterFreq.next(), 5, 0.05, samplerate);
     out = filter.next(out);
-    panner.next(out * gain.next(), left, right);
+    out = out - highpass.next(out);
+    panner.next(out * 0.125 * gain.next(), left, right);
   }
 };
 
@@ -388,6 +392,7 @@ struct Particle {
 struct Wall {
   OrientedBoundingBox collider;
   std::array<float, 4> notes = {36 + 24, 40 + 24, 43 + 24, 47 + 24};
+  SDL_Color color = {0, 80, 80};
   Wall(float x, float y, float w, float h, float rotation = 0)
       : collider(OrientedBoundingBox(vec2f_t{.x = x, .y = y},
                                      vec2f_t{.x = w, .y = h}, rotation)) {}
@@ -850,8 +855,10 @@ public:
     }
 
     addWalls();
+    randomizeChords();
     // physics.gravity = vec2f_t{.x = 4, .y = 9.8};
     lastFrameTime = SDL_GetTicks();
+    timeOfLastChordChange = lastFrameTime;
     // init was successful
 
     std::stringstream ss;
@@ -901,21 +908,73 @@ public:
     }
   };
 
+  void randomizeChords() {
+    SDL_Color colorSets[4][4] = {
+        {{0xD6, 0x02, 0x70},
+         {0x9B, 0x4F, 0x96},
+         {0x00, 0x38, 0xA8},
+         {44, 44, 44}},
+        {
+            {0xFF, 0x21, 0x8C},
+            {0xFF, 0xD8, 0x00},
+            {44, 44, 44},
+            {0x21, 0xB1, 0xFF},
+        },
+        {{0xFE, 0x9A, 0xCE},
+         {0xFF, 0x53, 0xBF},
+         {0x00, 0x38, 0xA8},
+         {0x20, 0x00, 0x44}},
+
+    };
+    float chordSets[3][4][4] = {
+        {{60, 60 + 4, 60 + 7, 60 + 11},
+         {62, 62 + 3, 62 + 7, 62 + 10},
+         {65, 65 + 4, 65 + 7, 65 + 11},
+         {67, 67 + 4, 67 + 7, 67 + 9}},
+        {{52, 52 + 3, 52 + 7, 52 + 10},
+         {55, 55 + 4, 55 + 7, 55 + 11},
+         {57, 57 + 4, 57 + 7, 57 + 9},
+         {59, 59 + 3, 50 + 7, 50 + 10}},
+        {{65, 65 + 3, 65 + 7, 65 + 10},
+         {63, 63 + 3, 63 + 7, 63 + 10},
+         {66, 66 + 4, 66 + 7, 66 + 11},
+         {61, 61 + 3, 61 + 7, 61 + 10}},
+    };
+    size_t idx = size_t(rand()) % 3;
+    wall1->object.wall.color = colorSets[idx][0];
+    wall2->object.wall.color = colorSets[idx][1];
+    wall3->object.wall.color = colorSets[idx][2];
+    wall4->object.wall.color = colorSets[idx][3];
+    for (size_t i = 0; i < 4; i++) {
+      wall1->object.wall.notes[i] = chordSets[idx][0][i];
+      wall2->object.wall.notes[i] = chordSets[idx][1][i];
+      wall3->object.wall.notes[i] = chordSets[idx][2][i];
+      wall3->object.wall.notes[i] = chordSets[idx][3][i];
+    }
+
+    SDL_LogInfo(0, "chords randomized!");
+  }
+
   void addWalls() {
     auto w1 = Wall(0.0, height / 2.0, 50, height / 2.0);
     auto w2 = Wall(width, height / 2.0, 50, height / 2.0);
     auto w3 = Wall(width / 2.0, 0, width / 2.0, 50);
     auto w4 = Wall(width / 2.0, height, width / 2.0, 50);
+    w1.notes = {60, 60 + 4, 60 + 7, 60 + 11};
     w2.notes = {62, 62 + 3, 62 + 7, 62 + 10};
     w3.notes = {65, 65 + 4, 65 + 7, 65 + 11};
     w3.notes = {67, 67 + 4, 67 + 7, 67 + 9};
-    gameObjects.push_back(new GameObject(w1));
+    wall1 = new GameObject(w1);
+    gameObjects.push_back(wall1);
 
-    gameObjects.push_back(new GameObject(w2));
+    wall2 = new GameObject(w2);
+    gameObjects.push_back(wall2);
 
-    gameObjects.push_back(new GameObject(w3));
+    wall3 = new GameObject(w3);
+    gameObjects.push_back(wall3);
 
-    gameObjects.push_back(new GameObject(w4));
+    wall4 = new GameObject(w4);
+    gameObjects.push_back(wall4);
   }
 
   bool loadConfig() {
@@ -944,9 +1003,10 @@ public:
     SDL_FreeSurface(surface);
 
     if (gCursor == NULL) {
-      printf("Unable to load image %s! "
-             "SDL Error: %s\n",
-             path, SDL_GetError());
+      SDL_LogError(0,
+                   "Unable to load image %s! "
+                   "SDL Error: %s\n",
+                   path, SDL_GetError());
       success = false;
     }
 
@@ -1036,8 +1096,10 @@ public:
 
           double accZ = event.sensor.data[2];
           double jerkZ = previousAccelerationZ - accZ;
-          if (abs(jerkZ) > 2) {
-            // randomizeChords();
+          if ((abs(jerkZ) > 8) &&
+              ((lastFrameTime - timeOfLastChordChange) > 50)) {
+            timeOfLastChordChange = lastFrameTime;
+            randomizeChords();
           }
           // SDL_LogInfo(0, "%s", ss.str().c_str());
           break;
@@ -1206,7 +1268,8 @@ public:
         SDL_Point center = SDL_Point();
         center.x = wall.collider.position.x;
         center.y = wall.collider.position.y;
-        SDL_SetTextureColorMod(gCursor, 0, 255, 255);
+        SDL_SetTextureColorMod(gCursor, wall.color.r, wall.color.g,
+                               wall.color.b);
         SDL_RenderCopyEx(renderer, gCursor, NULL, &destRect, angle, &center,
                          SDL_FLIP_NONE);
         break;
@@ -1256,6 +1319,7 @@ private:
   SDL_Joystick *gGameController = NULL;
   //  TTF_Font *font = NULL;
   std::vector<GameObject *> gameObjects;
+  GameObject *wall1, *wall2, *wall3, *wall4;
   SDL_Color textColor = {20, 20, 20};
   SDL_Color textBackgroundColor = {0, 0, 0};
 
@@ -1275,6 +1339,7 @@ private:
   double previousAccelerationZ = 9.8;
   Physics physics;
   double frameDeltaTimeSeconds;
+  double timeOfLastChordChange;
 };
 
 int main(int argc, char *argv[]) {
