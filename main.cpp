@@ -14,21 +14,18 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_opengl.h>
+// #include <SDL_ttf.h>
 #include <algae.h>
 #include <algorithm>
 #include <atomic>
 #include <cmath>
-#include <cstddef>
 #include <cstdint>
 #include <cstdio>
-#include <cstdlib>
 #include <functional>
 #include <math.h>
 #include <memory>
 #include <optional>
-#include <set>
 #include <sstream>
-#include <string>
 #include <type_traits>
 #include <utility>
 #include <variant>
@@ -45,6 +42,7 @@ using algae::dsp::filter::InterpolatedDelay;
 using algae::dsp::filter::Onepole;
 using algae::dsp::filter::ResonantBandpass2ndOrderIIR;
 using algae::dsp::filter::SmoothParameter;
+using algae::dsp::math::lerp;
 using algae::dsp::math::mtof;
 using algae::dsp::oscillator::SinOscillator;
 using algae::dsp::oscillator::WhiteNoise;
@@ -86,20 +84,39 @@ struct Onezero : _Filter<sample_t, Onezero<sample_t>> {
   }
 };
 
+template <typename sample_t, size_t NUM_SAMPLES = 50> struct SilenceDetector {
+  sample_t xs[NUM_SAMPLES];
+  int index = 0;
+
+  const inline sample_t next(sample_t x) {
+    xs[index] = x;
+    sample_t y = 0;
+    for (int i = 0; i < NUM_SAMPLES; i++) {
+
+      y += xs[i];
+    }
+    y /= sample_t(NUM_SAMPLES);
+
+    return y;
+  }
+};
+
 template <typename sample_t> struct KarplusStringVoice {
+  std::atomic<bool> active = false;
+
   static const size_t MAX_DELAY_SAMPS =
-      static_cast<size_t>((100.0 * 48000.0) / 1000.0);
+      static_cast<size_t>((70.0 * 48000.0) / 1000.0);
 
   Parameter<sample_t> allpassFilterGain;
-  Parameter<sample_t> noteNumber;
+  Parameter<sample_t> frequency;
   Parameter<sample_t> panPosition;
   Parameter<sample_t> feedback;
   Parameter<sample_t> b1Coefficient;
   Parameter<sample_t> gain;
-  Parameter<sample_t> pitchBend;
-  DiscreteParameter<sample_t> gate;
-  std::atomic<bool> active;
 
+  DiscreteParameter<sample_t> gate;
+  //
+  ADEnvelope<sample_t> env;
   WhiteNoise<sample_t> exciterNoise;
   SinOscillator<sample_t, sample_t> exciterTone;
   ADEnvelope<sample_t> exciterEnvelope;
@@ -116,10 +133,11 @@ template <typename sample_t> struct KarplusStringVoice {
   KarplusStringVoice<sample_t>() { init(); }
   KarplusStringVoice<sample_t>(const sample_t sr) : samplerate(sr) { init(); }
   void init() {
+    env.set(0.1, 500, samplerate);
     inputFilter.lowpass(19000, samplerate);
     exciterEnvelope.set(0.1, 1, samplerate);
     allpassFilterGain.value = -0.5;
-    noteNumber.value = 36;
+    frequency.value = 440;
     panPosition.value = 0.5;
     feedback.value = 0.999;
     b1Coefficient.value = 0.999;
@@ -129,13 +147,13 @@ template <typename sample_t> struct KarplusStringVoice {
   void setSampleRate(sample_t sr) { samplerate = sr; }
 
   const inline void next(sample_t &leftOut, sample_t &rightOut) {
-
+    leftOut = 0;
+    rightOut = 0;
     const sample_t fb = feedback.next();
     const sample_t b1 = b1Coefficient.next();
     const sample_t apfg = allpassFilterGain.next();
     const sample_t panPos = panPosition.next();
-    const sample_t pb = pitchBend.next();
-    const sample_t freq = mtof(noteNumber.next() + (12 * pb));
+    const sample_t freq = frequency.next();
     const sample_t dtime = (samplerate / freq);
     const sample_t allpassDelayTimeSamples = (samplerate / (h1 * freq));
     const sample_t _gain = gain.next();
@@ -147,9 +165,12 @@ template <typename sample_t> struct KarplusStringVoice {
     sample_t exciter = algae::dsp::math::lerp(tone, noise, exciterLevel);
     exciter *= exciterLevel;
     exciter *= _gain;
-    exciter = inputFilter.next(exciter + gate.value);
-    if (gate.value > 0) {
+    sample_t gt = gate.value;
+    exciter = inputFilter.next(exciter + gt);
+
+    if (gt > 0) {
       exciterEnvelope.trigger();
+      env.trigger();
       gate.set(0);
     }
 
@@ -166,11 +187,17 @@ template <typename sample_t> struct KarplusStringVoice {
 
     y1 = s1 + s2;
     panner.setPosition(panPos);
-    panner.next(y1 * _gain, leftOut, rightOut);
+    sample_t e = env.next();
+    if ((e + gt) < 0.0001) {
+      active = false;
+    }
+
+    panner.next(y1 * _gain * e, leftOut, rightOut);
   }
 };
 
 template <typename sample_t> struct NoisePercVoice {
+  std::atomic<bool> active = false;
   // graph
   WhiteNoise<sample_t> noise;
   ADEnvelope<sample_t> env;
@@ -178,6 +205,7 @@ template <typename sample_t> struct NoisePercVoice {
   Pan<sample_t> panner;
   // parameters
   Parameter<sample_t> filterFreq;
+  Parameter<sample_t> gain;
   DiscreteParameter<sample_t> gate;
 
   sample_t samplerate = 48000;
@@ -192,29 +220,35 @@ template <typename sample_t> struct NoisePercVoice {
   void setSampleRate(sample_t sr) { samplerate = sr; }
 
   void next(sample_t &left, sample_t &right) {
-    if (gate.value > 0) {
+    sample_t g = gate.value;
+    if (g > 0) {
       env.trigger();
       gate.set(0);
     }
     sample_t out = 0;
     out = noise.next();
     auto e = env.next();
+    if ((e + g) < 0.0001) {
+      active = false;
+    }
     out *= e * e;
     filter.bandpass(filterFreq.next(), 5, 0.05, samplerate);
     out = filter.next(out);
-    panner.next(out, left, right);
+    panner.next(out * gain.next(), left, right);
   }
 };
 
 template <typename sample_t> struct Synthesizer {
 private:
-  std::array<KarplusStringVoice<sample_t>, 16> strings;
+  std::array<KarplusStringVoice<sample_t>, 8> strings;
   std::atomic<size_t> stringVoiceIndex = 0;
-  std::array<NoisePercVoice<sample_t>, 16> noisePercs;
+  std::array<NoisePercVoice<sample_t>, 8> noisePercs;
   std::atomic<size_t> noiseVoiceIndex = 0;
   sample_t sampleRate = 48000;
+  SinOscillator<sample_t, sample_t> osc;
 
   inline void setup() {
+    osc.setFrequency(440, sampleRate);
     for (auto &s : strings) {
       s.setSampleRate(sampleRate);
     }
@@ -224,16 +258,19 @@ public:
   Synthesizer<sample_t>(sample_t SR) : sampleRate(SR) { setup(); }
   Synthesizer<sample_t>() { setup(); }
 
-  inline void stringNoteOn(sample_t note) {
-    strings[stringVoiceIndex].pitchBend.set(0, 5, sampleRate);
-    strings[stringVoiceIndex].noteNumber.set(note, 5, sampleRate);
+  inline void stringNoteOn(sample_t note, sample_t velocity) {
+    strings[stringVoiceIndex].frequency.set(mtof(note), 5, sampleRate);
     strings[stringVoiceIndex].gate.set(1);
+    strings[stringVoiceIndex].gain.set(velocity / 127.0, 1, sampleRate);
+    strings[stringVoiceIndex].active = true;
     stringVoiceIndex = (stringVoiceIndex + 1) % strings.size();
   }
 
-  inline void noiseNoteOn(sample_t note) {
+  inline void noiseNoteOn(sample_t note, sample_t velocity) {
     noisePercs[noiseVoiceIndex].filterFreq.set(mtof(note), 5, sampleRate);
     noisePercs[noiseVoiceIndex].gate.set(1);
+    noisePercs[noiseVoiceIndex].gain.set(velocity / 127.0, 1, sampleRate);
+    noisePercs[noiseVoiceIndex].active = true;
     noiseVoiceIndex = (noiseVoiceIndex + 1) % noisePercs.size();
   }
 
@@ -244,19 +281,26 @@ public:
   }
 
   inline void next(sample_t &leftOut, sample_t &rightOut) {
-    leftOut = 0;
-    rightOut = 0;
+
+    //    auto s = osc.next();
+    //    leftOut = s*0.25;
+    //    rightOut = s*0.25;
+    leftOut = rightOut = 0;
     for (auto &string : strings) {
-      sample_t l, r;
-      string.next(l, r);
-      leftOut += l;
-      rightOut += r;
+      if (string.active) {
+        sample_t l, r;
+        string.next(l, r);
+        leftOut += l;
+        rightOut += r;
+      }
     }
     for (auto &noise : noisePercs) {
-      sample_t l, r;
-      noise.next(l, r);
-      leftOut += l;
-      rightOut += r;
+      if (noise.active) {
+        sample_t l, r;
+        noise.next(l, r);
+        leftOut += l;
+        rightOut += r;
+      }
     }
   }
 };
@@ -395,7 +439,11 @@ public:
   static inline std::optional<vec2f_t>
   intersection(const CircleCollider &circle, const OrientedBoundingBox &box) {
     auto boxVertices = box.vertices();
-    auto axes = std::array<vec2f_t, 2>({box.axisX, box.axisY});
+    auto axes =
+        std::array<vec2f_t, 4>({box.axisX,
+                                {.x = -box.axisX.x, .y = -box.axisX.y},
+                                box.axisY,
+                                {.x = -box.axisY.x, .y = -box.axisY.y}});
 
     float minOverlap = MAXFLOAT;
     vec2f_t minAxis;
@@ -426,6 +474,8 @@ public:
         minAxis = axis;
       }
     }
+    // auto minTranslationVector = minAxis.scale(minOverlap);
+
     auto minTranslationVector = minAxis.scale(minOverlap);
     return minTranslationVector;
   }
@@ -487,8 +537,15 @@ private:
     float minimum = 0, maximum = 0;
     inline const float overlap(const projection_t &other) {
 
-      return std::max(float(0), std::min(maximum, other.maximum) -
-                                    std::max(minimum, other.minimum));
+      // return std::max(float(0), std::min(maximum, other.maximum) -
+      //                               std::max(minimum, other.minimum));
+      if ((maximum > other.minimum) && (minimum < other.maximum)) {
+        return maximum - other.minimum;
+      } else if ((minimum < other.maximum) && (maximum > other.minimum)) {
+        return other.maximum - minimum;
+      } else {
+        return 0;
+      }
     }
   };
   std::vector<collision_t> collisions;
@@ -673,9 +730,17 @@ public:
       return false;
     }
 
-    SDL_Init(SDL_INIT_VIDEO); // Initializing SDL as Video
-    SDL_CreateWindowAndRenderer(width, height, SDL_WINDOW_OPENGL, &window,
-                                &renderer); // Get window surface
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+      SDL_LogError(0, "could not init! %s", SDL_GetError());
+      return false;
+    } // Initializing SDL as Video
+    if (SDL_CreateWindowAndRenderer(width, height, SDL_WINDOW_OPENGL, &window,
+                                    &renderer) < 0) {
+      SDL_LogError(0, "could not get window! %s", SDL_GetError());
+      return false;
+    } // Get window surface
+
+    SDL_GetWindowSize(window, &width, &height);
 
     if (window == NULL) {
       printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
@@ -690,21 +755,48 @@ public:
       return false;
     }
 
+    if (SDL_InitSubSystem(SDL_INIT_SENSOR) < 0) {
+      SDL_LogError(0, "SDL_sensor could not initialize! Error: %s\n",
+                   SDL_GetError());
+    }
+
     if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0)
-      printf("SDL_joystick could not initialize! Error: %s\n", SDL_GetError());
+      SDL_LogError(0, "SDL_joystick could not initialize! Error: %s\n",
+                   SDL_GetError());
     // Check for joysticks
     if (SDL_NumJoysticks() < 1) {
-      printf("Warning: No joysticks connected!\n");
+      SDL_LogWarn(0, "Warning: No joysticks connected!\n");
     } else {
       // Load joystick
       gGameController = SDL_JoystickOpen(0);
       if (gGameController == NULL) {
-        printf("Warning: Unable to open game controller! SDL Error: %s\n",
-               SDL_GetError());
+        SDL_LogWarn(0,
+                    "Warning: Unable to open game controller! SDL Error: %s\n",
+                    SDL_GetError());
       }
     }
+    SDL_LogInfo(0, "num sensors: %d", SDL_NumSensors());
+    for (size_t i = 0; i < SDL_NumSensors(); i++) {
+      auto sensor = SDL_SensorOpen(i);
+      if (sensor == NULL) {
+        SDL_LogError(0, "%s", SDL_GetError());
+      } else {
+        SDL_LogInfo(0, " %s", SDL_SensorGetName(sensor));
+      }
+    }
+    //    if (TTF_Init() < 0) {
+    //      SDL_LogError(0, "SDL_ttf failed to init %s\n", SDL_GetError());
+    //      return false;
+    //    }
+
+    //    font = TTF_OpenFont("fonts/Roboto-Medium.ttf", 16);
+    //    if (font == NULL) {
+    //      SDL_LogError(0, "failed to load font: %s\n", SDL_GetError());
+    //    }
+
     if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0)
-      printf("SDL_audio could not initialize! Error: %s\n", SDL_GetError());
+      SDL_LogError(0, "SDL_audio could not initialize! Error: %s\n",
+                   SDL_GetError());
 
     auto numAudioDrivers = SDL_GetNumAudioDrivers();
     for (int i = 0; i < numAudioDrivers; i++) {
@@ -722,35 +814,55 @@ public:
     };
 
     audioDeviceID = SDL_OpenAudioDevice(NULL, 0, &desiredAudioConfig, &config,
-                                        SDL_AUDIO_ALLOW_ANY_CHANGE);
+                                        SDL_AUDIO_ALLOW_CHANNELS_CHANGE);
+    //   audioDeviceID = SDL_OpenAudioDevice(NULL, 0, &desiredAudioConfig,
+    //   &config,
+    //  0);
     if (audioDeviceID == 0) {
       SDL_LogError(0, "Couldn't open audio: %s\n", SDL_GetError());
       return false;
     } else {
-      SDL_LogInfo(0, "Audio status for device# %d: %s\n", audioDeviceID,
-                  SDL_GetAudioDeviceName(audioDeviceID, 0));
+      SDL_LogInfo(0,
+                  "Audio status for "
+                  "device# %d: %s\n",
+                  audioDeviceID, SDL_GetAudioDeviceName(audioDeviceID, 0));
     }
-    SDL_PauseAudioDevice(audioDeviceID, 0); // start playback
+    SDL_PauseAudioDevice(audioDeviceID,
+                         0); // start playback
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0,
                            0);   // setting draw color
-    SDL_RenderClear(renderer);   // Clear the newly created window
-    SDL_RenderPresent(renderer); // Reflects the changes done in the
+    SDL_RenderClear(renderer);   // Clear the newly
+                                 // created window
+    SDL_RenderPresent(renderer); // Reflects the
+                                 // changes done in the
     //  window.
     if (!loadMedia()) {
-      printf("Media could not be loaded...\n");
+      printf("Media could not be "
+             "loaded...\n");
     }
 
     if (std::atomic<float>{}.is_lock_free()) {
       SDL_LogInfo(0, "atomic is lock free!");
     } else {
-      SDL_LogError(0, "no hardware atomic... using mutex fallback!");
+      SDL_LogError(0, "no hardware atomic... "
+                      "using mutex fallback!");
     }
 
     addWalls();
-    physics.gravity = vec2f_t{.x = 4, .y = 9.8};
+    // physics.gravity = vec2f_t{.x = 4, .y = 9.8};
     lastFrameTime = SDL_GetTicks();
     // init was successful
+
+    std::stringstream ss;
+    ss << "audio conf: \n";
+    ss << "format: " << config.format << "\n";
+    ss << "channels: " << config.channels << "\n";
+    ss << "freq: " << config.freq << "\n";
+    ss << "padding: " << config.padding << "\n";
+    ss << "silence: " << config.silence << "\n";
+    ss << "size: " << config.size << "\n";
+    SDL_LogInfo(0, "%s", ss.str().c_str());
     return true;
   }
 
@@ -769,12 +881,17 @@ public:
     window = NULL;
     SDL_DestroyTexture(gCursor);
     gCursor = NULL;
+    //    TTF_CloseFont(font);
+    //    font = NULL;
+    //    TTF_Quit();
     IMG_Quit();
     SDL_Quit();
   }
 
   void audioCallback(Uint8 *stream, int len) {
-    /* 2 channels, 4 bytes/sample = 8 bytes/frame */
+
+    /* 2 channels, 4 bytes/sample = 8
+     * bytes/frame */
     float *sampleStream = (float *)stream;
     size_t numRequestedSamples = len / (config.channels * 4);
     for (size_t i = 0; i < numRequestedSamples; i++) {
@@ -785,29 +902,35 @@ public:
   };
 
   void addWalls() {
-    gameObjects.push_back(
-        new GameObject(Wall(0.0, height / 2.0, 50, height / 2.0)));
+    auto w1 = Wall(0.0, height / 2.0, 50, height / 2.0);
+    auto w2 = Wall(width, height / 2.0, 50, height / 2.0);
+    auto w3 = Wall(width / 2.0, 0, width / 2.0, 50);
+    auto w4 = Wall(width / 2.0, height, width / 2.0, 50);
+    w2.notes = {62, 62 + 3, 62 + 7, 62 + 10};
+    w3.notes = {65, 65 + 4, 65 + 7, 65 + 11};
+    w3.notes = {67, 67 + 4, 67 + 7, 67 + 9};
+    gameObjects.push_back(new GameObject(w1));
 
-    gameObjects.push_back(
-        new GameObject(Wall(width, height / 2.0, 50, height / 2.0)));
+    gameObjects.push_back(new GameObject(w2));
 
-    gameObjects.push_back(
-        new GameObject(Wall(width / 2.0, 0, width / 2.0, 50)));
+    gameObjects.push_back(new GameObject(w3));
 
-    gameObjects.push_back(
-        new GameObject(Wall(width / 2.0, height, width / 2.0, 50)));
+    gameObjects.push_back(new GameObject(w4));
   }
 
   bool loadConfig() {
-    // perhaps this will be where one could load color schemes or other config
-    // that is saved between runs of the app
+    // perhaps this will be where one
+    // could load color schemes or other
+    // config that is saved between runs
+    // of the app
 
     if (std::string(SDL_AUDIODRIVER).compare("jack") == 0) {
 
       putenv((char *)"SDL_AUDIODRIVER=jack");
     } else {
 
-      putenv((char *)"SDL_AUDIODRIVER=openslES");
+      putenv((char *)"SDL_AUDIODRIVER="
+                     "openslES");
     }
     return true;
   }
@@ -821,7 +944,9 @@ public:
     SDL_FreeSurface(surface);
 
     if (gCursor == NULL) {
-      printf("Unable to load image %s! SDL Error: %s\n", path, SDL_GetError());
+      printf("Unable to load image %s! "
+             "SDL Error: %s\n",
+             path, SDL_GetError());
       success = false;
     }
 
@@ -870,10 +995,6 @@ public:
       case SDL_MOUSEBUTTONDOWN: {
         mouseDownPositionX = event.motion.x;
         mouseDownPositionY = event.motion.y;
-        // particles.push_back(
-        //     Particle(mouseDownPositionX, mouseDownPositionY, 50, 0));
-        // int note = std::floor((float(event.motion.y) / float(width)) * 24
-        // + 36); synth.noteOn(note);
         break;
       }
       case SDL_MOUSEBUTTONUP: {
@@ -893,71 +1014,43 @@ public:
         break;
       }
       case SDL_MULTIGESTURE: {
-        // float pinchDistance = event.mgesture.dDist;
-        // auto x = event.mgesture.x;
-        // auto y = event.mgesture.y;
-        // auto dx = mousePositionX - x;
-        // auto dy = mousePositionY - y;
-        // radius = sqrt((dx * dx) + (dy * dy));
-        // synth.pitchBend(float(radius) / float(width));
         break;
       }
       case SDL_JOYAXISMOTION: {
-        // X axis motion
-        float xDir = 0;
-        float yDir = 0;
-        if (event.jaxis.axis == 0) {
-          joystickXPosition = event.jaxis.value;
-          // Left of dead zone
-          if (event.jaxis.value < -JOYSTICK_DEAD_ZONE) {
-            xDir = -1;
-          }
-          // Right of dead zone
-          else if (event.jaxis.value > JOYSTICK_DEAD_ZONE) {
-            xDir = 1;
-          } else {
-            xDir = 0;
-          }
-        }
-        // Y Axis motion
-        else if (event.jaxis.axis == 1) {
-          joystickYPosition = event.jaxis.value;
-          // Below of dead zone
-          if (event.jaxis.value < -JOYSTICK_DEAD_ZONE) {
-            yDir = -1;
-          }
-          // Above of dead zone
-          else if (event.jaxis.value > JOYSTICK_DEAD_ZONE) {
-            yDir = 1;
-          } else {
-            yDir = 0;
-          }
-        }
-        // Calculate angle
-        double joystickAngle =
-            atan2((double)yDir, (double)xDir) * (180.0 / M_PI);
-
-        // Correct angle
-        if (xDir == 0 && yDir == 0) {
-          joystickAngle = 0;
-        }
-
-        float jx = float(xDir * joystickYPosition) / float(JOYSTICK_MAX_VALUE);
-        float jy = float(yDir * joystickXPosition) / float(JOYSTICK_MAX_VALUE);
-
-        float g = 9.8;
-        physics.gravity = vec2f_t{.x = g * jx, .y = g * jy};
 
         break;
       }
       case SDL_SENSORUPDATE: {
-        // float data[6];
-        // SDL_SensorGetData()
+
         std::stringstream ss;
         auto sensor = SDL_SensorFromInstanceID(event.sensor.which);
         auto sensorName = SDL_SensorGetName(sensor);
-        ss << "sensor: " << sensorName << " " << event.sensor.data;
-        SDL_Log("%s", ss.str().c_str());
+        auto sensorType = SDL_SensorGetType(sensor);
+        switch (sensorType) {
+        case SDL_SENSOR_ACCEL: {
+          ss << "sensor: " << sensorName << " " << event.sensor.data[0] << ", "
+             << event.sensor.data[1] << ", " << event.sensor.data[2];
+
+          physics.gravity = vec2f_t{.x = event.sensor.data[0] * -3,
+                                    .y = event.sensor.data[1] * 3};
+
+          double accZ = event.sensor.data[2];
+          double jerkZ = previousAccelerationZ - accZ;
+          if (abs(jerkZ) > 2) {
+            // randomizeChords();
+          }
+          // SDL_LogInfo(0, "%s", ss.str().c_str());
+          break;
+        }
+        case SDL_SENSOR_GYRO: {
+          ss << "sensor: " << sensorName << " " << event.sensor.data[0] << ", "
+             << event.sensor.data[1] << ", " << event.sensor.data[2];
+          // SDL_LogInfo(0, "%s", ss.str().c_str());
+          break;
+        }
+        default:
+          break;
+        }
         break;
       }
       }
@@ -984,23 +1077,31 @@ public:
         case GameObject::PARTICLE: {
           auto p1 = obj1->object.particle;
           auto p2 = obj2->object.particle;
-          if (p2.velocity.subtract(p1.velocity).length() > 1) {
+          if (p2.velocity.subtract(p1.velocity).length() >
+              MIN_COLLISION_VELOCITY) {
+            auto v1 = lerp<float>(1, 127, p2.velocity.length() / 4.0);
+            auto v2 = lerp<float>(1, 127, p2.velocity.length() / 4.0);
             synth.noiseNoteOn(algae::dsp::math::lerp<float>(
-                88, 12, p1.collider.r / MAX_PARTICLE_SIZE));
+                                  100, 60, p1.collider.r / MAX_PARTICLE_SIZE),
+                              v1);
             synth.noiseNoteOn(algae::dsp::math::lerp<float>(
-                88, 12, p2.collider.r / MAX_PARTICLE_SIZE));
+                                  100, 60, p2.collider.r / MAX_PARTICLE_SIZE),
+                              v2);
           }
           break;
         }
         case GameObject::WALL: {
           auto w1 = obj2->object.wall;
           auto p2 = obj1->object.particle;
-          if (p2.velocity.length() > 1) {
+          if (p2.velocity.length() > MIN_COLLISION_VELOCITY) {
+            auto v1 = lerp<float>(1, 127, p2.velocity.length() / 4.0);
+
             synth.noiseNoteOn(algae::dsp::math::lerp<float>(
-                88, 12, p2.collider.r / MAX_PARTICLE_SIZE));
+                                  100, 60, p2.collider.r / MAX_PARTICLE_SIZE),
+                              v1);
             int randIndex = rand() % (w1.notes.size() - 1);
             auto note = w1.notes[randIndex];
-            synth.stringNoteOn(note + 24);
+            synth.stringNoteOn(note + 24, v1);
           }
           break;
         }
@@ -1013,12 +1114,15 @@ public:
         case GameObject::PARTICLE: {
           auto w1 = obj1->object.wall;
           auto p2 = obj1->object.particle;
-          if (p2.velocity.length() > 1) {
+
+          if (p2.velocity.length() > MIN_COLLISION_VELOCITY) {
+            auto v2 = lerp<float>(1, 127, p2.velocity.length() / 4.0);
             synth.noiseNoteOn(algae::dsp::math::lerp<float>(
-                88, 12, p2.collider.r / MAX_PARTICLE_SIZE));
+                                  100, 60, p2.collider.r / MAX_PARTICLE_SIZE),
+                              v2);
             int randIndex = rand() % (w1.notes.size() - 1);
             auto note = w1.notes[randIndex];
-            synth.stringNoteOn(note + 24);
+            synth.stringNoteOn(note + 24, v2);
           }
 
           break;
@@ -1064,8 +1168,10 @@ public:
     SDL_RenderClear(renderer);
     // drawing code here
 
-    // SDL_SetTextureColorMod(gHelloWorld, 255, 255, 0);
-    // SDL_RenderCopy(renderer, gCursor, NULL, &dst);
+    // SDL_SetTextureColorMod(gHelloWorld,
+    // 255, 255, 0);
+    // SDL_RenderCopy(renderer, gCursor,
+    // NULL, &dst);
 
     for (auto object : gameObjects) {
 
@@ -1079,7 +1185,8 @@ public:
         destRect.w = 2 * particle.collider.r;
         destRect.h = 2 * particle.collider.r;
         double angle = 0;
-        // atan(particle.collider.axisX.y / particle.collider.axisX.x);
+        // atan(particle.collider.axisX.y
+        // / particle.collider.axisX.x);
         SDL_Point center = SDL_Point();
         center.x = particle.collider.position.x;
         center.y = particle.collider.position.y;
@@ -1107,57 +1214,87 @@ public:
       }
     }
 
+    //    auto textSurface =
+    //    TTF_RenderUTF8_LCD(font,
+    //    ss.str().c_str(), textColor,
+    //                                          textBackgroundColor);
+    //    auto textTexture =
+    //    SDL_CreateTextureFromSurface(renderer,
+    //    textSurface); SDL_Rect
+    //    textSrcRect =
+    //        SDL_Rect{.x = 0, .y = 0, .w
+    //        = textSurface->w, .h =
+    //        textSurface->h};
+    //    SDL_Rect textDestRect =
+    //    SDL_Rect{.x = 25, .y = 25, .w =
+    //    500, .h = 200};
+    //    SDL_RenderCopy(renderer,
+    //    textTexture, &textSrcRect,
+    //    &textDestRect);
+    //    SDL_FreeSurface(textSurface);
+    //    SDL_DestroyTexture(textTexture);
     SDL_RenderPresent(renderer);
   }
 
 private:
-  const int FRAME_RATE_TARGET = 120;
+  const int FRAME_RATE_TARGET = 60; // 5; // 120
   const int FRAME_DELTA_MILLIS = (1.0 / float(FRAME_RATE_TARGET)) * 1000.0;
-  const size_t BUFFER_SIZE = 128;
+  const size_t BUFFER_SIZE = 1024;
   const float SAMPLE_RATE = 48000;
   const size_t NUM_CHANNELS = 2;
-  const int JOYSTICK_DEAD_ZONE = 8000;
+  const int JOYSTICK_DEAD_ZONE = 3000; // 8000;
   const int JOYSTICK_MAX_VALUE = 32767;
   const int JOYSTICK_MIN_VALUE = -32768;
   const double MIN_PARTICLE_SIZE = 5;
-  const double MAX_PARTICLE_SIZE = 500;
+  const double MAX_PARTICLE_SIZE = 150;
+  const double MIN_COLLISION_VELOCITY = 0.2;
   int height;                    // Height of the window
   int width;                     // Width of the window
   SDL_Renderer *renderer = NULL; // Pointer for the renderer
   SDL_Window *window = NULL;     // Pointer for the window
   SDL_Texture *gCursor = NULL;
   SDL_Joystick *gGameController = NULL;
+  //  TTF_Font *font = NULL;
   std::vector<GameObject *> gameObjects;
+  SDL_Color textColor = {20, 20, 20};
+  SDL_Color textBackgroundColor = {0, 0, 0};
+
   int mousePositionX = 0;
   int mousePositionY = 0;
   int mouseDownPositionX = 0;
   int mouseDownPositionY = 0;
   int joystickXPosition = 0;
   int joystickYPosition = 0;
+  float xDir = 0, yDir = 0;
   SDL_AudioSpec config;
   Synthesizer<float> synth;
   int lastFrameTime = 0;
   int radius = 50;
   bool renderIsOn = true;
   int audioDeviceID = -1;
+  double previousAccelerationZ = 9.8;
   Physics physics;
   double frameDeltaTimeSeconds;
 };
 
 int main(int argc, char *argv[]) {
+  SDL_Log("begin!");
   Framework game(2220, 940);
   // only proceed if init was success
   if (game.init()) {
 
     SDL_Event event; // Event variable
 
-    while (!(event.type == SDL_QUIT)) {
-      // SDL_Log("tick\n");
+    while (event.type != SDL_QUIT) {
+
       game.update(event);
       game.draw(event);
     }
   } else {
-    SDL_LogError(0, "Initialization of game failed: %s", SDL_GetError());
+    SDL_LogError(0,
+                 "Initialization of "
+                 "game failed: %s",
+                 SDL_GetError());
   }
 
   return 0;

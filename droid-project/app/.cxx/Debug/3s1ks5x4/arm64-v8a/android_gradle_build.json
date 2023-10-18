@@ -71,6 +71,12 @@
       "output": "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/build/intermediates/cxx/Debug/3s1ks5x4/obj/arm64-v8a/libalgae.so",
       "runtimeFiles": []
     },
+    "cpufeatures::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "arm64-v8a",
+      "artifactName": "cpufeatures",
+      "output": "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/libcpufeatures.a"
+    },
     "main::@145eef247bfb46b6828c": {
       "toolchain": "toolchain",
       "abi": "arm64-v8a",

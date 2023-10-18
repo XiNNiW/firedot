@@ -1,9 +1,9 @@
 Determining if the __GLIBC__ exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_96e28 && [1/2] Building C object CMakeFiles/cmTC_96e28.dir/CheckSymbolExists.c.o
-FAILED: CMakeFiles/cmTC_96e28.dir/CheckSymbolExists.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fPIE -MD -MT CMakeFiles/cmTC_96e28.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_96e28.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_96e28.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_3c4b6 && [1/2] Building C object CMakeFiles/cmTC_3c4b6.dir/CheckSymbolExists.c.o
+FAILED: CMakeFiles/cmTC_3c4b6.dir/CheckSymbolExists.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fPIE -MD -MT CMakeFiles/cmTC_3c4b6.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_3c4b6.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_3c4b6.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:8:19: error: use of undeclared identifier '__GLIBC__'
   return ((int*)(&__GLIBC__))[argc];
                   ^
@@ -28,9 +28,9 @@ int main(int argc, char** argv)
 Performing C SOURCE FILE Test CHECK_CPU_ARCHITECTURE_X86 failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_b8333 && [1/2] Building C object CMakeFiles/cmTC_b8333.dir/src.c.o
-FAILED: CMakeFiles/cmTC_b8333.dir/src.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DCHECK_CPU_ARCHITECTURE_X86  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fPIE -MD -MT CMakeFiles/cmTC_b8333.dir/src.c.o -MF CMakeFiles/cmTC_b8333.dir/src.c.o.d -o CMakeFiles/cmTC_b8333.dir/src.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/src.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_188e3 && [1/2] Building C object CMakeFiles/cmTC_188e3.dir/src.c.o
+FAILED: CMakeFiles/cmTC_188e3.dir/src.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DCHECK_CPU_ARCHITECTURE_X86  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fPIE -MD -MT CMakeFiles/cmTC_188e3.dir/src.c.o -MF CMakeFiles/cmTC_188e3.dir/src.c.o.d -o CMakeFiles/cmTC_188e3.dir/src.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/src.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/src.c:6:3: error: use of undeclared identifier 'choke'
   choke
   ^
@@ -51,9 +51,9 @@ int main(int argc, char *argv[]) {
 Performing C SOURCE FILE Test CHECK_CPU_ARCHITECTURE_X64 failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_1a520 && [1/2] Building C object CMakeFiles/cmTC_1a520.dir/src.c.o
-FAILED: CMakeFiles/cmTC_1a520.dir/src.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DCHECK_CPU_ARCHITECTURE_X64  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fPIE -MD -MT CMakeFiles/cmTC_1a520.dir/src.c.o -MF CMakeFiles/cmTC_1a520.dir/src.c.o.d -o CMakeFiles/cmTC_1a520.dir/src.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/src.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_e709e && [1/2] Building C object CMakeFiles/cmTC_e709e.dir/src.c.o
+FAILED: CMakeFiles/cmTC_e709e.dir/src.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DCHECK_CPU_ARCHITECTURE_X64  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fPIE -MD -MT CMakeFiles/cmTC_e709e.dir/src.c.o -MF CMakeFiles/cmTC_e709e.dir/src.c.o.d -o CMakeFiles/cmTC_e709e.dir/src.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/src.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/src.c:6:3: error: use of undeclared identifier 'choke'
   choke
   ^
@@ -74,9 +74,9 @@ int main(int argc, char *argv[]) {
 Performing C SOURCE FILE Test CHECK_CPU_ARCHITECTURE_ARM32 failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_3d9d2 && [1/2] Building C object CMakeFiles/cmTC_3d9d2.dir/src.c.o
-FAILED: CMakeFiles/cmTC_3d9d2.dir/src.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DCHECK_CPU_ARCHITECTURE_ARM32  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fPIE -MD -MT CMakeFiles/cmTC_3d9d2.dir/src.c.o -MF CMakeFiles/cmTC_3d9d2.dir/src.c.o.d -o CMakeFiles/cmTC_3d9d2.dir/src.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/src.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_1fce6 && [1/2] Building C object CMakeFiles/cmTC_1fce6.dir/src.c.o
+FAILED: CMakeFiles/cmTC_1fce6.dir/src.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DCHECK_CPU_ARCHITECTURE_ARM32  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fPIE -MD -MT CMakeFiles/cmTC_1fce6.dir/src.c.o -MF CMakeFiles/cmTC_1fce6.dir/src.c.o.d -o CMakeFiles/cmTC_1fce6.dir/src.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/src.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/src.c:6:3: error: use of undeclared identifier 'choke'
   choke
   ^
@@ -97,9 +97,9 @@ int main(int argc, char *argv[]) {
 Performing C SOURCE FILE Test CHECK_CPU_ARCHITECTURE_LOONGARCH64 failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_80452 && [1/2] Building C object CMakeFiles/cmTC_80452.dir/src.c.o
-FAILED: CMakeFiles/cmTC_80452.dir/src.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DCHECK_CPU_ARCHITECTURE_LOONGARCH64  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fPIE -MD -MT CMakeFiles/cmTC_80452.dir/src.c.o -MF CMakeFiles/cmTC_80452.dir/src.c.o.d -o CMakeFiles/cmTC_80452.dir/src.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/src.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_1e8a5 && [1/2] Building C object CMakeFiles/cmTC_1e8a5.dir/src.c.o
+FAILED: CMakeFiles/cmTC_1e8a5.dir/src.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DCHECK_CPU_ARCHITECTURE_LOONGARCH64  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fPIE -MD -MT CMakeFiles/cmTC_1e8a5.dir/src.c.o -MF CMakeFiles/cmTC_1e8a5.dir/src.c.o.d -o CMakeFiles/cmTC_1e8a5.dir/src.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/src.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/src.c:6:3: error: use of undeclared identifier 'choke'
   choke
   ^
@@ -120,9 +120,9 @@ int main(int argc, char *argv[]) {
 Determining if the include file immintrin.h exists failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_824c2 && [1/2] Building C object CMakeFiles/cmTC_824c2.dir/CheckIncludeFile.c.o
-FAILED: CMakeFiles/cmTC_824c2.dir/CheckIncludeFile.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_824c2.dir/CheckIncludeFile.c.o -MF CMakeFiles/cmTC_824c2.dir/CheckIncludeFile.c.o.d -o CMakeFiles/cmTC_824c2.dir/CheckIncludeFile.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_d6437 && [1/2] Building C object CMakeFiles/cmTC_d6437.dir/CheckIncludeFile.c.o
+FAILED: CMakeFiles/cmTC_d6437.dir/CheckIncludeFile.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_d6437.dir/CheckIncludeFile.c.o -MF CMakeFiles/cmTC_d6437.dir/CheckIncludeFile.c.o.d -o CMakeFiles/cmTC_d6437.dir/CheckIncludeFile.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckIncludeFile.c
 In file included from /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckIncludeFile.c:1:
 /home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.6/include/immintrin.h:14:2: error: "This header is only meant to be used on x86 and x64 architecture"
 #error "This header is only meant to be used on x86 and x64 architecture"
@@ -195,9 +195,9 @@ ninja: build stopped: subcommand failed.
 Performing C SOURCE FILE Test HAVE_ALTIVEC_H_HDR failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_34291 && [1/2] Building C object CMakeFiles/cmTC_34291.dir/src.c.o
-FAILED: CMakeFiles/cmTC_34291.dir/src.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DHAVE_ALTIVEC_H_HDR  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos" -maltivec -fPIE -MD -MT CMakeFiles/cmTC_34291.dir/src.c.o -MF CMakeFiles/cmTC_34291.dir/src.c.o.d -o CMakeFiles/cmTC_34291.dir/src.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/src.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_93e9f && [1/2] Building C object CMakeFiles/cmTC_93e9f.dir/src.c.o
+FAILED: CMakeFiles/cmTC_93e9f.dir/src.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DHAVE_ALTIVEC_H_HDR  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos" -maltivec -fPIE -MD -MT CMakeFiles/cmTC_93e9f.dir/src.c.o -MF CMakeFiles/cmTC_93e9f.dir/src.c.o.d -o CMakeFiles/cmTC_93e9f.dir/src.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/src.c
 clang: warning: argument unused during compilation: '-maltivec' [-Wunused-command-line-argument]
 In file included from /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/src.c:2:
 /home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/14.0.6/include/altivec.h:13:2: error: "AltiVec support not enabled"
@@ -275,9 +275,9 @@ Source file was:
 Performing C SOURCE FILE Test CPU_SUPPORTS_ALTIVEC failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_8b35b && [1/2] Building C object CMakeFiles/cmTC_8b35b.dir/src.c.o
-FAILED: CMakeFiles/cmTC_8b35b.dir/src.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DCPU_SUPPORTS_ALTIVEC  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos" -maltivec -fPIE -MD -MT CMakeFiles/cmTC_8b35b.dir/src.c.o -MF CMakeFiles/cmTC_8b35b.dir/src.c.o.d -o CMakeFiles/cmTC_8b35b.dir/src.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/src.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_4228a && [1/2] Building C object CMakeFiles/cmTC_4228a.dir/src.c.o
+FAILED: CMakeFiles/cmTC_4228a.dir/src.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DCPU_SUPPORTS_ALTIVEC  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos" -maltivec -fPIE -MD -MT CMakeFiles/cmTC_4228a.dir/src.c.o -MF CMakeFiles/cmTC_4228a.dir/src.c.o.d -o CMakeFiles/cmTC_4228a.dir/src.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/src.c
 clang: warning: argument unused during compilation: '-maltivec' [-Wunused-command-line-argument]
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/src.c:2:11: error: unknown type name 'vector'
           vector unsigned int vzero() {
@@ -298,9 +298,9 @@ Source file was:
 Determining if the include file libunwind.h exists failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_f4b35 && [1/2] Building C object CMakeFiles/cmTC_f4b35.dir/CheckIncludeFile.c.o
-FAILED: CMakeFiles/cmTC_f4b35.dir/CheckIncludeFile.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_f4b35.dir/CheckIncludeFile.c.o -MF CMakeFiles/cmTC_f4b35.dir/CheckIncludeFile.c.o.d -o CMakeFiles/cmTC_f4b35.dir/CheckIncludeFile.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_d4798 && [1/2] Building C object CMakeFiles/cmTC_d4798.dir/CheckIncludeFile.c.o
+FAILED: CMakeFiles/cmTC_d4798.dir/CheckIncludeFile.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_d4798.dir/CheckIncludeFile.c.o -MF CMakeFiles/cmTC_d4798.dir/CheckIncludeFile.c.o.d -o CMakeFiles/cmTC_d4798.dir/CheckIncludeFile.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckIncludeFile.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckIncludeFile.c:1:10: fatal error: 'libunwind.h' file not found
 #include <libunwind.h>
          ^~~~~~~~~~~~~
@@ -312,9 +312,9 @@ ninja: build stopped: subcommand failed.
 Determining if the _strrev exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_77d5c && [1/2] Building C object CMakeFiles/cmTC_77d5c.dir/CheckSymbolExists.c.o
-FAILED: CMakeFiles/cmTC_77d5c.dir/CheckSymbolExists.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_77d5c.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_77d5c.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_77d5c.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_fb3e5 && [1/2] Building C object CMakeFiles/cmTC_fb3e5.dir/CheckSymbolExists.c.o
+FAILED: CMakeFiles/cmTC_fb3e5.dir/CheckSymbolExists.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_fb3e5.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_fb3e5.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_fb3e5.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:14:19: error: use of undeclared identifier '_strrev'; did you mean 'strsep'?
   return ((int*)(&_strrev))[argc];
                   ^~~~~~~
@@ -349,9 +349,9 @@ int main(int argc, char** argv)
 Determining if the _strupr exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_5b5c8 && [1/2] Building C object CMakeFiles/cmTC_5b5c8.dir/CheckSymbolExists.c.o
-FAILED: CMakeFiles/cmTC_5b5c8.dir/CheckSymbolExists.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_5b5c8.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_5b5c8.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_5b5c8.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_7d952 && [1/2] Building C object CMakeFiles/cmTC_7d952.dir/CheckSymbolExists.c.o
+FAILED: CMakeFiles/cmTC_7d952.dir/CheckSymbolExists.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_7d952.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_7d952.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_7d952.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:14:19: error: use of undeclared identifier '_strupr'
   return ((int*)(&_strupr))[argc];
                   ^
@@ -382,9 +382,9 @@ int main(int argc, char** argv)
 Determining if the _strlwr exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_227d8 && [1/2] Building C object CMakeFiles/cmTC_227d8.dir/CheckSymbolExists.c.o
-FAILED: CMakeFiles/cmTC_227d8.dir/CheckSymbolExists.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_227d8.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_227d8.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_227d8.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_2b88d && [1/2] Building C object CMakeFiles/cmTC_2b88d.dir/CheckSymbolExists.c.o
+FAILED: CMakeFiles/cmTC_2b88d.dir/CheckSymbolExists.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_2b88d.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_2b88d.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_2b88d.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:14:19: error: use of undeclared identifier '_strlwr'; did you mean 'strstr'?
   return ((int*)(&_strlwr))[argc];
                   ^~~~~~~
@@ -419,20 +419,20 @@ int main(int argc, char** argv)
 Determining if the index exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_51854 && [1/2] Building C object CMakeFiles/cmTC_51854.dir/CheckSymbolExists.c.o
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_86af7 && [1/2] Building C object CMakeFiles/cmTC_86af7.dir/CheckSymbolExists.c.o
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:14:19: warning: implicitly declaring library function 'index' with type 'char *(const char *, int)' [-Wimplicit-function-declaration]
   return ((int*)(&index))[argc];
                   ^
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:14:19: note: include the header <strings.h> or explicitly provide a declaration for 'index'
 1 warning generated.
-[2/2] Linking C executable cmTC_51854
-FAILED: cmTC_51854 
-: && /home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments -Wl,--gc-sections CMakeFiles/cmTC_51854.dir/CheckSymbolExists.c.o -o cmTC_51854  -latomic -lm && :
+[2/2] Linking C executable cmTC_86af7
+FAILED: cmTC_86af7 
+: && /home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments -Wl,--gc-sections CMakeFiles/cmTC_86af7.dir/CheckSymbolExists.c.o -o cmTC_86af7  -latomic -lm && :
 ld: error: undefined symbol: index
 >>> referenced by CheckSymbolExists.c:0
->>>               CMakeFiles/cmTC_51854.dir/CheckSymbolExists.c.o:(main)
+>>>               CMakeFiles/cmTC_86af7.dir/CheckSymbolExists.c.o:(main)
 >>> referenced by CheckSymbolExists.c:0
->>>               CMakeFiles/cmTC_51854.dir/CheckSymbolExists.c.o:(main)
+>>>               CMakeFiles/cmTC_86af7.dir/CheckSymbolExists.c.o:(main)
 clang: error: linker command failed with exit code 1 (use -v to see invocation)
 ninja: build stopped: subcommand failed.
 
@@ -460,20 +460,20 @@ int main(int argc, char** argv)
 Determining if the rindex exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_4e755 && [1/2] Building C object CMakeFiles/cmTC_4e755.dir/CheckSymbolExists.c.o
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_c6142 && [1/2] Building C object CMakeFiles/cmTC_c6142.dir/CheckSymbolExists.c.o
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:14:19: warning: implicitly declaring library function 'rindex' with type 'char *(const char *, int)' [-Wimplicit-function-declaration]
   return ((int*)(&rindex))[argc];
                   ^
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:14:19: note: include the header <strings.h> or explicitly provide a declaration for 'rindex'
 1 warning generated.
-[2/2] Linking C executable cmTC_4e755
-FAILED: cmTC_4e755 
-: && /home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments -Wl,--gc-sections CMakeFiles/cmTC_4e755.dir/CheckSymbolExists.c.o -o cmTC_4e755  -latomic -lm && :
+[2/2] Linking C executable cmTC_c6142
+FAILED: cmTC_c6142 
+: && /home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments -Wl,--gc-sections CMakeFiles/cmTC_c6142.dir/CheckSymbolExists.c.o -o cmTC_c6142  -latomic -lm && :
 ld: error: undefined symbol: rindex
 >>> referenced by CheckSymbolExists.c:0
->>>               CMakeFiles/cmTC_4e755.dir/CheckSymbolExists.c.o:(main)
+>>>               CMakeFiles/cmTC_c6142.dir/CheckSymbolExists.c.o:(main)
 >>> referenced by CheckSymbolExists.c:0
->>>               CMakeFiles/cmTC_4e755.dir/CheckSymbolExists.c.o:(main)
+>>>               CMakeFiles/cmTC_c6142.dir/CheckSymbolExists.c.o:(main)
 clang: error: linker command failed with exit code 1 (use -v to see invocation)
 ninja: build stopped: subcommand failed.
 
@@ -501,9 +501,9 @@ int main(int argc, char** argv)
 Determining if the itoa exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_3f268 && [1/2] Building C object CMakeFiles/cmTC_3f268.dir/CheckSymbolExists.c.o
-FAILED: CMakeFiles/cmTC_3f268.dir/CheckSymbolExists.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_3f268.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_3f268.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_3f268.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_75246 && [1/2] Building C object CMakeFiles/cmTC_75246.dir/CheckSymbolExists.c.o
+FAILED: CMakeFiles/cmTC_75246.dir/CheckSymbolExists.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_75246.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_75246.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_75246.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:14:19: error: use of undeclared identifier 'itoa'
   return ((int*)(&itoa))[argc];
                   ^
@@ -534,9 +534,9 @@ int main(int argc, char** argv)
 Determining if the _ltoa exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_178a9 && [1/2] Building C object CMakeFiles/cmTC_178a9.dir/CheckSymbolExists.c.o
-FAILED: CMakeFiles/cmTC_178a9.dir/CheckSymbolExists.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_178a9.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_178a9.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_178a9.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_4ead7 && [1/2] Building C object CMakeFiles/cmTC_4ead7.dir/CheckSymbolExists.c.o
+FAILED: CMakeFiles/cmTC_4ead7.dir/CheckSymbolExists.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_4ead7.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_4ead7.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_4ead7.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:14:19: error: use of undeclared identifier '_ltoa'
   return ((int*)(&_ltoa))[argc];
                   ^
@@ -567,9 +567,9 @@ int main(int argc, char** argv)
 Determining if the _uitoa exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_2c31b && [1/2] Building C object CMakeFiles/cmTC_2c31b.dir/CheckSymbolExists.c.o
-FAILED: CMakeFiles/cmTC_2c31b.dir/CheckSymbolExists.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_2c31b.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_2c31b.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_2c31b.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_48cb7 && [1/2] Building C object CMakeFiles/cmTC_48cb7.dir/CheckSymbolExists.c.o
+FAILED: CMakeFiles/cmTC_48cb7.dir/CheckSymbolExists.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_48cb7.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_48cb7.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_48cb7.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:14:19: error: use of undeclared identifier '_uitoa'
   return ((int*)(&_uitoa))[argc];
                   ^
@@ -600,9 +600,9 @@ int main(int argc, char** argv)
 Determining if the _ultoa exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_735c5 && [1/2] Building C object CMakeFiles/cmTC_735c5.dir/CheckSymbolExists.c.o
-FAILED: CMakeFiles/cmTC_735c5.dir/CheckSymbolExists.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_735c5.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_735c5.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_735c5.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_75cc5 && [1/2] Building C object CMakeFiles/cmTC_75cc5.dir/CheckSymbolExists.c.o
+FAILED: CMakeFiles/cmTC_75cc5.dir/CheckSymbolExists.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_75cc5.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_75cc5.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_75cc5.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:14:19: error: use of undeclared identifier '_ultoa'
   return ((int*)(&_ultoa))[argc];
                   ^
@@ -633,9 +633,9 @@ int main(int argc, char** argv)
 Determining if the _i64toa exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_3472b && [1/2] Building C object CMakeFiles/cmTC_3472b.dir/CheckSymbolExists.c.o
-FAILED: CMakeFiles/cmTC_3472b.dir/CheckSymbolExists.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_3472b.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_3472b.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_3472b.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_e3f5b && [1/2] Building C object CMakeFiles/cmTC_e3f5b.dir/CheckSymbolExists.c.o
+FAILED: CMakeFiles/cmTC_e3f5b.dir/CheckSymbolExists.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_e3f5b.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_e3f5b.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_e3f5b.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:14:19: error: use of undeclared identifier '_i64toa'
   return ((int*)(&_i64toa))[argc];
                   ^
@@ -666,9 +666,9 @@ int main(int argc, char** argv)
 Determining if the _ui64toa exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_ca507 && [1/2] Building C object CMakeFiles/cmTC_ca507.dir/CheckSymbolExists.c.o
-FAILED: CMakeFiles/cmTC_ca507.dir/CheckSymbolExists.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_ca507.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_ca507.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_ca507.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_0be20 && [1/2] Building C object CMakeFiles/cmTC_0be20.dir/CheckSymbolExists.c.o
+FAILED: CMakeFiles/cmTC_0be20.dir/CheckSymbolExists.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_0be20.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_0be20.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_0be20.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:14:19: error: use of undeclared identifier '_ui64toa'
   return ((int*)(&_ui64toa))[argc];
                   ^
@@ -699,9 +699,9 @@ int main(int argc, char** argv)
 Determining if the _stricmp exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_79401 && [1/2] Building C object CMakeFiles/cmTC_79401.dir/CheckSymbolExists.c.o
-FAILED: CMakeFiles/cmTC_79401.dir/CheckSymbolExists.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_79401.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_79401.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_79401.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_c36cd && [1/2] Building C object CMakeFiles/cmTC_c36cd.dir/CheckSymbolExists.c.o
+FAILED: CMakeFiles/cmTC_c36cd.dir/CheckSymbolExists.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_c36cd.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_c36cd.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_c36cd.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:14:19: error: use of undeclared identifier '_stricmp'
   return ((int*)(&_stricmp))[argc];
                   ^
@@ -732,9 +732,9 @@ int main(int argc, char** argv)
 Determining if the _strnicmp exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_5b491 && [1/2] Building C object CMakeFiles/cmTC_5b491.dir/CheckSymbolExists.c.o
-FAILED: CMakeFiles/cmTC_5b491.dir/CheckSymbolExists.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_5b491.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_5b491.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_5b491.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_b2380 && [1/2] Building C object CMakeFiles/cmTC_b2380.dir/CheckSymbolExists.c.o
+FAILED: CMakeFiles/cmTC_b2380.dir/CheckSymbolExists.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_b2380.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_b2380.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_b2380.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:14:19: error: use of undeclared identifier '_strnicmp'; did you mean 'strncmp'?
   return ((int*)(&_strnicmp))[argc];
                   ^~~~~~~~~
@@ -769,9 +769,9 @@ int main(int argc, char** argv)
 Determining if the _wcsdup exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_553e1 && [1/2] Building C object CMakeFiles/cmTC_553e1.dir/CheckSymbolExists.c.o
-FAILED: CMakeFiles/cmTC_553e1.dir/CheckSymbolExists.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_553e1.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_553e1.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_553e1.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_0a14a && [1/2] Building C object CMakeFiles/cmTC_0a14a.dir/CheckSymbolExists.c.o
+FAILED: CMakeFiles/cmTC_0a14a.dir/CheckSymbolExists.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_0a14a.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_0a14a.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_0a14a.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:14:19: error: use of undeclared identifier '_wcsdup'; did you mean 'wcsdup'?
   return ((int*)(&_wcsdup))[argc];
                   ^~~~~~~
@@ -806,9 +806,9 @@ int main(int argc, char** argv)
 Determining if the _wcsicmp exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_a524a && [1/2] Building C object CMakeFiles/cmTC_a524a.dir/CheckSymbolExists.c.o
-FAILED: CMakeFiles/cmTC_a524a.dir/CheckSymbolExists.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_a524a.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_a524a.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_a524a.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_a0ea5 && [1/2] Building C object CMakeFiles/cmTC_a0ea5.dir/CheckSymbolExists.c.o
+FAILED: CMakeFiles/cmTC_a0ea5.dir/CheckSymbolExists.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_a0ea5.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_a0ea5.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_a0ea5.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:14:19: error: use of undeclared identifier '_wcsicmp'
   return ((int*)(&_wcsicmp))[argc];
                   ^
@@ -839,9 +839,9 @@ int main(int argc, char** argv)
 Determining if the _wcsnicmp exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_c896b && [1/2] Building C object CMakeFiles/cmTC_c896b.dir/CheckSymbolExists.c.o
-FAILED: CMakeFiles/cmTC_c896b.dir/CheckSymbolExists.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_c896b.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_c896b.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_c896b.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_e8e6d && [1/2] Building C object CMakeFiles/cmTC_e8e6d.dir/CheckSymbolExists.c.o
+FAILED: CMakeFiles/cmTC_e8e6d.dir/CheckSymbolExists.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_e8e6d.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_e8e6d.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_e8e6d.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:14:19: error: use of undeclared identifier '_wcsnicmp'; did you mean 'wcsncmp'?
   return ((int*)(&_wcsnicmp))[argc];
                   ^~~~~~~~~
@@ -876,9 +876,9 @@ int main(int argc, char** argv)
 Determining if the fopen64 exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_03053 && [1/2] Building C object CMakeFiles/cmTC_03053.dir/CheckSymbolExists.c.o
-FAILED: CMakeFiles/cmTC_03053.dir/CheckSymbolExists.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_03053.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_03053.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_03053.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_4829d && [1/2] Building C object CMakeFiles/cmTC_4829d.dir/CheckSymbolExists.c.o
+FAILED: CMakeFiles/cmTC_4829d.dir/CheckSymbolExists.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_4829d.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_4829d.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_4829d.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:14:19: error: use of undeclared identifier 'fopen64'; did you mean 'fopen'?
   return ((int*)(&fopen64))[argc];
                   ^~~~~~~
@@ -913,9 +913,9 @@ int main(int argc, char** argv)
 Determining if the fseeko64 exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_3bc70 && [1/2] Building C object CMakeFiles/cmTC_3bc70.dir/CheckSymbolExists.c.o
-FAILED: CMakeFiles/cmTC_3bc70.dir/CheckSymbolExists.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_3bc70.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_3bc70.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_3bc70.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_6c45c && [1/2] Building C object CMakeFiles/cmTC_6c45c.dir/CheckSymbolExists.c.o
+FAILED: CMakeFiles/cmTC_6c45c.dir/CheckSymbolExists.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_6c45c.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_6c45c.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_6c45c.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:14:19: error: use of undeclared identifier 'fseeko64'; did you mean 'fseeko'?
   return ((int*)(&fseeko64))[argc];
                   ^~~~~~~~
@@ -950,9 +950,9 @@ int main(int argc, char** argv)
 Determining if the sysctlbyname exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_7c6f4 && [1/2] Building C object CMakeFiles/cmTC_7c6f4.dir/CheckSymbolExists.c.o
-FAILED: CMakeFiles/cmTC_7c6f4.dir/CheckSymbolExists.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_7c6f4.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_7c6f4.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_7c6f4.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_14207 && [1/2] Building C object CMakeFiles/cmTC_14207.dir/CheckSymbolExists.c.o
+FAILED: CMakeFiles/cmTC_14207.dir/CheckSymbolExists.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_14207.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_14207.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_14207.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:3:10: fatal error: 'sys/sysctl.h' file not found
 #include <sys/sysctl.h>
          ^~~~~~~~~~~~~~
@@ -978,9 +978,9 @@ int main(int argc, char** argv)
 Determining if the elf_aux_info exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_8933b && [1/2] Building C object CMakeFiles/cmTC_8933b.dir/CheckSymbolExists.c.o
-FAILED: CMakeFiles/cmTC_8933b.dir/CheckSymbolExists.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_8933b.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_8933b.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_8933b.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_51690 && [1/2] Building C object CMakeFiles/cmTC_51690.dir/CheckSymbolExists.c.o
+FAILED: CMakeFiles/cmTC_51690.dir/CheckSymbolExists.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_51690.dir/CheckSymbolExists.c.o -MF CMakeFiles/cmTC_51690.dir/CheckSymbolExists.c.o.d -o CMakeFiles/cmTC_51690.dir/CheckSymbolExists.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:8:19: error: use of undeclared identifier 'elf_aux_info'
   return ((int*)(&elf_aux_info))[argc];
                   ^
@@ -1005,10 +1005,10 @@ int main(int argc, char** argv)
 Determining if the function iconv_open exists in the iconv failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_aadb5 && [1/2] Building C object CMakeFiles/cmTC_aadb5.dir/CheckFunctionExists.c.o
-[2/2] Linking C executable cmTC_aadb5
-FAILED: cmTC_aadb5 
-: && /home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos" -DCHECK_FUNCTION_EXISTS=iconv_open  -D_GNU_SOURCE=1 -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments -Wl,--gc-sections CMakeFiles/cmTC_aadb5.dir/CheckFunctionExists.c.o -o cmTC_aadb5  -liconv  -latomic -lm && :
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_2b107 && [1/2] Building C object CMakeFiles/cmTC_2b107.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_2b107
+FAILED: cmTC_2b107 
+: && /home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos" -DCHECK_FUNCTION_EXISTS=iconv_open  -D_GNU_SOURCE=1 -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments -Wl,--gc-sections CMakeFiles/cmTC_2b107.dir/CheckFunctionExists.c.o -o cmTC_2b107  -liconv  -latomic -lm && :
 ld: error: unable to find library -liconv
 clang: error: linker command failed with exit code 1 (use -v to see invocation)
 ninja: build stopped: subcommand failed.
@@ -1018,13 +1018,13 @@ ninja: build stopped: subcommand failed.
 Determining if the function iconv_open exists in the c failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_2dca4 && [1/2] Building C object CMakeFiles/cmTC_2dca4.dir/CheckFunctionExists.c.o
-[2/2] Linking C executable cmTC_2dca4
-FAILED: cmTC_2dca4 
-: && /home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos" -DCHECK_FUNCTION_EXISTS=iconv_open  -D_GNU_SOURCE=1 -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments -Wl,--gc-sections CMakeFiles/cmTC_2dca4.dir/CheckFunctionExists.c.o -o cmTC_2dca4  -lc  -latomic -lm && :
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_19b84 && [1/2] Building C object CMakeFiles/cmTC_19b84.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_19b84
+FAILED: cmTC_19b84 
+: && /home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos" -DCHECK_FUNCTION_EXISTS=iconv_open  -D_GNU_SOURCE=1 -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments -Wl,--gc-sections CMakeFiles/cmTC_19b84.dir/CheckFunctionExists.c.o -o cmTC_19b84  -lc  -latomic -lm && :
 ld: error: undefined symbol: iconv_open
 >>> referenced by CheckFunctionExists.c:17 (/home/xinniw/Android/Sdk/cmake/3.22.1/share/cmake-3.22/Modules/CheckFunctionExists.c:17)
->>>               CMakeFiles/cmTC_2dca4.dir/CheckFunctionExists.c.o:(main)
+>>>               CMakeFiles/cmTC_19b84.dir/CheckFunctionExists.c.o:(main)
 clang: error: linker command failed with exit code 1 (use -v to see invocation)
 ninja: build stopped: subcommand failed.
 
@@ -1033,20 +1033,20 @@ ninja: build stopped: subcommand failed.
 Determining if the alloca exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_bad29 && [1/2] Building C object CMakeFiles/cmTC_bad29.dir/CheckSymbolExists.c.o
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_0c9e2 && [1/2] Building C object CMakeFiles/cmTC_0c9e2.dir/CheckSymbolExists.c.o
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:8:19: warning: implicitly declaring library function 'alloca' with type 'void *(unsigned long)' [-Wimplicit-function-declaration]
   return ((int*)(&alloca))[argc];
                   ^
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/CheckSymbolExists.c:8:19: note: include the header <stdlib.h> or explicitly provide a declaration for 'alloca'
 1 warning generated.
-[2/2] Linking C executable cmTC_bad29
-FAILED: cmTC_bad29 
-: && /home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments -Wl,--gc-sections CMakeFiles/cmTC_bad29.dir/CheckSymbolExists.c.o -o cmTC_bad29  -latomic -lm && :
+[2/2] Linking C executable cmTC_0c9e2
+FAILED: cmTC_0c9e2 
+: && /home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments -Wl,--gc-sections CMakeFiles/cmTC_0c9e2.dir/CheckSymbolExists.c.o -o cmTC_0c9e2  -latomic -lm && :
 ld: error: undefined symbol: alloca
 >>> referenced by CheckSymbolExists.c:0
->>>               CMakeFiles/cmTC_bad29.dir/CheckSymbolExists.c.o:(main)
+>>>               CMakeFiles/cmTC_0c9e2.dir/CheckSymbolExists.c.o:(main)
 >>> referenced by CheckSymbolExists.c:0
->>>               CMakeFiles/cmTC_bad29.dir/CheckSymbolExists.c.o:(main)
+>>>               CMakeFiles/cmTC_0c9e2.dir/CheckSymbolExists.c.o:(main)
 clang: error: linker command failed with exit code 1 (use -v to see invocation)
 ninja: build stopped: subcommand failed.
 
@@ -1068,9 +1068,9 @@ int main(int argc, char** argv)
 Performing C SOURCE FILE Test HAVE_ARM_MODE failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_055c1 && [1/2] Building C object CMakeFiles/cmTC_055c1.dir/src.c.o
-FAILED: CMakeFiles/cmTC_055c1.dir/src.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DHAVE_ARM_MODE  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos" -Werror=unused-command-line-argument -fPIE   -marm -MD -MT CMakeFiles/cmTC_055c1.dir/src.c.o -MF CMakeFiles/cmTC_055c1.dir/src.c.o.d -o CMakeFiles/cmTC_055c1.dir/src.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/src.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_0cb94 && [1/2] Building C object CMakeFiles/cmTC_0cb94.dir/src.c.o
+FAILED: CMakeFiles/cmTC_0cb94.dir/src.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DHAVE_ARM_MODE  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos" -Werror=unused-command-line-argument -fPIE   -marm -MD -MT CMakeFiles/cmTC_0cb94.dir/src.c.o -MF CMakeFiles/cmTC_0cb94.dir/src.c.o.d -o CMakeFiles/cmTC_0cb94.dir/src.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp/src.c
 clang: error: argument unused during compilation: '-marm' [-Werror,-Wunused-command-line-argument]
 ninja: build stopped: subcommand failed.
 
@@ -1080,9 +1080,9 @@ int main(void) { return 0; }
 Determining if files pthread_np.h exist failed with the following output:
 Change Dir: /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_4f8a2 && [1/2] Building C object CMakeFiles/cmTC_4f8a2.dir/HAVE_PTHREAD_NP_H.c.o
-FAILED: CMakeFiles/cmTC_4f8a2.dir/HAVE_PTHREAD_NP_H.c.o 
-/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_4f8a2.dir/HAVE_PTHREAD_NP_H.c.o -MF CMakeFiles/cmTC_4f8a2.dir/HAVE_PTHREAD_NP_H.c.o.d -o CMakeFiles/cmTC_4f8a2.dir/HAVE_PTHREAD_NP_H.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CheckIncludeFiles/HAVE_PTHREAD_NP_H.c
+Run Build Command(s):/home/xinniw/Android/Sdk/cmake/3.22.1/bin/ninja cmTC_fa8c1 && [1/2] Building C object CMakeFiles/cmTC_fa8c1.dir/HAVE_PTHREAD_NP_H.c.o
+FAILED: CMakeFiles/cmTC_fa8c1.dir/HAVE_PTHREAD_NP_H.c.o 
+/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=aarch64-none-linux-android21 --sysroot=/home/xinniw/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -idirafter "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/SDL2/src/video/khronos"  -D_GNU_SOURCE=1 -fPIE -MD -MT CMakeFiles/cmTC_fa8c1.dir/HAVE_PTHREAD_NP_H.c.o -MF CMakeFiles/cmTC_fa8c1.dir/HAVE_PTHREAD_NP_H.c.o.d -o CMakeFiles/cmTC_fa8c1.dir/HAVE_PTHREAD_NP_H.c.o -c /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CheckIncludeFiles/HAVE_PTHREAD_NP_H.c
 /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/CMakeFiles/CheckIncludeFiles/HAVE_PTHREAD_NP_H.c:2:10: fatal error: 'pthread_np.h' file not found
 #include <pthread_np.h>
          ^~~~~~~~~~~~~~

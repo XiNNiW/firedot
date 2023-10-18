@@ -64,6 +64,12 @@
       "abi": "arm64-v8a",
       "runtimeFiles": []
     },
+    "cpufeatures::@6890427a1f51a3e7e1df": {
+      "artifactName": "cpufeatures",
+      "abi": "arm64-v8a",
+      "output": "/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/3s1ks5x4/arm64-v8a/libcpufeatures.a",
+      "runtimeFiles": []
+    },
     "algae::@beeb1740c95367ecfbee": {
       "artifactName": "algae",
       "abi": "arm64-v8a",

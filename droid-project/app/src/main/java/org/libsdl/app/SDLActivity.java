@@ -61,7 +61,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     private static final String TAG = "SDL";
     private static final int SDL_MAJOR_VERSION = 2;
     private static final int SDL_MINOR_VERSION = 28;
-    private static final int SDL_MICRO_VERSION = 4;
+    private static final int SDL_MICRO_VERSION = 2;
 /*
     // Display InputType.SOURCE/CLASS of events and devices
     //
@@ -270,7 +270,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     protected String[] getLibraries() {
         return new String[] {
             "SDL2",
-            // "SDL2_image",
+            "SDL2_image",
             // "SDL2_mixer",
             // "SDL2_net",
             // "SDL2_ttf",
@@ -711,6 +711,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
                     mSDLThread = new Thread(new SDLMain(), "SDLThread");
                     mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, true);
+                    mSurface.enableSensor(Sensor.TYPE_GYROSCOPE, true);
                     mSDLThread.start();
 
                     // No nativeResume(), don't signal Android_ResumeSem
@@ -1345,6 +1346,23 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             }
         }
 
+        if ((source & InputDevice.SOURCE_KEYBOARD) == InputDevice.SOURCE_KEYBOARD) {
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                if (isTextInputEvent(event)) {
+                    if (ic != null) {
+                        ic.commitText(String.valueOf((char) event.getUnicodeChar()), 1);
+                    } else {
+                        SDLInputConnection.nativeCommitText(String.valueOf((char) event.getUnicodeChar()), 1);
+                    }
+                }
+                onNativeKeyDown(keyCode);
+                return true;
+            } else if (event.getAction() == KeyEvent.ACTION_UP) {
+                onNativeKeyUp(keyCode);
+                return true;
+            }
+        }
+
         if ((source & InputDevice.SOURCE_MOUSE) == InputDevice.SOURCE_MOUSE) {
             // on some devices key events are sent for mouse BUTTON_BACK/FORWARD presses
             // they are ignored here because sending them as mouse input to SDL is messy
@@ -1357,21 +1375,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                     return true;
                 }
             }
-        }
-
-        if (event.getAction() == KeyEvent.ACTION_DOWN) {
-            if (isTextInputEvent(event)) {
-                if (ic != null) {
-                    ic.commitText(String.valueOf((char) event.getUnicodeChar()), 1);
-                } else {
-                    SDLInputConnection.nativeCommitText(String.valueOf((char) event.getUnicodeChar()), 1);
-                }
-            }
-            onNativeKeyDown(keyCode);
-            return true;
-        } else if (event.getAction() == KeyEvent.ACTION_UP) {
-            onNativeKeyUp(keyCode);
-            return true;
         }
 
         return false;

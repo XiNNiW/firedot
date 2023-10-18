@@ -262,8 +262,6 @@
 /* #undef HAVE_XINPUT_GAMEPAD_EX */
 /* #undef HAVE_XINPUT_STATE_EX */
 
-/* #undef USE_POSIX_SPAWN */
-
 /* SDL internal assertion support */
 #if 0
 /* #undef SDL_DEFAULT_ASSERT_LEVEL */

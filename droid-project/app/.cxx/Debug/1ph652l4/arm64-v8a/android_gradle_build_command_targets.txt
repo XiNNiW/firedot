@@ -5,6 +5,7 @@ arguments :
 SDL2
 SDL2_image
 algae
+freetype
 main
 jvmArgs : 
 

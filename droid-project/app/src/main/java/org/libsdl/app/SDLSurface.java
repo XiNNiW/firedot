@@ -74,6 +74,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         setOnKeyListener(this);
         setOnTouchListener(this);
         enableSensor(Sensor.TYPE_ACCELEROMETER, true);
+        enableSensor(Sensor.TYPE_GYROSCOPE, true);
     }
 
     public Surface getNativeSurface() {

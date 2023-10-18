@@ -46,6 +46,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/SDL2/cmake_install.cmake")
   include("/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/SDL2_image/cmake_install.cmake")
+  include("/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/freetype/cmake_install.cmake")
   include("/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/algae/cmake_install.cmake")
   include("/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a/src/cmake_install.cmake")
 

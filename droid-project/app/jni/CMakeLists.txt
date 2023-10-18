@@ -1,42 +1,24 @@
-#cmake_minimum_required(VERSION 3.6)
-#
-#project(GAME)
-#
-## armeabi-v7a requires cpufeatures library
-## include(AndroidNdkModules)
-## android_ndk_import_module_cpufeatures()
-#
-#
-## SDL sources are in a subfolder named "SDL"
-#add_subdirectory(SDL)
-#
-## Compilation of companion libraries
-##add_subdirectory(SDL_image)
-##add_subdirectory(SDL_mixer)
-##add_subdirectory(SDL_ttf)
-#
-## Your game and its CMakeLists.txt are in a subfolder named "src"
-#add_subdirectory(src)
-
-cmake_minimum_required(VERSION 3.6)
-
+cmake_minimum_required(VERSION 3.2)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED On)
 project(PHYS_SDL_DEMO)
 
 # armeabi-v7a requires cpufeatures library
 # include(AndroidNdkModules)
 # android_ndk_import_module_cpufeatures()
 
-
+#set(FREETYPE_DIR SDL2_ttf/external/freetype)
 # SDL sources are in a subfolder named "SDL"
 add_subdirectory(SDL2)
 
 # Compilation of companion libraries
 add_subdirectory(SDL2_image)
 #add_subdirectory(SDL_mixer)
-#add_subdirectory(SDL_ttf)
+add_subdirectory(freetype)
+#add_subdirectory(SDL2_ttf)
 add_subdirectory(algae)
+
 
 add_compile_definitions(SDL_AUDIODRIVER="openslES")
 # Your game and its CMakeLists.txt are in a subfolder named "src"
 add_subdirectory(src)
-

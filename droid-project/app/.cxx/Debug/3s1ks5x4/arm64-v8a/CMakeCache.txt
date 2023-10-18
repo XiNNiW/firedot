@@ -693,6 +693,9 @@ algae_IS_TOP_LEVEL:STATIC=OFF
 algae_SOURCE_DIR:STATIC=/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/jni/algae
 
 //Dependencies for the target
+cpufeatures_LIB_DEPENDS:STATIC=general;dl;
+
+//Dependencies for the target
 main_LIB_DEPENDS:STATIC=general;SDL2;general;SDL2_image;general;algae;general;android;general;log;general;EGL;general;GLESv1_CM;general;OpenSLES;general;GLESv2;
 
 
