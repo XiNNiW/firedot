@@ -1,3 +1,2 @@
 ninja: Entering directory `/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/.cxx/Debug/1ph652l4/arm64-v8a'
-[1/2] Building CXX object src/CMakeFiles/main.dir/home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/main.cpp.o
-[2/2] Linking CXX shared library /home/xinniw/Development/THESIS-sustainable_computing-dev/imu_synth/droid-project/app/build/intermediates/cxx/Debug/1ph652l4/obj/arm64-v8a/libmain.so
+ninja: no work to do.

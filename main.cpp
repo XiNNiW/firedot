@@ -4,6 +4,7 @@
 #include "SDL_hints.h"
 #include "SDL_keycode.h"
 #include "SDL_log.h"
+#include "SDL_pixels.h"
 #include "SDL_rect.h"
 #include "SDL_render.h"
 #include "SDL_sensor.h"
@@ -11,10 +12,13 @@
 #include "SDL_surface.h"
 #include "SDL_timer.h"
 #include "SDL_video.h"
+#include "include/game_object.h"
+#include "include/physics.h"
+#include "include/synthesis.h"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_opengl.h>
-// #include <SDL_ttf.h>
+#include <SDL_ttf.h>
 #include <algae.h>
 #include <algorithm>
 #include <atomic>
@@ -36,697 +40,16 @@
 #define SDL_AUDIODRIVER "jack"
 #endif // !SDL_AUDIODRIVER
 
-using algae::dsp::_Filter;
-using algae::dsp::control::ADEnvelope;
-using algae::dsp::filter::Allpass2Comb;
-using algae::dsp::filter::InterpolatedDelay;
-using algae::dsp::filter::Onepole;
-using algae::dsp::filter::ResonantBandpass2ndOrderIIR;
-using algae::dsp::filter::SmoothParameter;
-using algae::dsp::math::lerp;
-using algae::dsp::math::mtof;
-using algae::dsp::oscillator::SinOscillator;
-using algae::dsp::oscillator::WhiteNoise;
-using algae::dsp::spacialization::Pan;
-
-template <typename sample_t> struct Parameter {
-  Parameter<sample_t>() { value = 0; }
-  Parameter<sample_t>(const sample_t &_value) : value(_value) {}
-  Parameter<sample_t>(Parameter<sample_t> &p) { value = p.value; }
-  SmoothParameter<sample_t> smoothingFilter;
-  std ::atomic<sample_t> value;
-  inline const sample_t next() { return smoothingFilter.next(value); }
-  void set(sample_t newValue, sample_t smoothingTimeMillis,
-           sample_t sampleRate) {
-    smoothingFilter.set(smoothingTimeMillis, sampleRate);
-    value = newValue;
-  }
-};
-
-template <typename sample_t> struct DiscreteParameter {
-  DiscreteParameter<sample_t>() { value = 0; }
-  DiscreteParameter<sample_t>(const sample_t &_value) : value(_value) {}
-  DiscreteParameter<sample_t>(DiscreteParameter<sample_t> &p) {
-    value = p.value;
-  }
-  std::atomic<sample_t> value;
-  inline const sample_t next() { return value; }
-  void set(sample_t newValue) { value = newValue; }
-};
-
-template <typename sample_t>
-struct Onezero : _Filter<sample_t, Onezero<sample_t>> {
-  sample_t x1 = 0;
-  sample_t b1 = 0.1;
-  const inline sample_t next(const sample_t in) {
-    sample_t out = in + b1 * x1;
-    x1 = in;
-    return out * 0.5;
-  }
-};
-
-template <typename sample_t, size_t NUM_SAMPLES = 50> struct SilenceDetector {
-  sample_t xs[NUM_SAMPLES];
-  int index = 0;
-
-  const inline sample_t next(sample_t x) {
-    xs[index] = x;
-    sample_t y = 0;
-    for (int i = 0; i < NUM_SAMPLES; i++) {
-
-      y += xs[i];
-    }
-    y /= sample_t(NUM_SAMPLES);
-
-    return y;
-  }
-};
-
-template <typename sample_t> struct KarplusStringVoice {
-  std::atomic<bool> active = false;
-
-  static const size_t MAX_DELAY_SAMPS =
-      static_cast<size_t>((70.0 * 48000.0) / 1000.0);
-
-  Parameter<sample_t> allpassFilterGain;
-  Parameter<sample_t> frequency;
-  Parameter<sample_t> panPosition;
-  Parameter<sample_t> feedback;
-  Parameter<sample_t> b1Coefficient;
-  Parameter<sample_t> gain;
-
-  DiscreteParameter<sample_t> gate;
-  //
-  ADEnvelope<sample_t> env;
-  WhiteNoise<sample_t> exciterNoise;
-  SinOscillator<sample_t, sample_t> exciterTone;
-  ADEnvelope<sample_t> exciterEnvelope;
-  Allpass2Comb<sample_t, MAX_DELAY_SAMPS> apf;
-  InterpolatedDelay<sample_t, MAX_DELAY_SAMPS> delay;
-  Onepole<sample_t, sample_t> inputFilter;
-  Onezero<sample_t> lp;
-  Pan<sample_t> panner;
-
-  sample_t samplerate = 48000;
-  sample_t y1 = 0;
-  sample_t h1 = 1.73;
-
-  KarplusStringVoice<sample_t>() { init(); }
-  KarplusStringVoice<sample_t>(const sample_t sr) : samplerate(sr) { init(); }
-  void init() {
-    env.set(0.1, 500, samplerate);
-    inputFilter.lowpass(19000, samplerate);
-    exciterEnvelope.set(0.1, 1, samplerate);
-    allpassFilterGain.value = -0.5;
-    frequency.value = 440;
-    panPosition.value = 0.5;
-    feedback.value = 0.999;
-    b1Coefficient.value = 0.999;
-    gain.value = 0.8;
-  }
-
-  void setSampleRate(sample_t sr) { samplerate = sr; }
-
-  const inline void next(sample_t &leftOut, sample_t &rightOut) {
-    leftOut = 0;
-    rightOut = 0;
-    const sample_t fb = feedback.next();
-    const sample_t b1 = b1Coefficient.next();
-    const sample_t apfg = allpassFilterGain.next();
-    const sample_t panPos = panPosition.next();
-    const sample_t freq = frequency.next();
-    const sample_t dtime = (samplerate / freq);
-    const sample_t allpassDelayTimeSamples = (samplerate / (h1 * freq));
-    const sample_t _gain = gain.next();
-
-    sample_t tone = exciterTone.next();
-    sample_t noise = exciterNoise.next();
-
-    sample_t exciterLevel = exciterEnvelope.next();
-    sample_t exciter = algae::dsp::math::lerp(tone, noise, exciterLevel);
-    exciter *= exciterLevel;
-    exciter *= _gain;
-    sample_t gt = gate.value;
-    exciter = inputFilter.next(exciter + gt);
-
-    if (gt > 0) {
-      exciterEnvelope.trigger();
-      env.trigger();
-      gate.set(0);
-    }
-
-    sample_t s1 = inputFilter.next(exciter);
-    delay.delayTimeSamples = dtime;
-
-    sample_t s2 = delay.next(y1);
-    s2 *= fb;
-    apf.g = apfg;
-    apf.delayTimeSamples = allpassDelayTimeSamples;
-    s2 = apf.next(s2);
-    lp.b1 = b1;
-    s2 = lp.next(s2);
-
-    y1 = s1 + s2;
-    panner.setPosition(panPos);
-    sample_t e = env.next();
-    if ((e + gt) < 0.0001) {
-      active = false;
-    }
-
-    panner.next(y1 * _gain * e, leftOut, rightOut);
-  }
-};
-
-template <typename sample_t> struct NoisePercVoice {
-  std::atomic<bool> active = false;
-  // graph
-  WhiteNoise<sample_t> noise;
-  ADEnvelope<sample_t> env;
-  ResonantBandpass2ndOrderIIR<sample_t, sample_t> filter;
-  Onepole<sample_t, sample_t> highpass;
-  Pan<sample_t> panner;
-  // parameters
-  Parameter<sample_t> filterFreq;
-  Parameter<sample_t> gain;
-  DiscreteParameter<sample_t> gate;
-
-  sample_t samplerate = 48000;
-  NoisePercVoice<sample_t>() { init(); }
-  NoisePercVoice<sample_t>(const sample_t sr) : samplerate(sr) { init(); }
-  void init() {
-    filterFreq.set(800, 30, samplerate);
-    highpass.lowpass(1200, samplerate);
-    env.set(1, 15, samplerate);
-    panner.setPosition(0.5);
-  }
-
-  void setSampleRate(sample_t sr) { samplerate = sr; }
-
-  void next(sample_t &left, sample_t &right) {
-    sample_t g = gate.value;
-    if (g > 0) {
-      env.trigger();
-      gate.set(0);
-    }
-    sample_t out = 0;
-    out = noise.next();
-    auto e = env.next();
-    if ((e + g) < 0.0001) {
-      active = false;
-    }
-    out *= e * e;
-    filter.bandpass(filterFreq.next(), 5, 0.05, samplerate);
-    out = filter.next(out);
-    out = out - highpass.next(out);
-    panner.next(out * 0.125 * gain.next(), left, right);
-  }
-};
-
-template <typename sample_t> struct Synthesizer {
-private:
-  std::array<KarplusStringVoice<sample_t>, 8> strings;
-  std::atomic<size_t> stringVoiceIndex = 0;
-  std::array<NoisePercVoice<sample_t>, 8> noisePercs;
-  std::atomic<size_t> noiseVoiceIndex = 0;
-  sample_t sampleRate = 48000;
-  SinOscillator<sample_t, sample_t> osc;
-
-  inline void setup() {
-    osc.setFrequency(440, sampleRate);
-    for (auto &s : strings) {
-      s.setSampleRate(sampleRate);
-    }
-  }
-
-public:
-  Synthesizer<sample_t>(sample_t SR) : sampleRate(SR) { setup(); }
-  Synthesizer<sample_t>() { setup(); }
-
-  inline void stringNoteOn(sample_t note, sample_t velocity) {
-    strings[stringVoiceIndex].frequency.set(mtof(note), 5, sampleRate);
-    strings[stringVoiceIndex].gate.set(1);
-    strings[stringVoiceIndex].gain.set(velocity / 127.0, 1, sampleRate);
-    strings[stringVoiceIndex].active = true;
-    stringVoiceIndex = (stringVoiceIndex + 1) % strings.size();
-  }
-
-  inline void noiseNoteOn(sample_t note, sample_t velocity) {
-    noisePercs[noiseVoiceIndex].filterFreq.set(mtof(note), 5, sampleRate);
-    noisePercs[noiseVoiceIndex].gate.set(1);
-    noisePercs[noiseVoiceIndex].gain.set(velocity / 127.0, 1, sampleRate);
-    noisePercs[noiseVoiceIndex].active = true;
-    noiseVoiceIndex = (noiseVoiceIndex + 1) % noisePercs.size();
-  }
-
-  inline void setAllpassFilterGain(sample_t g) {
-    for (auto &string : strings) {
-      string.allpassFilterGain.set(g, 15, sampleRate);
-    }
-  }
-
-  inline void next(sample_t &leftOut, sample_t &rightOut) {
-
-    //    auto s = osc.next();
-    //    leftOut = s*0.25;
-    //    rightOut = s*0.25;
-    leftOut = rightOut = 0;
-    for (auto &string : strings) {
-      if (string.active) {
-        sample_t l, r;
-        string.next(l, r);
-        leftOut += l;
-        rightOut += r;
-      }
-    }
-    for (auto &noise : noisePercs) {
-      if (noise.active) {
-        sample_t l, r;
-        noise.next(l, r);
-        leftOut += l;
-        rightOut += r;
-      }
-    }
-  }
-};
-
-struct vec2f_t {
-  float x = 0, y = 0;
-  inline const float length() const { return float(sqrt((x * x) + (y * y))); }
-  inline const float dot(const vec2f_t &other) const {
-    return (x * other.x) + (y * other.y);
-  }
-  inline const vec2f_t subtract(const vec2f_t &other) const {
-    return vec2f_t{.x = x - other.x, .y = y - other.y};
-  }
-  inline const vec2f_t add(const vec2f_t &other) const {
-    return vec2f_t{.x = x + other.x, .y = y + other.y};
-  }
-  inline const vec2f_t norm() const {
-    auto l = length();
-    return vec2f_t{.x = x / l, .y = y / l};
-  }
-  inline const vec2f_t scale(float factor) const {
-    return vec2f_t{.x = x * factor, .y = y * factor};
-  }
-};
-
-struct CircleCollider {
-  vec2f_t position;
-  float r;
-};
-
-struct OrientedBoundingBox {
-  vec2f_t position, axisX, axisY, halfSize;
-  OrientedBoundingBox() {}
-  OrientedBoundingBox(vec2f_t pos, vec2f_t size, float rotation)
-      : position(pos) {
-    halfSize = vec2f_t{.x = size.x / float(2.0), .y = size.y / float(2.0)};
-    axisX = vec2f_t{.x = cos(rotation), .y = sin(rotation)}.norm();
-    axisY = vec2f_t{.x = -sin(rotation), .y = cos(rotation)}.norm();
-  }
-  inline const std::array<vec2f_t, 4> vertices() const {
-    auto xProj = position.dot(axisX);
-    auto yProj = position.dot(axisY);
-    return {
-        vec2f_t{.x = xProj - halfSize.x, .y = yProj - halfSize.y},
-        vec2f_t{.x = xProj - halfSize.x, .y = yProj + halfSize.y},
-        vec2f_t{.x = xProj + halfSize.x, .y = yProj - halfSize.y},
-        vec2f_t{.x = xProj + halfSize.x, .y = yProj + halfSize.y},
-    };
-  }
-
-  static inline vec2f_t
-  computeMinMaxVerticesOnAxis(const std::array<vec2f_t, 4> &vertices,
-                              const vec2f_t axis) {
-    float minProjBox2On1x, maxProjBox2On1x;
-    for (size_t i = 0; i < vertices.size(); i++) {
-      auto proj = vertices[i].dot(axis);
-      if (i == 0) {
-        minProjBox2On1x = proj;
-        maxProjBox2On1x = proj;
-      } else {
-
-        minProjBox2On1x = fmin(minProjBox2On1x, proj);
-        maxProjBox2On1x = fmax(maxProjBox2On1x, proj);
-      }
-    }
-    return vec2f_t{.x = minProjBox2On1x, .y = maxProjBox2On1x};
-  }
-};
-
-struct Particle {
-  vec2f_t velocity = vec2f_t{.x = 0, .y = 0};
-  CircleCollider collider;
-
-  Particle() {}
-  Particle(float x, float y, float size) {
-    collider = CircleCollider{.position = vec2f_t{.x = x, .y = y}, .r = size};
-  }
-  inline void update(const float &deltaTimeSeconds,
-                     const float &pixelsPerMeter) {
-    collider.position = collider.position.add(
-        velocity.scale(deltaTimeSeconds).scale(pixelsPerMeter));
-  }
-};
-
-struct Wall {
-  OrientedBoundingBox collider;
-  std::array<float, 4> notes = {36 + 24, 40 + 24, 43 + 24, 47 + 24};
-  SDL_Color color = {0, 80, 80};
-  Wall(float x, float y, float w, float h, float rotation = 0)
-      : collider(OrientedBoundingBox(vec2f_t{.x = x, .y = y},
-                                     vec2f_t{.x = w, .y = h}, rotation)) {}
-};
-
-struct GameObject {
-
-  enum GameObjectType { PARTICLE, WALL } type;
-  union uGameObject {
-    Particle particle;
-    Wall wall;
-    uGameObject(const Particle &p) : particle(p) {}
-    uGameObject(const Wall &w) : wall(w) {}
-  } object;
-
-  GameObject(const Particle &p) : object(p), type(PARTICLE) {}
-  GameObject(const Wall &w) : object(w), type(WALL) {}
-};
-struct collision_t {
-  GameObject *object1;
-  GameObject *object2;
-  vec2f_t minimumTranslationVector;
-};
-
-class Physics {
-public:
-  vec2f_t gravity = vec2f_t{.x = 0, .y = 0};
-  double pixelPerMeter = 1000;
-  void update(const float deltaTimeSeconds,
-              std::vector<GameObject *> *gameObjects) {
-    updatePositions(deltaTimeSeconds, gameObjects);
-    detectCollisions(gameObjects);
-    handleCollisions();
-  }
-
-  const std::vector<collision_t> &getCollisions() { return collisions; }
-  static inline std::optional<vec2f_t>
-  intersection(const CircleCollider &circle1, const CircleCollider &circle2) {
-    auto seperationVector = circle1.position.subtract(circle2.position);
-    auto distance = seperationVector.length();
-    auto sumOfRadii = (circle1.r + circle2.r);
-    if (distance > sumOfRadii) {
-      return std::nullopt;
-    }
-    auto overlap = distance - sumOfRadii;
-    auto minTranslationVector = seperationVector.norm().scale(overlap);
-    return minTranslationVector;
-  }
-  static inline std::optional<vec2f_t>
-  intersection(const CircleCollider &circle, const OrientedBoundingBox &box) {
-    auto boxVertices = box.vertices();
-    auto axes =
-        std::array<vec2f_t, 4>({box.axisX,
-                                {.x = -box.axisX.x, .y = -box.axisX.y},
-                                box.axisY,
-                                {.x = -box.axisY.x, .y = -box.axisY.y}});
-
-    float minOverlap = MAXFLOAT;
-    vec2f_t minAxis;
-
-    // for each axis project all vertices and detect overlap
-    for (auto &axis : axes) {
-
-      auto toEdge = axis.scale(circle.r);
-      auto circleEdgePoint1 = circle.position.add(toEdge);
-      auto circleEdgePoint2 = circle.position.subtract(toEdge);
-      auto proj1 = circleEdgePoint1.dot(axis);
-      auto proj2 = circleEdgePoint2.dot(axis);
-      auto circleProjection = projection_t{.minimum = std::min(proj1, proj2),
-                                           .maximum = std::max(proj1, proj2)};
-
-      auto boxProjection = projection_t{.minimum = FLT_MAX, .maximum = FLT_MIN};
-      for (auto &vertex : boxVertices) {
-        auto proj = vertex.dot(axis);
-        boxProjection.minimum = std::min(boxProjection.minimum, proj);
-        boxProjection.maximum = std::max(boxProjection.maximum, proj);
-      }
-      auto overlap = circleProjection.overlap(boxProjection);
-
-      if (overlap == 0) {
-        return std::nullopt;
-      } else if (overlap < minOverlap) {
-        minOverlap = overlap;
-        minAxis = axis;
-      }
-    }
-    // auto minTranslationVector = minAxis.scale(minOverlap);
-
-    auto minTranslationVector = minAxis.scale(minOverlap);
-    return minTranslationVector;
-  }
-
-  static inline std::optional<vec2f_t>
-  intersection(const OrientedBoundingBox &box1,
-               const OrientedBoundingBox &box2) {
-
-    // detect intersection using seperating axis theorem
-    auto box1Vertices = box1.vertices();
-    auto box2Vertices = box2.vertices();
-    constexpr size_t NUM_VERTICES = 4;
-    constexpr size_t NUM_AXES = 4;
-    auto axes = std::array<vec2f_t, NUM_AXES>(
-        {box1.axisX, box1.axisY, box2.axisX, box2.axisY});
-    auto minTranslationVector = axes.at(0);
-    float minOverlap = MAXFLOAT;
-
-    // for each axis project all vertices and detect overlap
-    for (size_t a = 0; a < NUM_AXES; a++) {
-      auto axis = axes[a];
-      auto minBox1Projection = axis.dot(box1Vertices.at(0));
-      // auto maxBox1Projection = minBox1Projection;
-      auto box1Projection = projection_t{.minimum = minBox1Projection,
-                                         .maximum = minBox1Projection};
-
-      auto minBox2Projection = axis.dot(box2Vertices.at(0));
-      // auto maxBox2Projection = minBox2Projection;
-      auto box2Projection = projection_t{.minimum = minBox2Projection,
-                                         .maximum = minBox2Projection};
-      for (size_t i = 1; i < NUM_VERTICES; i++) {
-        auto projection1 = axis.dot(box1Vertices[i]);
-        auto projection2 = axis.dot(box2Vertices[i]);
-        box1Projection.minimum = std::min(box1Projection.minimum, projection1);
-        box1Projection.maximum = std::max(box1Projection.maximum, projection1);
-        box2Projection.minimum = std::min(box2Projection.minimum, projection2);
-        box2Projection.maximum = std::max(box2Projection.maximum, projection2);
-      }
-
-      auto overlap = box1Projection.overlap(box2Projection);
-
-      if (overlap == 0) {
-        // no overlap! found seperating axis... these shapes are not touching
-        return std::nullopt;
-      }
-      if (overlap < minOverlap) {
-        minOverlap = overlap;
-        minTranslationVector = axis;
-      }
-    }
-
-    // no seperating axis was found... return the vector to get the colliding
-    // shape out of the other one (minTranslationVector)
-    return minTranslationVector.scale(minOverlap);
-  }
-
-private:
-  struct projection_t {
-    float minimum = 0, maximum = 0;
-    inline const float overlap(const projection_t &other) {
-
-      // return std::max(float(0), std::min(maximum, other.maximum) -
-      //                               std::max(minimum, other.minimum));
-      if ((maximum > other.minimum) && (minimum < other.maximum)) {
-        return maximum - other.minimum;
-      } else if ((minimum < other.maximum) && (maximum > other.minimum)) {
-        return other.maximum - minimum;
-      } else {
-        return 0;
-      }
-    }
-  };
-  std::vector<collision_t> collisions;
-  void interact(Particle *p1, Particle *p2,
-                const vec2f_t &minTranslationVector) {
-    // handle particle particle collision
-    // move them outside one another
-    auto xi1 = p1->collider.position;
-    auto xi2 = p2->collider.position;
-
-    p1->collider.position =
-        p1->collider.position.subtract(minTranslationVector.scale(0.5));
-    p2->collider.position =
-        p2->collider.position.add(minTranslationVector.scale(0.5));
-
-    // figure out transfer of momentuum
-    const auto density = 1.0;
-    double m1 = density * (double(p1->collider.r));
-    double m2 = density * (double(p2->collider.r));
-    double massSum = m1 + m2;
-    auto v1 = p1->velocity;
-    auto v2 = p2->velocity;
-    auto x1 = p1->collider.position;
-    auto x2 = p2->collider.position;
-    auto x1_minus_x2 = x1.subtract(x2).scale(1.0 / pixelPerMeter);
-    p1->velocity = v1.subtract(x1_minus_x2.scale(
-        (2.0 * m2 / massSum) *
-        (v1.subtract(v2).dot(x1_minus_x2) / x1_minus_x2.length())));
-    auto x2_minus_x1 = x2.subtract(x1).scale(1.0 / pixelPerMeter);
-    p2->velocity = v2.subtract(x2_minus_x1.scale(
-        (2.0 * m1 / massSum) * v2.subtract(v1).dot(x2_minus_x1) /
-        x2_minus_x1.length()));
-  }
-  void interact(Particle *p1, Wall *w2, const vec2f_t &minTranslationVector) {
-
-    //  handle particle wall collision
-    //  move it outside the wall
-    p1->collider.position =
-        p1->collider.position.subtract(minTranslationVector);
-
-    // compute reflected velocity (r) from incidence velocity (d)
-    // n = normal of surface
-    // r=d−2(d⋅n)n
-    auto n = minTranslationVector.norm();
-    auto d = p1->velocity;
-    auto r = d.subtract(n.scale(2 * d.dot(n)));
-
-    // update velocity with some loss
-    float loss = 0.9;
-    p1->velocity = r.scale(loss);
-  }
-
-  // dont need to handle this
-  // void interact(Wall *w1, Wall *w2) {}
-
-  void updatePositions(const float deltaTimeSeconds,
-                       std::vector<GameObject *> *gameObjects) {
-    for (size_t i = 0; i < gameObjects->size(); i++) {
-      auto object = gameObjects->at(i);
-      switch (object->type) {
-      case GameObject::PARTICLE:
-        object->object.particle.velocity = object->object.particle.velocity.add(
-            gravity.scale(deltaTimeSeconds));
-        object->object.particle.update(deltaTimeSeconds, pixelPerMeter);
-        break;
-      case GameObject::WALL:
-        break;
-      }
-    }
-  }
-  void handleCollisions() {
-    for (auto &collision : collisions) {
-      auto object1 = collision.object1;
-      auto object2 = collision.object2;
-      switch (object1->type) {
-      case GameObject::PARTICLE: {
-        auto particle1 = &object1->object.particle;
-        switch (object2->type) {
-        case GameObject::PARTICLE: {
-          interact(particle1, &object2->object.particle,
-                   collision.minimumTranslationVector);
-          break;
-        }
-        case GameObject::WALL: {
-          interact(particle1, &object2->object.wall,
-                   collision.minimumTranslationVector);
-          break;
-        }
-        }
-        break;
-      }
-      case GameObject::WALL: {
-        auto wall1 = &object1->object.wall;
-        switch (object2->type) {
-        case GameObject::PARTICLE: {
-          interact(&object2->object.particle, wall1,
-                   collision.minimumTranslationVector);
-        } break;
-        case GameObject::WALL:
-          break;
-        }
-        break;
-      }
-      }
-    }
-  }
-  void detectCollisions(const std::vector<GameObject *> *gameObjects) {
-    collisions.clear();
-    for (size_t i = 0; i < gameObjects->size(); i++) {
-      for (size_t j = i + 1; j < gameObjects->size(); j++) {
-
-        auto object1 = gameObjects->at(i);
-        auto object2 = gameObjects->at(j);
-
-        switch (object1->type) {
-        case GameObject::PARTICLE: {
-          Particle *particle1 = &object1->object.particle;
-          switch (object2->type) {
-          case GameObject::PARTICLE: {
-            Particle *particle2 = &object2->object.particle;
-            auto mvt = intersection(particle1->collider, particle2->collider);
-            if (mvt.has_value()) {
-              collisions.push_back(
-                  collision_t{.object1 = object1,
-                              .object2 = object2,
-                              .minimumTranslationVector = mvt.value()});
-            }
-            break;
-          }
-          case GameObject::WALL: {
-            Wall *wall2 = &object2->object.wall;
-            auto mvt = intersection(particle1->collider, wall2->collider);
-            if (mvt.has_value()) {
-              collisions.push_back(
-                  collision_t{.object1 = object1,
-                              .object2 = object2,
-                              .minimumTranslationVector = mvt.value()});
-            }
-            break;
-          }
-          }
-          break;
-        }
-        case GameObject::WALL: {
-          auto wall1 = &object1->object.wall;
-          switch (object2->type) {
-          case GameObject::PARTICLE: {
-            Particle *particle2 = &object2->object.particle;
-            auto mvt = intersection(particle2->collider, wall1->collider);
-            if (mvt.has_value()) {
-              collisions.push_back(
-                  collision_t{.object1 = object2,
-                              .object2 = object1,
-                              .minimumTranslationVector = mvt.value()});
-            }
-
-            break;
-          }
-          case GameObject::WALL: {
-            break;
-          }
-          }
-          break;
-        }
-        }
-      }
-    }
-  }
-};
-
 class Framework {
 public:
   static void forwardAudioCallback(void *userdata, Uint8 *stream, int len) {
     static_cast<Framework *>(userdata)->audioCallback(stream, len);
   }
-  Framework(int height_, int width_) : height(height_), width(width_) {}
+  Framework(int height_, int width_)
+      : height(height_), width(width_),
+        synth(Synthesizer<float>(SubtractiveSynthesizer<float>())) {
+    ;
+  }
 
   inline const bool init() {
 
@@ -854,11 +177,8 @@ public:
                       "using mutex fallback!");
     }
 
-    addWalls();
-    randomizeChords();
     // physics.gravity = vec2f_t{.x = 4, .y = 9.8};
     lastFrameTime = SDL_GetTicks();
-    timeOfLastChordChange = lastFrameTime;
     // init was successful
 
     std::stringstream ss;
@@ -903,79 +223,10 @@ public:
     size_t numRequestedSamples = len / (config.channels * 4);
     for (size_t i = 0; i < numRequestedSamples; i++) {
 
-      synth.next(sampleStream[i * config.channels],
-                 sampleStream[i * config.channels + 1]);
+      sampleStream[i * config.channels] =
+          sampleStream[i * config.channels + 1] = synth.next();
     }
   };
-
-  void randomizeChords() {
-    SDL_Color colorSets[4][4] = {
-        {{0xD6, 0x02, 0x70},
-         {0x9B, 0x4F, 0x96},
-         {0x00, 0x38, 0xA8},
-         {44, 44, 44}},
-        {
-            {0xFF, 0x21, 0x8C},
-            {0xFF, 0xD8, 0x00},
-            {44, 44, 44},
-            {0x21, 0xB1, 0xFF},
-        },
-        {{0xFE, 0x9A, 0xCE},
-         {0xFF, 0x53, 0xBF},
-         {0x00, 0x38, 0xA8},
-         {0x20, 0x00, 0x44}},
-
-    };
-    float chordSets[3][4][4] = {
-        {{60, 60 + 4, 60 + 7, 60 + 11},
-         {62, 62 + 3, 62 + 7, 62 + 10},
-         {65, 65 + 4, 65 + 7, 65 + 11},
-         {67, 67 + 4, 67 + 7, 67 + 9}},
-        {{52, 52 + 3, 52 + 7, 52 + 10},
-         {55, 55 + 4, 55 + 7, 55 + 11},
-         {57, 57 + 4, 57 + 7, 57 + 9},
-         {59, 59 + 3, 50 + 7, 50 + 10}},
-        {{65, 65 + 3, 65 + 7, 65 + 10},
-         {63, 63 + 3, 63 + 7, 63 + 10},
-         {66, 66 + 4, 66 + 7, 66 + 11},
-         {61, 61 + 3, 61 + 7, 61 + 10}},
-    };
-    size_t idx = size_t(rand()) % 3;
-    wall1->object.wall.color = colorSets[idx][0];
-    wall2->object.wall.color = colorSets[idx][1];
-    wall3->object.wall.color = colorSets[idx][2];
-    wall4->object.wall.color = colorSets[idx][3];
-    for (size_t i = 0; i < 4; i++) {
-      wall1->object.wall.notes[i] = chordSets[idx][0][i];
-      wall2->object.wall.notes[i] = chordSets[idx][1][i];
-      wall3->object.wall.notes[i] = chordSets[idx][2][i];
-      wall3->object.wall.notes[i] = chordSets[idx][3][i];
-    }
-
-    SDL_LogInfo(0, "chords randomized!");
-  }
-
-  void addWalls() {
-    auto w1 = Wall(0.0, height / 2.0, 50, height / 2.0);
-    auto w2 = Wall(width, height / 2.0, 50, height / 2.0);
-    auto w3 = Wall(width / 2.0, 0, width / 2.0, 50);
-    auto w4 = Wall(width / 2.0, height, width / 2.0, 50);
-    w1.notes = {60, 60 + 4, 60 + 7, 60 + 11};
-    w2.notes = {62, 62 + 3, 62 + 7, 62 + 10};
-    w3.notes = {65, 65 + 4, 65 + 7, 65 + 11};
-    w3.notes = {67, 67 + 4, 67 + 7, 67 + 9};
-    wall1 = new GameObject(w1);
-    gameObjects.push_back(wall1);
-
-    wall2 = new GameObject(w2);
-    gameObjects.push_back(wall2);
-
-    wall3 = new GameObject(w3);
-    gameObjects.push_back(wall3);
-
-    wall4 = new GameObject(w4);
-    gameObjects.push_back(wall4);
-  }
 
   bool loadConfig() {
     // perhaps this will be where one
@@ -1059,17 +310,10 @@ public:
       }
       case SDL_MOUSEBUTTONUP: {
 
-        auto mDown = vec2f_t{.x = float(mouseDownPositionX),
-                             .y = float(mouseDownPositionY)};
-        auto mUp =
-            vec2f_t{.x = float(event.motion.x), .y = float(event.motion.y)};
-
-        auto particleSize = mUp.subtract(mDown).length();
-        particleSize = (particleSize > MAX_PARTICLE_SIZE)   ? MAX_PARTICLE_SIZE
-                       : (particleSize < MIN_PARTICLE_SIZE) ? MIN_PARTICLE_SIZE
-                                                            : particleSize;
-        auto particle = Particle(mDown.x, mDown.y, particleSize);
-        gameObjects.push_back(new GameObject(particle));
+        // auto mDown = vec2f_t{.x = float(mouseDownPositionX),
+        //                      .y = float(mouseDownPositionY)};
+        // auto mUp =
+        //     vec2f_t{.x = float(event.motion.x), .y = float(event.motion.y)};
 
         break;
       }
@@ -1082,37 +326,6 @@ public:
       }
       case SDL_SENSORUPDATE: {
 
-        std::stringstream ss;
-        auto sensor = SDL_SensorFromInstanceID(event.sensor.which);
-        auto sensorName = SDL_SensorGetName(sensor);
-        auto sensorType = SDL_SensorGetType(sensor);
-        switch (sensorType) {
-        case SDL_SENSOR_ACCEL: {
-          ss << "sensor: " << sensorName << " " << event.sensor.data[0] << ", "
-             << event.sensor.data[1] << ", " << event.sensor.data[2];
-
-          physics.gravity = vec2f_t{.x = event.sensor.data[0] * -3,
-                                    .y = event.sensor.data[1] * 3};
-
-          double accZ = event.sensor.data[2];
-          double jerkZ = previousAccelerationZ - accZ;
-          if ((abs(jerkZ) > 8) &&
-              ((lastFrameTime - timeOfLastChordChange) > 50)) {
-            timeOfLastChordChange = lastFrameTime;
-            randomizeChords();
-          }
-          // SDL_LogInfo(0, "%s", ss.str().c_str());
-          break;
-        }
-        case SDL_SENSOR_GYRO: {
-          ss << "sensor: " << sensorName << " " << event.sensor.data[0] << ", "
-             << event.sensor.data[1] << ", " << event.sensor.data[2];
-          // SDL_LogInfo(0, "%s", ss.str().c_str());
-          break;
-        }
-        default:
-          break;
-        }
         break;
       }
       }
@@ -1128,100 +341,6 @@ public:
   void evaluateGameRules(SDL_Event &event) {
     if (event.type == SDL_QUIT || (!renderIsOn))
       return;
-
-    for (auto &collision : physics.getCollisions()) {
-      auto obj1 = collision.object1;
-      auto obj2 = collision.object2;
-
-      switch (obj1->type) {
-      case GameObject::PARTICLE: {
-        switch (obj2->type) {
-        case GameObject::PARTICLE: {
-          auto p1 = obj1->object.particle;
-          auto p2 = obj2->object.particle;
-          if (p2.velocity.subtract(p1.velocity).length() >
-              MIN_COLLISION_VELOCITY) {
-            auto v1 = lerp<float>(1, 127, p2.velocity.length() / 4.0);
-            auto v2 = lerp<float>(1, 127, p2.velocity.length() / 4.0);
-            synth.noiseNoteOn(algae::dsp::math::lerp<float>(
-                                  100, 60, p1.collider.r / MAX_PARTICLE_SIZE),
-                              v1);
-            synth.noiseNoteOn(algae::dsp::math::lerp<float>(
-                                  100, 60, p2.collider.r / MAX_PARTICLE_SIZE),
-                              v2);
-          }
-          break;
-        }
-        case GameObject::WALL: {
-          auto w1 = obj2->object.wall;
-          auto p2 = obj1->object.particle;
-          if (p2.velocity.length() > MIN_COLLISION_VELOCITY) {
-            auto v1 = lerp<float>(1, 127, p2.velocity.length() / 4.0);
-
-            synth.noiseNoteOn(algae::dsp::math::lerp<float>(
-                                  100, 60, p2.collider.r / MAX_PARTICLE_SIZE),
-                              v1);
-            int randIndex = rand() % (w1.notes.size() - 1);
-            auto note = w1.notes[randIndex];
-            synth.stringNoteOn(note + 24, v1);
-          }
-          break;
-        }
-        }
-        break;
-      }
-      case GameObject::WALL: {
-
-        switch (obj2->type) {
-        case GameObject::PARTICLE: {
-          auto w1 = obj1->object.wall;
-          auto p2 = obj1->object.particle;
-
-          if (p2.velocity.length() > MIN_COLLISION_VELOCITY) {
-            auto v2 = lerp<float>(1, 127, p2.velocity.length() / 4.0);
-            synth.noiseNoteOn(algae::dsp::math::lerp<float>(
-                                  100, 60, p2.collider.r / MAX_PARTICLE_SIZE),
-                              v2);
-            int randIndex = rand() % (w1.notes.size() - 1);
-            auto note = w1.notes[randIndex];
-            synth.stringNoteOn(note + 24, v2);
-          }
-
-          break;
-        }
-        case GameObject::WALL: {
-          break;
-        }
-        }
-        break;
-      }
-      }
-    }
-
-    for (std::vector<GameObject *>::iterator objectIterator =
-             gameObjects.begin();
-         objectIterator != gameObjects.end();) {
-      switch ((*objectIterator)->type) {
-      case GameObject::PARTICLE: {
-        auto particle = &(*objectIterator)->object.particle;
-        auto twiceSize = particle->collider.r * 2 * 2;
-        auto pos = particle->collider.position;
-        bool isInBounds =
-            (pos.x < (width + twiceSize)) && (pos.x > (-twiceSize)) &&
-            (pos.y < (height + twiceSize)) && (pos.y > (-twiceSize));
-
-        if (!isInBounds) {
-          objectIterator = gameObjects.erase(objectIterator);
-        } else {
-          ++objectIterator;
-        }
-        break;
-      }
-      case GameObject::WALL:
-        ++objectIterator;
-        break;
-      }
-    }
   }
 
   void draw(SDL_Event &event) {
@@ -1230,51 +349,7 @@ public:
     SDL_RenderClear(renderer);
     // drawing code here
 
-    // SDL_SetTextureColorMod(gHelloWorld,
-    // 255, 255, 0);
-    // SDL_RenderCopy(renderer, gCursor,
-    // NULL, &dst);
-
     for (auto object : gameObjects) {
-
-      switch (object->type) {
-      case GameObject::PARTICLE: {
-
-        auto particle = object->object.particle;
-        auto destRect = SDL_Rect();
-        destRect.x = particle.collider.position.x - particle.collider.r;
-        destRect.y = particle.collider.position.y - particle.collider.r;
-        destRect.w = 2 * particle.collider.r;
-        destRect.h = 2 * particle.collider.r;
-        double angle = 0;
-        // atan(particle.collider.axisX.y
-        // / particle.collider.axisX.x);
-        SDL_Point center = SDL_Point();
-        center.x = particle.collider.position.x;
-        center.y = particle.collider.position.y;
-        SDL_SetTextureColorMod(gCursor, 255, 255, 0);
-        SDL_RenderCopyEx(renderer, gCursor, NULL, &destRect, angle, &center,
-                         SDL_FLIP_NONE);
-        break;
-      }
-      case GameObject::WALL: {
-        auto wall = object->object.wall;
-        auto destRect = SDL_Rect();
-        destRect.x = wall.collider.position.x - wall.collider.halfSize.x;
-        destRect.y = wall.collider.position.y - wall.collider.halfSize.y;
-        destRect.w = 2 * wall.collider.halfSize.x;
-        destRect.h = 2 * wall.collider.halfSize.y;
-        double angle = atan(wall.collider.axisX.y / wall.collider.axisX.x);
-        SDL_Point center = SDL_Point();
-        center.x = wall.collider.position.x;
-        center.y = wall.collider.position.y;
-        SDL_SetTextureColorMod(gCursor, wall.color.r, wall.color.g,
-                               wall.color.b);
-        SDL_RenderCopyEx(renderer, gCursor, NULL, &destRect, angle, &center,
-                         SDL_FLIP_NONE);
-        break;
-      }
-      }
     }
 
     //    auto textSurface =
@@ -1302,27 +377,24 @@ public:
 private:
   const int FRAME_RATE_TARGET = 60; // 5; // 120
   const int FRAME_DELTA_MILLIS = (1.0 / float(FRAME_RATE_TARGET)) * 1000.0;
-  const size_t BUFFER_SIZE = 1024;
+  const size_t BUFFER_SIZE = 256;
   const float SAMPLE_RATE = 48000;
   const size_t NUM_CHANNELS = 2;
   const int JOYSTICK_DEAD_ZONE = 3000; // 8000;
   const int JOYSTICK_MAX_VALUE = 32767;
   const int JOYSTICK_MIN_VALUE = -32768;
-  const double MIN_PARTICLE_SIZE = 5;
-  const double MAX_PARTICLE_SIZE = 150;
-  const double MIN_COLLISION_VELOCITY = 0.2;
   int height;                    // Height of the window
   int width;                     // Width of the window
   SDL_Renderer *renderer = NULL; // Pointer for the renderer
   SDL_Window *window = NULL;     // Pointer for the window
   SDL_Texture *gCursor = NULL;
   SDL_Joystick *gGameController = NULL;
-  //  TTF_Font *font = NULL;
+  TTF_Font *font = NULL;
   std::vector<GameObject *> gameObjects;
   GameObject *wall1, *wall2, *wall3, *wall4;
   SDL_Color textColor = {20, 20, 20};
   SDL_Color textBackgroundColor = {0, 0, 0};
-
+  double lastAccZ = 9.8;
   int mousePositionX = 0;
   int mousePositionY = 0;
   int mouseDownPositionX = 0;
@@ -1340,6 +412,7 @@ private:
   Physics physics;
   double frameDeltaTimeSeconds;
   double timeOfLastChordChange;
+  int chordSetIndex = 0;
 };
 
 int main(int argc, char *argv[]) {
