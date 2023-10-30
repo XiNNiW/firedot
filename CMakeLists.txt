@@ -7,9 +7,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 # Our project name
-project (imu_synth)
+project (keyboard_synth)
 
-add_executable(imu_synth main.cpp)
+add_executable(keyboard_synth main.cpp)
 
 # For finding our SDL2 package!
 INCLUDE(FindPkgConfig)
@@ -36,4 +36,4 @@ set(ALGAE_LIBRARIES, "/usr/local/lib/libalgae.a")
 INCLUDE_DIRECTORIES(${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS} ${SDL2TTF_INCLUDE_DIR} ${ALGAE_INCLUDE_DIRS})
 
 # Linking SDL2 library with our project.
-target_link_libraries(imu_synth ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${SDL2TTF_LIBRARY} ${ALGAE_LIBRARIES})
+target_link_libraries(keyboard_synth ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${SDL2TTF_LIBRARY} ${ALGAE_LIBRARIES})

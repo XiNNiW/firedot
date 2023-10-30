@@ -27,7 +27,7 @@ public:
   intersection(const CircleCollider &circle1, const CircleCollider &circle2) {
     auto seperationVector = circle1.position.subtract(circle2.position);
     auto distance = seperationVector.length();
-    auto sumOfRadii = (circle1.r + circle2.r);
+    auto sumOfRadii = (circle1.radius + circle2.radius);
     if (distance > sumOfRadii) {
       return std::nullopt;
     }
@@ -50,7 +50,7 @@ public:
     // for each axis project all vertices and detect overlap
     for (auto &axis : axes) {
 
-      auto toEdge = axis.scale(circle.r);
+      auto toEdge = axis.scale(circle.radius);
       auto circleEdgePoint1 = circle.position.add(toEdge);
       auto circleEdgePoint2 = circle.position.subtract(toEdge);
       auto proj1 = circleEdgePoint1.dot(axis);

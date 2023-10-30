@@ -4,6 +4,10 @@ build/*/
 # Prerequisites
 *.d
 
+.cache
+.cache/**/*
+.cache/
+
 # Compiled Object files
 *.slo
 *.lo

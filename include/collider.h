@@ -6,7 +6,10 @@
 
 struct CircleCollider {
   vec2f_t position;
-  float r;
+  float radius;
+  inline const bool contains(const vec2f_t &point) {
+    return position.subtract(point).length() <= radius;
+  }
 };
 
 struct OrientedBoundingBox {
@@ -32,7 +35,12 @@ struct OrientedBoundingBox {
         vec2f_t{.x = xProj + halfSize.x, .y = yProj + halfSize.y},
     };
   }
-
+  inline const bool contains(const vec2f_t &point) {
+    auto dist = point.subtract(position);
+    auto xProj = dist.dot(axisX);
+    auto yProj = dist.dot(axisY);
+    return (abs(xProj) <= halfSize.x) && (abs(yProj) <= halfSize.y);
+  }
   static inline vec2f_t
   computeMinMaxVerticesOnAxis(const std::array<vec2f_t, 4> &vertices,
                               const vec2f_t axis) {
@@ -54,9 +62,6 @@ struct OrientedBoundingBox {
 
 struct AxisAlignedBoundingBox {
   vec2f_t position, halfSize;
-  AxisAlignedBoundingBox() {}
-  AxisAlignedBoundingBox(vec2f_t pos, vec2f_t size)
-      : position(pos), halfSize(size.scale(0.5)) {}
 
   inline const std::array<vec2f_t, 4> vertices() const {
     return {
@@ -65,6 +70,10 @@ struct AxisAlignedBoundingBox {
         vec2f_t{.x = position.x + halfSize.x, .y = position.y - halfSize.y},
         vec2f_t{.x = position.x + halfSize.x, .y = position.y + halfSize.y},
     };
+  }
+  inline const bool contains(const vec2f_t &point) {
+    auto dist = point.subtract(position);
+    return (abs(dist.x) <= halfSize.x) && (abs(dist.y) <= halfSize.y);
   }
 };
 
@@ -181,7 +190,7 @@ struct Collider {
     switch (type) {
 
     case CIRCLE: {
-      auto r = object.circle.r;
+      auto r = object.circle.radius;
       return 2.0 * M_PI * (r * r);
       break;
     }
@@ -197,6 +206,18 @@ struct Collider {
     }
     }
     return 0;
+  }
+
+  inline const bool contains(vec2f_t &point) {
+    switch (type) {
+
+    case CIRCLE:
+      return object.circle.contains(point);
+    case ORIENTED_BOUNDING_BOX:
+      return object.orientedBoundingBox.contains(point);
+    case AXIS_ALIGNED_BOUNDING_BOX:
+      return object.axisAlignedBoundingBox.contains(point);
+    }
   }
 
   struct projection_t {
@@ -219,7 +240,7 @@ struct Collider {
 
     auto seperationVector = circle1.position.subtract(circle2.position);
     auto distance = seperationVector.length();
-    auto sumOfRadii = (circle1.r + circle2.r);
+    auto sumOfRadii = (circle1.radius + circle2.radius);
     if (distance > sumOfRadii) {
       return std::nullopt;
     }
@@ -243,7 +264,7 @@ struct Collider {
     // for each axis project all vertices and detect overlap
     for (auto &axis : axes) {
 
-      auto toEdge = axis.scale(circle.r);
+      auto toEdge = axis.scale(circle.radius);
       auto circleEdgePoint1 = circle.position.add(toEdge);
       auto circleEdgePoint2 = circle.position.subtract(toEdge);
       auto proj1 = circleEdgePoint1.dot(axis);
@@ -281,10 +302,10 @@ struct Collider {
         circleToBox.clamp(box.halfSize.scale(-1), box.halfSize);
 
     auto distanceToBoxSurface = circleToClosestBoxPoint.length();
-    if (circle.r < distanceToBoxSurface) {
+    if (circle.radius < distanceToBoxSurface) {
       return std::nullopt;
     } else {
-      return circleToClosestBoxPoint.norm().scale(circle.r -
+      return circleToClosestBoxPoint.norm().scale(circle.radius -
                                                   distanceToBoxSurface);
     }
   }

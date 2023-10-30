@@ -1,17 +1,18 @@
 [
-    {
-        "arguments": [
-            "/usr/bin/c++",
-            "-I/usr/include/SDL2",
-            "-std=c++17",
-            "-g",
-            "-c",
-            "-o",
-            "CMakeFiles/framework.dir/main.cpp.o",
-            "/home/xinniw/Development/learning-sdl2/main.cpp"
-        ],
-        "directory": "/home/xinniw/Development/learning-sdl2/build",
-        "file": "/home/xinniw/Development/learning-sdl2/main.cpp",
-        "output": "/home/xinniw/Development/learning-sdl2/build/CMakeFiles/framework.dir/main.cpp.o"
-    }
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-DSDL_AUDIODRIVER=\"jack\"",
+      "-I/usr/include/SDL2",
+      "-std=c++17",
+      "-g",
+      "-c",
+      "-o",
+      "CMakeFiles/imu_synth.dir/main.cpp.o",
+      "/home/xinniw/Development/THESIS-sustainable_computing-dev/keyboard_synth/main.cpp"
+    ],
+    "directory": "/home/xinniw/Development/THESIS-sustainable_computing-dev/keyboard_synth/build",
+    "file": "/home/xinniw/Development/THESIS-sustainable_computing-dev/keyboard_synth/main.cpp",
+    "output": "/home/xinniw/Development/THESIS-sustainable_computing-dev/keyboard_synth/build/CMakeFiles/imu_synth.dir/main.cpp.o"
+  }
 ]

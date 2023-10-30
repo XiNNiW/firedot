@@ -1,6 +1,7 @@
 #pragma once
 #include "SDL_pixels.h"
 #include "collider.h"
+#include "vector_math.h"
 struct Particle {
   vec2f_t velocity = vec2f_t{.x = 0, .y = 0};
   Collider collider;
@@ -18,12 +19,6 @@ struct Wall {
   std::array<float, 4> notes = {36 + 24, 40 + 24, 43 + 24, 47 + 24};
   SDL_Color color = {0, 80, 80};
   Wall(const Collider &_collider) : collider(_collider) {}
-};
-
-struct Button {
-  CircleCollider collider;
-  bool isPressed;
-  Button() {}
 };
 
 struct GameObject {
