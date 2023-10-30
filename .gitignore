@@ -37,3 +37,16 @@ build/*/
 *.exe
 *.out
 *.app
+
+
+.cxx
+.cxx/**/*
+.cxx/*
+
+.gradle
+.gradle/**/*
+.gradle/*
+
+.idea
+.idea/**/*
+.idea/*

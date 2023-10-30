@@ -3,6 +3,7 @@
 #include <algae.h>
 #include <atomic>
 #include <cstddef>
+#include <new>
 #include <rigtorp/SPSCQueue.h>
 
 using algae::dsp::_Filter;
@@ -123,7 +124,7 @@ template <typename sample_t> struct KarplusStringVoice {
       active = false;
     }
 
-    return y1 * gain * 10.0 * envelopeSample;
+    return y1 * gain * envelopeSample;
   }
 };
 
@@ -325,7 +326,7 @@ template <typename sample_t> struct SubtractiveSynthesizer {
         out += voice.next();
       }
     }
-    return (out * gain);
+    return (out * gain * 0.1);
   }
 
   inline void note(const sample_t note, const sample_t velocity) {
@@ -471,7 +472,7 @@ template <typename sample_t> struct FMSynthesizer {
         out += voice.next();
       }
     }
-    return (out * gain);
+    return (out * gain * 0.1);
   }
 
   inline void note(const sample_t note, const sample_t velocity) {
@@ -591,9 +592,20 @@ template <typename sample_t> struct Synthesizer {
   Synthesizer<sample_t>(const FMSynthesizer<sample_t> &s)
       : object(s), type(FREQUENCY_MODULATION) {}
 
+  inline const void process(sample_t *block, const size_t &blockSize) {
+    consumeMessagesFromQueue();
+    for (size_t i = 0; i < blockSize; i++) {
+      block[i] = computeNextSample();
+    }
+  }
+
   inline const sample_t next() {
     // SDL_LogInfo(0, "sample tick");
     consumeMessagesFromQueue();
+    return computeNextSample();
+  }
+
+  inline const sample_t computeNextSample() {
     auto nextGain = gain.next();
     auto nextFilterCutoff = filterCutoff.next();
     auto nextFilterQuality = filterQuality.next();
@@ -683,27 +695,27 @@ template <typename sample_t> struct Synthesizer {
         auto value = event.data.paramChange.value;
         switch (event.data.paramChange.type) {
         case ParameterChangeEvent<sample_t>::GAIN: {
-          gain.set(value, 5, sampleRate);
+          gain.set(value, 32, sampleRate);
           break;
         }
         case ParameterChangeEvent<sample_t>::SOUND_SOURCE: {
-          soundSource.set(value, 5, sampleRate);
+          soundSource.set(value, 32, sampleRate);
           break;
         }
         case ParameterChangeEvent<sample_t>::FILTER_CUTOFF: {
-          filterCutoff.set(value, 5, sampleRate);
+          filterCutoff.set(value, 32, sampleRate);
           break;
         }
         case ParameterChangeEvent<sample_t>::FILTER_QUALITY: {
-          filterQuality.set(value, 5, sampleRate);
+          filterQuality.set(value, 32, sampleRate);
           break;
         }
         case ParameterChangeEvent<sample_t>::ATTACK_TIME: {
-          attackTime.set(value, 5, sampleRate);
+          attackTime.set(value, 32, sampleRate);
           break;
         }
         case ParameterChangeEvent<sample_t>::RELEASE_TIME: {
-          releaseTime.set(value, 5, sampleRate);
+          releaseTime.set(value, 32, sampleRate);
           break;
         }
         }

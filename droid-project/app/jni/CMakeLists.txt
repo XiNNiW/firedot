@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.2)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
-project(PHYS_SDL_DEMO)
+project(KEY_SDL_DEMO)
 
 # armeabi-v7a requires cpufeatures library
 # include(AndroidNdkModules)
@@ -13,10 +13,9 @@ add_subdirectory(SDL2)
 
 # Compilation of companion libraries
 add_subdirectory(SDL2_image)
-#add_subdirectory(SDL_mixer)
-add_subdirectory(freetype)
-#add_subdirectory(SDL2_ttf)
+add_subdirectory(SDL2_ttf)
 add_subdirectory(algae)
+add_subdirectory(SPSCQueue)
 
 
 add_compile_definitions(SDL_AUDIODRIVER="openslES")

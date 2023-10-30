@@ -15,6 +15,7 @@
 #include "include/game_object.h"
 #include "include/physics.h"
 #include "include/synthesis.h"
+#include "include/ui.h"
 #include "include/vector_math.h"
 #include <SDL.h>
 #include <SDL_image.h>
@@ -36,6 +37,7 @@
 #include <type_traits>
 #include <utility>
 #include <variant>
+#include <map>
 
 #include <vector>
 
@@ -43,150 +45,10 @@
 #define SDL_AUDIODRIVER "jack"
 #endif // !SDL_AUDIODRIVER
 
-enum UIState { INACTIVE, HOVER, ACTIVE };
-struct Button {
-  std::string labelText = "";
-  AxisAlignedBoundingBox shape =
-      AxisAlignedBoundingBox{.position = {0, 0}, .halfSize = {100, 100}};
-  UIState state = INACTIVE;
-};
-
-inline const bool UpdateButton(Button *button, const vec2f_t mousePosition,
-                               const UIState newState) {
-  if (button->shape.contains(mousePosition)) {
-    button->state = newState;
-    return true;
-  };
-  return false;
-}
-
-inline const int DoClickRadioGroup(std::vector<Button> *buttons,
-
-                                   const vec2f_t &mousePosition) {
-  auto selected = 0;
-  for (size_t i = 0; i < buttons->size(); ++i) {
-    Button *button = &(*buttons)[i];
-    if ((button->state != UIState::ACTIVE) &&
-        button->shape.contains(mousePosition)) {
-      button->state = UIState::ACTIVE;
-      selected = i;
-      for (size_t j = 0; j < buttons->size(); ++j) {
-        if (j != selected) {
-          (*buttons)[j].state = UIState::INACTIVE;
-        }
-      }
-    } else if (button->state == UIState::ACTIVE) {
-      selected = i;
-    }
-  }
-
-  return selected;
-}
-
-struct Style {
-  TTF_Font *font;
-
-  SDL_Color color0 = SDL_Color{.r = 0xd6, .g = 0x02, .b = 0x70, .a = 0xff};
-  SDL_Color color1 = SDL_Color{.r = 0x9b, .g = 0x4f, .b = 0x96, .a = 0xff};
-  SDL_Color color2 = SDL_Color{.r = 0x00, .g = 0x38, .b = 0xa8, .a = 0xff};
-  SDL_Color inactiveColor =
-      SDL_Color{.r = 0x1b, .g = 0x1b, .b = 0x1b, .a = 0xff};
-  SDL_Color hoverColor = SDL_Color{.r = 0xa0, .g = 0xa0, .b = 0xa0, .a = 0xff};
-
-  inline const SDL_Color getButtonColor(const Button &button) const {
-
-    switch (button.state) {
-    case INACTIVE:
-      return inactiveColor;
-      break;
-    case HOVER:
-      return hoverColor;
-      break;
-    case ACTIVE:
-      return color0;
-      break;
-    }
-    return SDL_Color();
-  }
-
-  inline const SDL_Color getButtonLabelColor(const Button &button) const {
-
-    switch (button.state) {
-    case INACTIVE:
-      return hoverColor;
-      break;
-    case HOVER:
-      return color1;
-      break;
-    case ACTIVE:
-      return color2;
-      break;
-    }
-    return SDL_Color();
-  }
-};
-
-inline const void DrawButton(const Button &button, SDL_Texture *buttonTexture,
-                             SDL_Renderer *renderer, const Style &style) {
-  auto destRect = SDL_Rect{
-      .x = static_cast<int>(button.shape.position.x - button.shape.halfSize.x),
-      .y = static_cast<int>(button.shape.position.y - button.shape.halfSize.y),
-      .w = static_cast<int>(2 * button.shape.halfSize.x),
-      .h = static_cast<int>(2 * button.shape.halfSize.y)};
-
-  SDL_Point center = SDL_Point{.x = static_cast<int>(button.shape.position.x),
-                               .y = static_cast<int>(button.shape.position.y)};
-  auto color = style.getButtonColor(button);
-  SDL_SetTextureColorMod(buttonTexture, color.r, color.g, color.b);
-
-  SDL_RenderCopy(renderer, buttonTexture, NULL, &destRect);
-}
-
-inline const void DrawButtonRect(const Button &button, SDL_Renderer *renderer,
-                                 const Style &style) {
-  auto rect = SDL_Rect{
-      .x = static_cast<int>(button.shape.position.x - button.shape.halfSize.x),
-      .y = static_cast<int>(button.shape.position.y - button.shape.halfSize.y),
-      .w = static_cast<int>(2 * button.shape.halfSize.x),
-      .h = static_cast<int>(2 * button.shape.halfSize.y)};
-  auto color = style.getButtonColor(button);
-
-  SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-
-  SDL_RenderDrawRect(renderer, &rect);
-  SDL_RenderFillRect(renderer, &rect);
-  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-}
-
-inline const void DrawButtonLabel(const Button &button, SDL_Renderer *renderer,
-                                  const Style &style) {
-
-  auto textColor = style.getButtonLabelColor(button);
-  auto color = style.getButtonColor(button);
-  auto labelText = button.labelText.c_str();
-  auto textSurface =
-      TTF_RenderUTF8_LCD(style.font, labelText, textColor, color);
-
-  if (textSurface != NULL) {
-    auto textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
-    SDL_Rect textSrcRect =
-        SDL_Rect{.x = 0, .y = 0, .w = textSurface->w, .h = textSurface->h};
-    SDL_Rect textDestRect = SDL_Rect{
-        .x =
-            static_cast<int>(button.shape.position.x - button.shape.halfSize.x),
-        .y =
-            static_cast<int>(button.shape.position.y - button.shape.halfSize.y),
-        .w = static_cast<int>(button.shape.halfSize.x * 2),
-        .h = static_cast<int>(button.shape.halfSize.y * 2)};
-    SDL_RenderCopy(renderer, textTexture, &textSrcRect, &textDestRect);
-    SDL_FreeSurface(textSurface);
-    SDL_DestroyTexture(textTexture);
-  }
-}
-
 class Framework {
 public:
-  static void forwardAudioCallback(void *userdata, Uint8 *stream, int len) {
+  static inline void forwardAudioCallback(void *userdata, Uint8 *stream,
+                                          int len) {
     static_cast<Framework *>(userdata)->audioCallback(stream, len);
   }
   Framework(int width_, int height_)
@@ -197,6 +59,8 @@ public:
 
   inline const bool init() {
 
+    std::stringstream ss;
+    ss << "initial size: " << width << ", " << height << "\n";
     if (!loadConfig()) {
       SDL_LogError(0, "unable to load config!");
       return false;
@@ -206,18 +70,23 @@ public:
       SDL_LogError(0, "could not init! %s", SDL_GetError());
       return false;
     } // Initializing SDL as Video
+    // | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP |
+    // SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_ALLOW_HIGHDPI
     if (SDL_CreateWindowAndRenderer(width, height, SDL_WINDOW_OPENGL, &window,
                                     &renderer) < 0) {
       SDL_LogError(0, "could not get window! %s", SDL_GetError());
       return false;
     } // Get window surface
 
-    SDL_GetWindowSize(window, &width, &height);
-
     if (window == NULL) {
       printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
       return false;
     }
+    SDL_GetWindowSize(window, &width, &height);
+    // SDL_GL_GetDrawableSize(window,&width, &height);
+    ss << "adjusted size: " << width << ", " << height << "\n";
+    // SDL_RenderSetLogicalSize(renderer, width, height);
+    //  SDL_SetWindowSize(&window, width, height);
 
     // Initialize PNG loading
     int imgFlags = IMG_INIT_PNG;
@@ -292,8 +161,8 @@ public:
 
     audioDeviceID = SDL_OpenAudioDevice(NULL, 0, &desiredAudioConfig, &config,
                                         SDL_AUDIO_ALLOW_ANY_CHANGE);
-    //  audioDeviceID =
-    //     SDL_OpenAudioDevice(NULL, 0, &desiredAudioConfig, &config, 0);
+    // audioDeviceID =
+    //    SDL_OpenAudioDevice(NULL, 0, &desiredAudioConfig, &config, 0);
     if (audioDeviceID == 0) {
       SDL_LogError(0, "Couldn't open audio: %s\n", SDL_GetError());
       return false;
@@ -303,6 +172,18 @@ public:
                   "device# %d: %s\n",
                   audioDeviceID, SDL_GetAudioDeviceName(audioDeviceID, 0));
     }
+
+    // init was successful
+
+    ss << "audio conf: \n";
+    ss << "format: " << config.format << "\n";
+    ss << "channels: " << config.channels << "\n";
+    ss << "freq: " << config.freq << "\n";
+    ss << "padding: " << config.padding << "\n";
+    ss << "size: " << config.size << "\n";
+    ss << "silence: " << config.silence << "\n";
+    SDL_LogInfo(0, "%s", ss.str().c_str());
+
     SDL_PauseAudioDevice(audioDeviceID,
                          0); // start playback
 
@@ -325,25 +206,13 @@ public:
                       "using mutex fallback!");
     }
 
-    // init was successful
-
-    std::stringstream ss;
-    ss << "audio conf: \n";
-    ss << "format: " << config.format << "\n";
-    ss << "channels: " << config.channels << "\n";
-    ss << "freq: " << config.freq << "\n";
-    ss << "padding: " << config.padding << "\n";
-    ss << "silence: " << config.silence << "\n";
-    ss << "size: " << config.size << "\n";
-    SDL_LogInfo(0, "%s", ss.str().c_str());
-
     auto pageMargin = 50;
     auto radiobuttonMargin = 10;
-    auto synthSelectSize = width / 18.0;
+    auto synthSelectSize = width / 8.0;
     synthTypes = {SynthesizerType::SUBTRACTIVE, SynthesizerType::PHYSICAL_MODEL,
                   SynthesizerType::FREQUENCY_MODULATION};
     std::vector<std::string> synthTypeLabels = {"sub", "phys", "fm"};
-
+    const size_t initialSynthTypeSelection = 0;
     for (size_t i = 0; i < synthTypes.size(); ++i) {
       synthSelectRadioGroup.push_back(Button{
           .labelText = synthTypeLabels[i],
@@ -358,14 +227,14 @@ public:
                   vec2f_t{.x = static_cast<float>(synthSelectSize / 2),
                           .y = static_cast<float>(synthSelectSize / 2)}}});
     }
-    synthSelectRadioGroup[0].state = UIState::ACTIVE;
+    synthSelectRadioGroup[initialSynthTypeSelection].state = UIState::ACTIVE;
     for (auto &button : synthSelectRadioGroup) {
       buttons.push_back(&button);
     }
 
     auto buttonMargin = 25;
     auto topBarHeight = synthSelectSize + (1.5 * buttonMargin) + pageMargin;
-    auto keySize = width / 24.0;
+    auto keySize = width / 4.75;
     auto keyboardStartPositionX = 100;
     int numberOfKeys = 24;
 
@@ -384,16 +253,14 @@ public:
               .halfSize = vec2f_t{.x = static_cast<float>(keySize / 2),
                                   .y = static_cast<float>(keySize / 2)}}});
 
-      noteListKeys.push_back(60 + i * 2);
+      noteListKeys.push_back(48 + i * 2);
     }
 
     for (auto &button : keyButtons) {
       buttons.push_back(&button);
     }
 
-    synth.setSynthType(synthTypes[0]);
-    // synth.setSynthType(SynthesizerType::SUBTRACTIVE);
-    oscTest.setFrequency(440, config.freq);
+    synth.setSynthType(synthTypes[initialSynthTypeSelection]);
     synth.setGain(1);
     synth.setFilterCutoff(10000);
     synth.setFilterQuality(0.5);
@@ -427,20 +294,41 @@ public:
     IMG_Quit();
     SDL_Quit();
   }
-  MultiOscillator<float> oscTest;
   void audioCallback(Uint8 *stream, int numBytesRequested) {
-
+    memset(stream, config.silence, numBytesRequested);
     /* 2 channels, 4 bytes/sample = 8
      * bytes/frame */
     const int bytesPerSample = sizeof(float);
     float *sampleStream = (float *)stream;
-    size_t numRequestedSamples =
+    size_t numRequestedSamplesPerChannel =
         numBytesRequested / (config.channels * bytesPerSample);
-    for (size_t i = 0; i < numRequestedSamples; i++) {
+    const size_t fixedBlockSize = 64;
+    const size_t numBlocks = numRequestedSamplesPerChannel / fixedBlockSize;
+    const size_t remainingSamples =
+        numRequestedSamplesPerChannel % fixedBlockSize;
 
-      auto out = synth.next() * 0.1;
-      sampleStream[(i * config.channels)] = out;
-      sampleStream[(i * config.channels) + 1] = out;
+    float *ch1Pointer = &sampleStream[0];
+    float *ch2Pointer = &sampleStream[1];
+
+    for (size_t i = 0; i < numBlocks; ++i) {
+      float block[fixedBlockSize];
+      synth.process(block, fixedBlockSize);
+      for (size_t j = 0; j < fixedBlockSize; ++j) {
+        auto nextSample = block[j];
+        *ch1Pointer = nextSample;
+        *ch2Pointer = nextSample;
+        ch1Pointer += config.channels;
+        ch2Pointer += config.channels;
+      }
+    }
+
+    for (size_t i = 0; i < remainingSamples; ++i) {
+   // for (size_t i = 0; i < numRequestedSamplesPerChannel; ++i) {
+      auto nextSample = synth.next();
+      *ch1Pointer = nextSample;
+      *ch2Pointer = nextSample;
+      ch1Pointer += config.channels;
+      ch2Pointer += config.channels;
     }
   };
 
@@ -521,12 +409,12 @@ public:
       case SDL_MOUSEMOTION:
         mousePosition.x = event.motion.x;
         mousePosition.y = event.motion.y;
-        for (auto button : buttons) {
-          if ((button->state != UIState::ACTIVE) &&
-              button->shape.contains(mousePosition)) {
-            button->state = UIState::HOVER;
-          } else if (button->state == UIState::HOVER) {
-            button->state = UIState::INACTIVE;
+        for (auto& button : synthSelectRadioGroup) {
+          if ((button.state != UIState::ACTIVE) &&
+              button.shape.contains(mousePosition)) {
+            button.state = UIState::HOVER;
+          } else if (button.state == UIState::HOVER) {
+            button.state = UIState::INACTIVE;
           }
         }
         break;
@@ -535,41 +423,123 @@ public:
         mouseDownPosition.y = event.motion.y;
 
         auto selected =
-            DoClickRadioGroup(&synthSelectRadioGroup, mousePosition);
+            DoClickRadioGroup(synthSelectRadioGroup.data(),
+                              synthSelectRadioGroup.size(), mousePosition);
         if (synthTypes[selected] != synth.type) {
           synth.setSynthType(synthTypes[selected]);
         };
 
-        for (size_t i = 0; i < keyButtons.size(); ++i) {
-          // evaluate clicks
-          if (UpdateButton(&keyButtons[i], mousePosition, UIState::ACTIVE)) {
-            // play sound
-            synth.note(noteListKeys[i], 127);
-          }
-        }
+     //   for (size_t i = 0; i < keyButtons.size(); ++i) {
+     //     // evaluate clicks
+     //     if (UpdateButton(&keyButtons[i], mousePosition, UIState::ACTIVE)) {
+     //       // play sound
+     //       synth.note(noteListKeys[i], 127);
+     //     }
+     //   }
 
         break;
       }
       case SDL_MOUSEBUTTONUP: {
 
-        for (size_t i = 0; i < keyButtons.size(); ++i) {
-          if (keyButtons[i].state == UIState::ACTIVE) {
-            keyButtons[i].state = UIState::INACTIVE;
-            synth.note(noteListKeys[i], 0);
-          }
-        }
+       for (size_t i = 0; i < keyButtons.size(); ++i) {
+         if ((keyButtons[i].state == UIState::ACTIVE)) {
+           keyButtons[i].state = UIState::INACTIVE;
+           synth.note(noteListKeys[i], 0);
+           heldKeys.clear();
+         } else if ((keyButtons[i].state == UIState::HOVER)){
+keyButtons[i].state = UIState::INACTIVE;
+         }
+       }
 
         break;
       }
       case SDL_MULTIGESTURE: {
+
+
+
         break;
       }
-      case SDL_JOYAXISMOTION: {
+      case SDL_FINGERMOTION: {
+       auto fingerId =  event.tfinger.fingerId;
+       auto position = vec2f_t { .x= event.tfinger.x*width, .y=event.tfinger.y*height};
+       auto velocity = event.tfinger.pressure * 100 + 17;
+        for (auto button : buttons) {
+          if ((button->state != UIState::ACTIVE) && (button->state != UIState::HOVER)&&
+              button->shape.contains(position)) {
+            button->state = UIState::HOVER;
+          }
+        }
 
+                               break;}
+      case SDL_FINGERDOWN:{
+       auto fingerId =  event.tfinger.fingerId;
+       auto position = vec2f_t { .x= event.tfinger.x*width, .y=event.tfinger.y*height};
+       auto velocity = event.tfinger.pressure * 100 + 17;
+SDL_Log("finger down #%d: %f %f", fingerId, position.x, position.y);
+       for (size_t i = 0; i < keyButtons.size(); ++i) {
+          // evaluate clicks
+          if (UpdateButton(&keyButtons[i], position, UIState::ACTIVE)) {
+            // play sound
+           auto note = noteListKeys[i];
+           heldKeys[fingerId] = i;
+          synth.note(note, velocity);
+          }
+        }
+
+       break;
+    }
+      case SDL_FINGERUP:{
+
+       auto fingerId =  event.tfinger.fingerId;
+       auto position = vec2f_t { .x= event.tfinger.x*width, .y=event.tfinger.y*height};
+SDL_Log("finger up #%d: %f %f", fingerId, position.x, position.y);
+       if(auto buttonIdx = heldKeys[fingerId]){
+         keyButtons[buttonIdx].state = UIState::INACTIVE;
+            synth.note(noteListKeys[buttonIdx], 0);
+            heldKeys.erase(fingerId);
+       }
+
+       if(heldKeys.size()==0){
+        for (auto& button : keyButtons) {
+          // evaluate clicks
+           button.state = UIState::INACTIVE;
+        }
+
+       }
+
+      break;
+                        }
+      case SDL_JOYAXISMOTION: {
         break;
       }
       case SDL_SENSORUPDATE: {
 
+        std::stringstream ss;
+        auto sensor = SDL_SensorFromInstanceID(event.sensor.which);
+        auto sensorName = SDL_SensorGetName(sensor);
+        auto sensorType = SDL_SensorGetType(sensor);
+        switch (sensorType) {
+        case SDL_SENSOR_ACCEL: {
+          ss << "sensor: " << sensorName << " " << event.sensor.data[0] << ", "
+             << event.sensor.data[1] << ", " << event.sensor.data[2];
+
+          physics.gravity = vec2f_t{.x = event.sensor.data[0] * -3,
+                                    .y = event.sensor.data[1] * 3};
+
+          synth.setFilterCutoff((event.sensor.data[0] / 9.8) * 18000 + 100);
+          synth.setFilterQuality(event.sensor.data[0] / 9.8);
+
+          break;
+        }
+        case SDL_SENSOR_GYRO: {
+          ss << "sensor: " << sensorName << " " << event.sensor.data[0] << ", "
+             << event.sensor.data[1] << ", " << event.sensor.data[2];
+          // SDL_LogInfo(0, "%s", ss.str().c_str());
+          break;
+        }
+        default:
+          break;
+        }
         break;
       }
       }
@@ -583,10 +553,10 @@ public:
   void evaluateGameRules(SDL_Event &event) {}
 
   void draw(SDL_Event &event) {
+    // drawing code here
     if (event.type == SDL_QUIT || (!renderIsOn))
       return;
     SDL_RenderClear(renderer);
-    // drawing code here
 
     for (auto object : gameObjects) {
     }
@@ -629,7 +599,7 @@ private:
   vec2f_t mousePosition = vec2f_t{0, 0};
   vec2f_t mouseDownPosition = vec2f_t{0, 0};
   bool mouseIsDown = false;
-
+  std::map<SDL_FingerID, int> heldKeys;
   int joystickXPosition = 0;
   int joystickYPosition = 0;
   float xDir = 0, yDir = 0;
@@ -646,7 +616,8 @@ private:
 
 int main(int argc, char *argv[]) {
   SDL_Log("begin!");
-  Framework game(1920, 1080);
+  // Framework game(1920, 1080);
+  Framework game(940, 2220);
   // only proceed if init was success
   if (game.init()) {
 
