@@ -340,9 +340,9 @@ public:
     auto pageMargin = 50;
     auto radiobuttonMargin = 10;
     auto synthSelectSize = width / 18.0;
-    synthTypes = {SynthesizerType::SUBTRACTIVE,
-                  SynthesizerType::PHYSICAL_MODEL};
-    std::vector<std::string> synthTypeLabels = {"sub", "phys"};
+    synthTypes = {SynthesizerType::SUBTRACTIVE, SynthesizerType::PHYSICAL_MODEL,
+                  SynthesizerType::FREQUENCY_MODULATION};
+    std::vector<std::string> synthTypeLabels = {"sub", "phys", "fm"};
 
     for (size_t i = 0; i < synthTypes.size(); ++i) {
       synthSelectRadioGroup.push_back(Button{

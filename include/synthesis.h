@@ -378,6 +378,151 @@ template <typename sample_t> struct SubtractiveSynthesizer {
   }
 };
 
+template <typename sample_t> struct FMOperator {
+  sample_t sampleRate = 48000;
+  SinOscillator<sample_t, sample_t> osc;
+  ASREnvelope<sample_t> env;
+  sample_t freq = 440;
+  sample_t last = 0;
+
+  inline const sample_t next(sample_t pmod = 0) {
+    osc.setFrequency(freq, sampleRate);
+    last = env.next() * osc.next(pmod);
+    return last;
+  }
+
+  inline void setFrequency(sample_t f) { freq = f; }
+};
+
+template <typename sample_t> struct FM4OpVoice {
+  sample_t mod1_1 = sample_t(0), mod1_2 = sample_t(0), mod1_3 = sample_t(0),
+           mod1_4 = sample_t(0);
+  sample_t mod2_1 = sample_t(1), mod2_2 = sample_t(0), mod2_3 = sample_t(0),
+           mod2_4 = sample_t(0);
+  sample_t mod3_1 = sample_t(1), mod3_2 = sample_t(0), mod3_3 = sample_t(0),
+           mod3_4 = sample_t(0);
+  sample_t mod4_1 = sample_t(1), mod4_2 = sample_t(0), mod4_3 = sample_t(0),
+           mod4_4 = sample_t(0);
+
+  sample_t ratio1 = sample_t(1), ratio2 = sample_t(2), ratio3 = sample_t(3),
+           ratio4 = sample_t(2.0 / 3.0);
+
+  sample_t gain1 = sample_t(1), gain2 = sample_t(0), gain3 = sample_t(0),
+           gain4 = sample_t(0);
+
+  sample_t index = 0.1;
+
+  Parameter<sample_t> frequency = Parameter<sample_t>(440.0);
+  sample_t gain = 1.0;
+  FMOperator<sample_t> op1;
+  FMOperator<sample_t> op2;
+  FMOperator<sample_t> op3;
+  FMOperator<sample_t> op4;
+  sample_t active = false;
+
+  inline const sample_t next() {
+
+    auto nextFrequency = frequency.next();
+
+    op1.setFrequency(nextFrequency * ratio1);
+    op2.setFrequency(nextFrequency * ratio2);
+    op3.setFrequency(nextFrequency * ratio3);
+    op4.setFrequency(nextFrequency * ratio4);
+
+    sample_t mod1 = index * (op1.last * mod1_1 + op2.last * mod2_1 +
+                             op3.last * mod3_1 + op4.last * mod4_1);
+    sample_t mod2 = index * (op1.last * mod1_2 + op2.last * mod2_2 +
+                             op3.last * mod3_2 + op4.last * mod4_2);
+    sample_t mod3 = index * (op1.last * mod1_3 + op2.last * mod2_3 +
+                             op3.last * mod3_3 + op4.last * mod4_3);
+    sample_t mod4 = index * (op1.last * mod1_4 + op2.last * mod2_4 +
+                             op3.last * mod3_4 + op4.last * mod4_4);
+    sample_t out = op1.next(mod1) * gain1 + op2.next(mod2) * gain2 +
+                   op2.next(mod3) * gain3 + op4.next(mod4) * gain4;
+    out *= gain;
+    active = (op1.env.stage != ASREnvelope<sample_t>::OFF) ||
+             (op2.env.stage != ASREnvelope<sample_t>::OFF) ||
+             (op3.env.stage != ASREnvelope<sample_t>::OFF) ||
+             (op4.env.stage != ASREnvelope<sample_t>::OFF);
+    return out;
+  }
+
+  inline void setGate(sample_t gate) {
+    op1.env.setGate(gate);
+    op2.env.setGate(gate);
+    op3.env.setGate(gate);
+    op4.env.setGate(gate);
+  }
+};
+
+template <typename sample_t> struct FMSynthesizer {
+  static const size_t MAX_VOICES = 16;
+  size_t voiceIndex = 0;
+  FM4OpVoice<sample_t> voices[MAX_VOICES];
+  sample_t gain = 1;
+  sample_t notes[MAX_VOICES] = {-1, -1, -1, -1, -1, -1, -1, -1,
+                                -1, -1, -1, -1, -1, -1, -1, -1};
+  sample_t sampleRate = 48000;
+
+  inline const sample_t next() {
+    sample_t out = 0;
+    for (auto &voice : voices) {
+      if (voice.active) {
+        out += voice.next();
+      }
+    }
+    return (out * gain);
+  }
+
+  inline void note(const sample_t note, const sample_t velocity) {
+    if (velocity > 0) {
+      SDL_Log("note on (%f, %f) for %d", note, velocity, voiceIndex);
+      voices[voiceIndex].setGate(true);
+      voices[voiceIndex].active = true;
+      voices[voiceIndex].gain = (velocity / 127.0);
+      voices[voiceIndex].frequency.set(mtof(note), 5, sampleRate);
+      notes[voiceIndex] = note;
+      ++voiceIndex;
+      if (voiceIndex >= MAX_VOICES)
+        voiceIndex = 0;
+    } else {
+      for (size_t i = 0; i < MAX_VOICES; ++i) {
+        if (notes[i] == note) {
+          voices[i].setGate(false);
+          notes[i] = -1;
+          break;
+        }
+      }
+    }
+  }
+
+  inline void setGain(sample_t value) { gain = value; }
+  inline void setFilterCutoff(sample_t value) {
+    for (auto &voice : voices) {
+      // voice.filterCutoff = value;
+    }
+  }
+  inline void setFilterQuality(sample_t value) {
+    for (auto &voice : voices) {
+      // voice.filterQuality = value;
+    }
+  }
+  inline void setSoundSource(sample_t value) {
+    for (auto &voice : voices) {
+      // voice.osc.oscMix = value;
+    }
+  }
+  inline void setAttackTime(sample_t value) {
+    for (auto &voice : voices) {
+      // voice.setAttackTime(value);
+    }
+  }
+  inline void setReleaseTime(sample_t value) {
+    for (auto &voice : voices) {
+      // voice.releaseTime = value;
+    }
+  }
+};
 template <typename sample_t> struct NoteEvent {
   sample_t note;
   sample_t velocity;
@@ -395,7 +540,7 @@ template <typename sample_t> struct ParameterChangeEvent {
   sample_t value;
 };
 
-enum SynthesizerType { SUBTRACTIVE, PHYSICAL_MODEL };
+enum SynthesizerType { SUBTRACTIVE, PHYSICAL_MODEL, FREQUENCY_MODULATION };
 
 template <typename sample_t> struct SynthesizerEvent {
   enum EventType { NOTE, PARAMETER_CHANGE, SYNTHESIZER_CHANGE } type;
@@ -429,9 +574,11 @@ template <typename sample_t> struct Synthesizer {
   union uSynthesizer {
     SubtractiveSynthesizer<sample_t> subtractive;
     KarplusStrongSynthesizer<sample_t> physicalModel;
+    FMSynthesizer<sample_t> fm;
     uSynthesizer(const SubtractiveSynthesizer<sample_t> &s) : subtractive(s) {}
     uSynthesizer(const KarplusStrongSynthesizer<sample_t> &s)
         : physicalModel(s) {}
+    uSynthesizer(const FMSynthesizer<sample_t> &s) : fm(s) {}
   } object;
 
   rigtorp::SPSCQueue<SynthesizerEvent<sample_t>> eventQueue =
@@ -441,6 +588,8 @@ template <typename sample_t> struct Synthesizer {
       : object(s), type(SUBTRACTIVE) {}
   Synthesizer<sample_t>(const KarplusStrongSynthesizer<sample_t> &s)
       : object(s), type(PHYSICAL_MODEL) {}
+  Synthesizer<sample_t>(const FMSynthesizer<sample_t> &s)
+      : object(s), type(FREQUENCY_MODULATION) {}
 
   inline const sample_t next() {
     // SDL_LogInfo(0, "sample tick");
@@ -472,6 +621,16 @@ template <typename sample_t> struct Synthesizer {
       return object.physicalModel.next();
       break;
     }
+    case FREQUENCY_MODULATION: {
+      object.fm.setGain(nextGain);
+      object.fm.setFilterCutoff(nextFilterCutoff);
+      object.fm.setFilterQuality(nextFilterQuality);
+      object.fm.setSoundSource(nextSoundSource);
+      object.fm.setAttackTime(nextAttackTime);
+      object.fm.setReleaseTime(nextReleaseTime);
+      return object.fm.next();
+      break;
+    }
     }
     return 0;
   }
@@ -494,6 +653,11 @@ template <typename sample_t> struct Synthesizer {
           object.physicalModel = KarplusStrongSynthesizer<sample_t>();
           break;
         }
+        case FREQUENCY_MODULATION: {
+          type = FREQUENCY_MODULATION;
+          object.fm = FMSynthesizer<sample_t>();
+          break;
+        }
         }
         break;
       }
@@ -508,7 +672,11 @@ template <typename sample_t> struct Synthesizer {
           object.physicalModel.note(event.data.note.note,
                                     event.data.note.velocity);
           break;
+        case FREQUENCY_MODULATION:
+          object.fm.note(event.data.note.note, event.data.note.velocity);
+          break;
         }
+
         break;
       }
       case SynthesizerEvent<sample_t>::PARAMETER_CHANGE: {
