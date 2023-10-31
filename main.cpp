@@ -208,7 +208,8 @@ public:
 
     auto pageMargin = 50;
     auto radiobuttonMargin = 10;
-    auto synthSelectSize = width / 8.0;
+    auto synthSelectWidth = width / 3.25;
+    auto synthSelectHeight= width / 8.0;
     synthTypes = {SynthesizerType::SUBTRACTIVE, SynthesizerType::PHYSICAL_MODEL,
                   SynthesizerType::FREQUENCY_MODULATION};
     std::vector<std::string> synthTypeLabels = {"sub", "phys", "fm"};
@@ -219,22 +220,22 @@ public:
           .shape = AxisAlignedBoundingBox{
               .position =
                   vec2f_t{.x = static_cast<float>(
-                              pageMargin + synthSelectSize / 2.0 +
-                              i * (synthSelectSize + radiobuttonMargin)),
+                              pageMargin + synthSelectWidth / 2.0 +
+                              i * (synthSelectWidth + radiobuttonMargin)),
                           .y = static_cast<float>(pageMargin +
-                                                  synthSelectSize / 2.0)},
+                                                  synthSelectHeight / 2.0)},
               .halfSize =
-                  vec2f_t{.x = static_cast<float>(synthSelectSize / 2),
-                          .y = static_cast<float>(synthSelectSize / 2)}}});
+                  vec2f_t{.x = static_cast<float>(synthSelectWidth / 2),
+                          .y = static_cast<float>(synthSelectHeight / 2)}}});
     }
     synthSelectRadioGroup[initialSynthTypeSelection].state = UIState::ACTIVE;
     for (auto &button : synthSelectRadioGroup) {
       buttons.push_back(&button);
     }
 
-    auto buttonMargin = 25;
-    auto topBarHeight = synthSelectSize + (1.5 * buttonMargin) + pageMargin;
-    auto keySize = width / 4.75;
+    auto buttonMargin = 5;
+    auto topBarHeight = synthSelectHeight + (1.5 * buttonMargin) + pageMargin;
+    auto keySize = width / 4.5;
     auto keyboardStartPositionX = 100;
     int numberOfKeys = 24;
 
@@ -526,8 +527,9 @@ SDL_Log("finger up #%d: %f %f", fingerId, position.x, position.y);
           physics.gravity = vec2f_t{.x = event.sensor.data[0] * -3,
                                     .y = event.sensor.data[1] * 3};
 
-          synth.setFilterCutoff((event.sensor.data[0] / 9.8) * 18000 + 100);
-          synth.setFilterQuality(event.sensor.data[0] / 9.8);
+          synth.setFilterCutoff((event.sensor.data[0] / 9.8) );
+          synth.setSoundSource((event.sensor.data[1] / 9.8));
+          synth.setFilterQuality((event.sensor.data[2] / 9.8));
 
           break;
         }
@@ -568,7 +570,7 @@ SDL_Log("finger up #%d: %f %f", fingerId, position.x, position.y);
   }
 
 private:
-  const int FRAME_RATE_TARGET = 60; // 5; // 120
+  const int FRAME_RATE_TARGET =  120;
   const int FRAME_DELTA_MILLIS = (1.0 / float(FRAME_RATE_TARGET)) * 1000.0;
   const size_t BUFFER_SIZE = 256;
   const float SAMPLE_RATE = 48000;
