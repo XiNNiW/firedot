@@ -56,26 +56,6 @@ static const SynthesizerType synthTypes[NUM_SYNTH_TYPES] = {
 
 enum SensorType { TILT, SPIN };
 
-struct UI {
-  virtual void show(const float width, const float height) = 0;
-  virtual void handleMouseMove(const vec2f_t &mousePosition) = 0;
-  virtual void handleMouseDown(const vec2f_t &mousePosition) = 0;
-  virtual void handleMouseUp(const vec2f_t &mousePosition) = 0;
-
-  virtual void handleFingerMove(const SDL_FingerID &fingerId,
-                                const vec2f_t &position,
-                                const float pressure) = 0;
-  virtual void handleFingerDown(const SDL_FingerID &fingerId,
-                                const vec2f_t &position,
-                                const float pressure) = 0;
-  virtual void handleFingerUp(const SDL_FingerID &fingerId,
-                              const vec2f_t &position,
-                              const float pressure) = 0;
-
-  virtual const std::vector<Button *> &getAllWidgets() = 0;
-  virtual ~UI(){};
-};
-
 template <typename sample_t> struct SensorMapping {
   std::set<std::pair<SensorType,
                      typename ParameterChangeEvent<sample_t>::ParameterType>>
@@ -105,18 +85,18 @@ template <typename sample_t> struct SensorMapping {
   }
 };
 
+enum UIPage { KEYBOARD, MAPPING };
+
 struct KeyboardWidget {
   static constexpr size_t SYNTH_SELECTED_RADIO_GROUP_SIZE = 3;
-  Button synthSelectRadioGroup[SYNTH_SELECTED_RADIO_GROUP_SIZE];
-  std::vector<Button> keyButtons;
+  static constexpr size_t NUM_KEY_BUTTONS = 24;
   Button menuButton;
-  std::vector<Button *> allButtons;
-
-  KeyboardWidget() {}
+  Button synthSelectRadioGroup[SYNTH_SELECTED_RADIO_GROUP_SIZE];
+  Button keyButtons[NUM_KEY_BUTTONS];
 
   template <typename sample_t>
   inline void buildLayout(const float width, const float height,
-                          const std::vector<sample_t> &notes) {
+                          const std::array<sample_t, NUM_KEY_BUTTONS> &notes) {
 
     auto pageMargin = 50;
     auto radiobuttonMargin = 10;
@@ -141,10 +121,6 @@ struct KeyboardWidget {
                           .y = static_cast<float>(synthSelectHeight / 2)}}};
     }
     synthSelectRadioGroup[initialSynthTypeSelection].state = UIState::ACTIVE;
-    for (auto &button : synthSelectRadioGroup) {
-      allButtons.push_back(&button);
-    }
-
     menuButton = Button{
         .labelText = "menu",
         .shape = AxisAlignedBoundingBox{
@@ -155,8 +131,6 @@ struct KeyboardWidget {
                 vec2f_t{.x = static_cast<float>(synthSelectWidth / 2),
                         .y = static_cast<float>(synthSelectHeight / 2)}}};
 
-    allButtons.push_back(&menuButton);
-
     auto buttonMargin = 5;
     auto topBarHeight = synthSelectHeight + (1.5 * buttonMargin) + pageMargin;
     auto keySize = width / 4.5;
@@ -164,7 +138,7 @@ struct KeyboardWidget {
 
     for (size_t i = 0; i < notes.size(); ++i) {
 
-      keyButtons.push_back(Button{
+      keyButtons[i] = Button{
           .labelText = "",
           .shape = AxisAlignedBoundingBox{
               .position =
@@ -175,7 +149,7 @@ struct KeyboardWidget {
                               topBarHeight + keySize / 2.0 +
                               floor(i / 4.0) * (keySize + buttonMargin))},
               .halfSize = vec2f_t{.x = static_cast<float>(keySize / 2),
-                                  .y = static_cast<float>(keySize / 2)}}});
+                                  .y = static_cast<float>(keySize / 2)}}};
     }
 
     for (auto &button : keyButtons) {
@@ -183,12 +157,19 @@ struct KeyboardWidget {
     }
   }
 
-  const std::vector<Button *> &getAllWidgets() { return allButtons; }
+  inline void draw(SDL_Renderer *renderer, const Style &style) {
+    DrawButtonRect(backButton, renderer, style);
+    DrawButtonLabel(backButton, renderer, style);
+  }
 };
 
 struct KeyboardController {
 
   std::map<SDL_FingerID, int> heldKeys;
+  void (*navigateToMenuPage)(void);
+
+  KeyboardController(void (*_navigateToMenuPage)(void))
+      : navigateToMenuPage(_navigateToMenuPage) {}
 
   template <typename sample_t>
   inline void handleFingerMove(KeyboardWidget *keyboardWidget,
@@ -272,6 +253,7 @@ struct KeyboardController {
     };
 
     if (UpdateButton(&keyboardWidget->menuButton, mousePosition, ACTIVE)) {
+      navigateToMenuPage();
     };
 
     //  for (size_t i = 0; i < keyboardWidget->keyButtons.size(); ++i) {
@@ -302,15 +284,15 @@ struct KeyboardController {
   }
 };
 
-struct KeyboardUI : UI {
+struct KeyboardUI {
   KeyboardWidget widget;
   KeyboardController controller;
   Synthesizer<float> *synth = NULL;
   std::vector<float> notes = {36, 40, 44, 48, 43, 47, 51, 55, 50, 54, 58, 62,
                               57, 61, 65, 69, 64, 68, 72, 76, 71, 75, 79, 83};
 
-  KeyboardUI(Synthesizer<float> *_synth) : synth(_synth) {}
-  ~KeyboardUI() {}
+  KeyboardUI(Synthesizer<float> *_synth, void (*menuButtonCallback)(void))
+      : synth(_synth), controller(KeyboardController(menuButtonCallback)) {}
 
   void show(const float width, const float height) {
     widget.buildLayout(width, height, notes);
@@ -345,24 +327,34 @@ struct KeyboardUI : UI {
     return widget.getAllWidgets();
   }
 };
-struct OptionMenu {
-  AxisAlignedBoundingBox shape =
-      AxisAlignedBoundingBox{.position = {0, 0}, .halfSize = {100, 100}};
-  UIState state = INACTIVE;
-};
 
 struct MappingWidget {
-  OptionMenu tiltMappingMenu;
+  Button backButton;
+  Button tiltMappingMenu;
   std::vector<Button *> allWidgets;
 
   MappingWidget() {}
 
   void buildLayout(const float width, const float height) {
-    tiltMappingMenu.shape =
-        AxisAlignedBoundingBox{.position = {.x = width / 2, .y = height / 2}};
+    auto buttonSize = width / 16.0;
+    backButton =
+        Button{.shape = AxisAlignedBoundingBox{
+                   .position = {.x = static_cast<float>(buttonSize / 2.0),
+                                .y = static_cast<float>(buttonSize / 2.0)},
+                   .halfSize = {.x = static_cast<float>(buttonSize / 2.0),
+                                .y = static_cast<float>(buttonSize / 2.0)}}};
+    tiltMappingMenu =
+        Button{.shape = AxisAlignedBoundingBox{
+                   .position = {.x = static_cast<float>(buttonSize / 2.0),
+                                .y = static_cast<float>(buttonSize / 2.0)},
+                   .halfSize = {.x = static_cast<float>(buttonSize / 2.0),
+                                .y = static_cast<float>(buttonSize / 2.0)}}};
   }
 
-  inline const std::vector<Button *> &getAllWidgets() { return allWidgets; }
+  inline void draw(SDL_Renderer *renderer, const Style &style) {
+    DrawButtonRect(backButton, renderer, style);
+    DrawButtonLabel(backButton, renderer, style);
+  }
 };
 
 struct MappingController {
@@ -390,13 +382,13 @@ struct MappingController {
                              const vec2f_t &position, const float pressure) {}
 };
 
-struct MappingUI : UI {
+struct MappingUI {
   MappingWidget widget;
   MappingController controller;
   SensorMapping<float> *mapping = NULL;
 
-  MappingUI(SensorMapping<float> *_mapping) : mapping(_mapping) {}
-  ~MappingUI() {}
+  MappingUI(SensorMapping<float> *_mapping, void (*backButtonCallback)())
+      : mapping(_mapping), controller() {}
   void show(const float width, const float height) {
     widget.buildLayout(width, height);
   }
