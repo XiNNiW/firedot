@@ -156,6 +156,12 @@ template <typename sample_t> struct KarplusStrongSynthesizer {
     return (out * gain);
   }
 
+  inline void process(sample_t *buffer, const size_t bufferSize) {
+    for (size_t i = 0; i < bufferSize; ++i) {
+      buffer[i] = next();
+    }
+  }
+
   inline void note(sample_t note, sample_t velocity) {
 
     if (velocity > 0) {
@@ -185,7 +191,7 @@ template <typename sample_t> struct KarplusStrongSynthesizer {
     value = clamp<sample_t>(value, 0, 1);
     value = lerp<sample_t>(0.8, 1, value);
     for (auto &voice : voices) {
-      voice.b1Coefficient = value;
+      // voice.inputFilter.lowpass(value, sampleRate);
     }
   }
   inline void setFilterQuality(sample_t value) {
@@ -316,12 +322,11 @@ template <typename sample_t> struct SubtractiveVoice {
 };
 
 template <typename sample_t> struct SubtractiveSynthesizer {
-  static const size_t MAX_VOICES = 16;
+  static const size_t MAX_VOICES = 8;
   size_t voiceIndex = 0;
   SubtractiveVoice<sample_t> voices[MAX_VOICES];
   sample_t gain = 1;
-  sample_t notes[MAX_VOICES] = {-1, -1, -1, -1, -1, -1, -1, -1,
-                                -1, -1, -1, -1, -1, -1, -1, -1};
+  sample_t notes[MAX_VOICES] = {-1, -1, -1, -1, -1, -1, -1, -1};
   sample_t sampleRate = 48000;
 
   inline const sample_t next() {
@@ -332,6 +337,12 @@ template <typename sample_t> struct SubtractiveSynthesizer {
       }
     }
     return (out * gain * 0.1);
+  }
+
+  inline void process(sample_t *buffer, const size_t bufferSize) {
+    for (size_t i = 0; i < bufferSize; ++i) {
+      buffer[i] = next();
+    }
   }
 
   inline void note(const sample_t note, const sample_t velocity) {
@@ -391,6 +402,8 @@ template <typename sample_t> struct FMOperator {
   ASREnvelope<sample_t> env;
   sample_t freq = 440;
   sample_t last = 0;
+
+  FMOperator<sample_t>() { env.set(10, 1000, sampleRate); }
 
   inline const sample_t next(sample_t pmod = 0) {
     osc.setFrequency(freq, sampleRate);
@@ -461,7 +474,7 @@ template <typename sample_t> struct FM4OpVoice {
   }
 };
 template <typename sample_t> struct FMSynthesizer {
-  static const size_t MAX_VOICES = 16;
+  static const size_t MAX_VOICES = 8;
   size_t voiceIndex = 0;
 
   static const size_t NUM_RATIOS = 8;
@@ -484,8 +497,7 @@ template <typename sample_t> struct FMSynthesizer {
   };
   FM4OpVoice<sample_t> voices[MAX_VOICES];
   sample_t gain = 1;
-  sample_t notes[MAX_VOICES] = {-1, -1, -1, -1, -1, -1, -1, -1,
-                                -1, -1, -1, -1, -1, -1, -1, -1};
+  sample_t notes[MAX_VOICES] = {-1, -1, -1, -1, -1, -1, -1, -1};
   sample_t sampleRate = 48000;
 
   inline const sample_t next() {
@@ -496,6 +508,12 @@ template <typename sample_t> struct FMSynthesizer {
       }
     }
     return (out * gain * 0.1);
+  }
+
+  inline void process(sample_t *buffer, const size_t bufferSize) {
+    for (size_t i = 0; i < bufferSize; ++i) {
+      buffer[i] = next();
+    }
   }
 
   inline void note(const sample_t note, const sample_t velocity) {
@@ -614,6 +632,7 @@ template <typename sample_t> struct SynthesizerEvent {
 };
 
 template <typename sample_t> struct Synthesizer {
+
   Parameter<sample_t> gain = Parameter<sample_t>(1);
   Parameter<sample_t> filterCutoff = Parameter<sample_t>(17000);
   Parameter<sample_t> filterQuality = Parameter<sample_t>(0.3);
@@ -788,6 +807,13 @@ template <typename sample_t> struct Synthesizer {
 
     eventQueue.push(event);
   }
+  inline void pushParameterChangeEvent(
+      typename ParameterChangeEvent<sample_t>::ParameterType type,
+      sample_t value) {
+    eventQueue.push(SynthesizerEvent<sample_t>(
+        ParameterChangeEvent<sample_t>{.type = type, .value = value}));
+  }
+
   inline void setGain(sample_t value) {
     eventQueue.push(SynthesizerEvent<sample_t>(ParameterChangeEvent<sample_t>{
         .type = ParameterChangeEvent<sample_t>::GAIN, .value = value}));

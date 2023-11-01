@@ -23,27 +23,443 @@
 #include <SDL_ttf.h>
 #include <algae.h>
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <functional>
+#include <map>
 #include <math.h>
 #include <memory>
 #include <optional>
+#include <set>
 #include <sstream>
 #include <string>
 #include <type_traits>
 #include <utility>
 #include <variant>
-#include <map>
 
 #include <vector>
 
 #ifndef SDL_AUDIODRIVER
 #define SDL_AUDIODRIVER "jack"
 #endif // !SDL_AUDIODRIVER
+
+enum IconType { MENU, SYNTH_SELECT };
+
+static const size_t NUM_SYNTH_TYPES = 3;
+static const SynthesizerType synthTypes[NUM_SYNTH_TYPES] = {
+    SynthesizerType::SUBTRACTIVE, SynthesizerType::PHYSICAL_MODEL,
+    SynthesizerType::FREQUENCY_MODULATION};
+
+enum SensorType { TILT, SPIN };
+
+struct UI {
+  virtual void show(const float width, const float height) = 0;
+  virtual void handleMouseMove(const vec2f_t &mousePosition) = 0;
+  virtual void handleMouseDown(const vec2f_t &mousePosition) = 0;
+  virtual void handleMouseUp(const vec2f_t &mousePosition) = 0;
+
+  virtual void handleFingerMove(const SDL_FingerID &fingerId,
+                                const vec2f_t &position,
+                                const float pressure) = 0;
+  virtual void handleFingerDown(const SDL_FingerID &fingerId,
+                                const vec2f_t &position,
+                                const float pressure) = 0;
+  virtual void handleFingerUp(const SDL_FingerID &fingerId,
+                              const vec2f_t &position,
+                              const float pressure) = 0;
+
+  virtual const std::vector<Button *> &getAllWidgets() = 0;
+  virtual ~UI(){};
+};
+
+template <typename sample_t> struct SensorMapping {
+  std::set<std::pair<SensorType,
+                     typename ParameterChangeEvent<sample_t>::ParameterType>>
+      mapping;
+
+  inline void emitEvent(Synthesizer<sample_t> *synth, SensorType type,
+                        float value) {
+    for (auto &pair : mapping) {
+      auto sensorType = pair.first;
+      auto parameterEventType = pair.second;
+      if (type == sensorType) {
+        synth->pushParameterChangeEvent(parameterEventType, value);
+      }
+    }
+  }
+
+  inline void
+  addMapping(SensorType sensorType,
+             typename ParameterChangeEvent<sample_t>::ParameterType paramType) {
+    mapping.insert(std::pair(sensorType, paramType));
+  }
+
+  inline void removeMapping(
+      SensorType sensorType,
+      typename ParameterChangeEvent<sample_t>::ParameterType paramType) {
+    mapping.erase(std::pair(sensorType, paramType));
+  }
+};
+
+struct KeyboardWidget {
+  static constexpr size_t SYNTH_SELECTED_RADIO_GROUP_SIZE = 3;
+  Button synthSelectRadioGroup[SYNTH_SELECTED_RADIO_GROUP_SIZE];
+  std::vector<Button> keyButtons;
+  Button menuButton;
+  std::vector<Button *> allButtons;
+
+  KeyboardWidget() {}
+
+  template <typename sample_t>
+  inline void buildLayout(const float width, const float height,
+                          const std::vector<sample_t> &notes) {
+
+    auto pageMargin = 50;
+    auto radiobuttonMargin = 10;
+    auto synthSelectWidth = width / 6;
+    auto synthSelectHeight = width / 8.0;
+
+    std::array<std::string, NUM_SYNTH_TYPES> synthTypeLabels = {"sub", "phys",
+                                                                "fm"};
+    const size_t initialSynthTypeSelection = 0;
+    for (size_t i = 0; i < NUM_SYNTH_TYPES; ++i) {
+      synthSelectRadioGroup[i] = Button{
+          .labelText = synthTypeLabels[i],
+          .shape = AxisAlignedBoundingBox{
+              .position =
+                  vec2f_t{.x = static_cast<float>(
+                              pageMargin + synthSelectWidth / 2.0 +
+                              i * (synthSelectWidth + radiobuttonMargin)),
+                          .y = static_cast<float>(pageMargin +
+                                                  synthSelectHeight / 2.0)},
+              .halfSize =
+                  vec2f_t{.x = static_cast<float>(synthSelectWidth / 2),
+                          .y = static_cast<float>(synthSelectHeight / 2)}}};
+    }
+    synthSelectRadioGroup[initialSynthTypeSelection].state = UIState::ACTIVE;
+    for (auto &button : synthSelectRadioGroup) {
+      allButtons.push_back(&button);
+    }
+
+    menuButton = Button{
+        .labelText = "menu",
+        .shape = AxisAlignedBoundingBox{
+            .position = vec2f_t{.x = width - synthSelectWidth / 2 - pageMargin,
+                                .y = static_cast<float>(pageMargin +
+                                                        synthSelectHeight / 2)},
+            .halfSize =
+                vec2f_t{.x = static_cast<float>(synthSelectWidth / 2),
+                        .y = static_cast<float>(synthSelectHeight / 2)}}};
+
+    allButtons.push_back(&menuButton);
+
+    auto buttonMargin = 5;
+    auto topBarHeight = synthSelectHeight + (1.5 * buttonMargin) + pageMargin;
+    auto keySize = width / 4.5;
+    auto keyboardStartPositionX = 100;
+
+    for (size_t i = 0; i < notes.size(); ++i) {
+
+      keyButtons.push_back(Button{
+          .labelText = "",
+          .shape = AxisAlignedBoundingBox{
+              .position =
+                  vec2f_t{.x = static_cast<float>(pageMargin + keySize / 2.0 +
+                                                  (i % 4) *
+                                                      (keySize + buttonMargin)),
+                          .y = static_cast<float>(
+                              topBarHeight + keySize / 2.0 +
+                              floor(i / 4.0) * (keySize + buttonMargin))},
+              .halfSize = vec2f_t{.x = static_cast<float>(keySize / 2),
+                                  .y = static_cast<float>(keySize / 2)}}});
+    }
+
+    for (auto &button : keyButtons) {
+      allButtons.push_back(&button);
+    }
+  }
+
+  const std::vector<Button *> &getAllWidgets() { return allButtons; }
+};
+
+struct KeyboardController {
+
+  std::map<SDL_FingerID, int> heldKeys;
+
+  template <typename sample_t>
+  inline void handleFingerMove(KeyboardWidget *keyboardWidget,
+                               Synthesizer<sample_t> *synth,
+                               const std::vector<sample_t> &notes,
+                               const SDL_FingerID &fingerId,
+                               const vec2f_t &position, const float pressure) {
+    for (auto button : keyboardWidget->getAllWidgets()) {
+      if ((button->state != UIState::ACTIVE) &&
+          (button->state != UIState::HOVER) &&
+          button->shape.contains(position)) {
+        button->state = UIState::HOVER;
+      }
+    }
+  }
+
+  template <typename sample_t>
+  inline void handleFingerDown(KeyboardWidget *keyboardWidget,
+                               Synthesizer<sample_t> *synth,
+                               const std::vector<sample_t> &notes,
+                               const SDL_FingerID &fingerId,
+                               const vec2f_t &position, const float pressure) {
+    for (size_t i = 0; i < keyboardWidget->keyButtons.size(); ++i) {
+      // evaluate clicks
+      if (UpdateButton(&keyboardWidget->keyButtons[i], position,
+                       UIState::ACTIVE)) {
+        // play sound
+        auto note = notes[i];
+        heldKeys[fingerId] = i;
+        synth->note(note, pressure * 127);
+      }
+    }
+  }
+
+  template <typename sample_t>
+  inline void handleFingerUp(KeyboardWidget *keyboardWidget,
+                             Synthesizer<sample_t> *synth,
+                             const std::vector<sample_t> &notes,
+                             const SDL_FingerID &fingerId,
+                             const vec2f_t &position, const float pressure) {
+
+    if (auto buttonIdx = heldKeys[fingerId]) {
+      keyboardWidget->keyButtons[buttonIdx].state = UIState::INACTIVE;
+      synth->note(notes[buttonIdx], 0);
+      heldKeys.erase(fingerId);
+    }
+
+    if (heldKeys.size() == 0) {
+      for (auto &button : keyboardWidget->keyButtons) {
+        // evaluate clicks
+        button.state = UIState::INACTIVE;
+      }
+    }
+  }
+
+  template <typename sample_t>
+  inline void handleMouseMove(KeyboardWidget *keyboardWidget,
+                              Synthesizer<sample_t> *synth,
+                              const std::vector<sample_t> &notes,
+                              const vec2f_t &mousePosition) {
+    for (auto &button : keyboardWidget->synthSelectRadioGroup) {
+      if ((button.state != UIState::ACTIVE) &&
+          button.shape.contains(mousePosition)) {
+        button.state = UIState::HOVER;
+      } else if (button.state == UIState::HOVER) {
+        button.state = UIState::INACTIVE;
+      }
+    }
+  }
+
+  template <typename sample_t>
+  inline void handleMouseDown(KeyboardWidget *keyboardWidget,
+                              Synthesizer<sample_t> *synth,
+                              const std::vector<sample_t> &notes,
+                              const vec2f_t &mousePosition) {
+    auto selected = DoClickRadioGroup(
+        keyboardWidget->synthSelectRadioGroup,
+        KeyboardWidget::SYNTH_SELECTED_RADIO_GROUP_SIZE, mousePosition);
+    if (synthTypes[selected] != synth->type) {
+      synth->setSynthType(synthTypes[selected]);
+    };
+
+    if (UpdateButton(&keyboardWidget->menuButton, mousePosition, ACTIVE)) {
+    };
+
+    //  for (size_t i = 0; i < keyboardWidget->keyButtons.size(); ++i) {
+    //    // evaluate clicks
+    //    if (UpdateButton(&keyboardWidget->keyButtons[i], mousePosition,
+    //                     UIState::ACTIVE)) {
+    //      // play sound
+    //      synth->note(notes[i], 127);
+    //    }
+    //  }
+  }
+
+  template <typename sample_t>
+  inline void handleMouseUp(KeyboardWidget *keyboardWidget,
+                            Synthesizer<sample_t> *synth,
+                            const std::vector<sample_t> &notes,
+                            const vec2f_t &mousePosition) {
+
+    for (size_t i = 0; i < keyboardWidget->keyButtons.size(); ++i) {
+      if (keyboardWidget->keyButtons[i].state == UIState::ACTIVE) {
+        keyboardWidget->keyButtons[i].state = UIState::INACTIVE;
+        synth->note(notes[i], 0);
+        heldKeys.clear();
+      } else if (keyboardWidget->keyButtons[i].state == UIState::HOVER) {
+        keyboardWidget->keyButtons[i].state = UIState::INACTIVE;
+      }
+    }
+  }
+};
+
+struct KeyboardUI : UI {
+  KeyboardWidget widget;
+  KeyboardController controller;
+  Synthesizer<float> *synth = NULL;
+  std::vector<float> notes = {36, 40, 44, 48, 43, 47, 51, 55, 50, 54, 58, 62,
+                              57, 61, 65, 69, 64, 68, 72, 76, 71, 75, 79, 83};
+
+  KeyboardUI(Synthesizer<float> *_synth) : synth(_synth) {}
+  ~KeyboardUI() {}
+
+  void show(const float width, const float height) {
+    widget.buildLayout(width, height, notes);
+  }
+
+  inline void handleMouseMove(const vec2f_t &mousePosition) {
+    controller.handleMouseMove(&widget, synth, notes, mousePosition);
+  }
+  inline void handleMouseDown(const vec2f_t &mousePosition) {
+    controller.handleMouseDown(&widget, synth, notes, mousePosition);
+  }
+  inline void handleMouseUp(const vec2f_t &mousePosition) {
+    controller.handleMouseUp(&widget, synth, notes, mousePosition);
+  }
+
+  inline void handleFingerMove(const SDL_FingerID &fingerId,
+                               const vec2f_t &position, const float pressure) {
+    controller.handleFingerMove(&widget, synth, notes, fingerId, position,
+                                pressure);
+  }
+  inline void handleFingerDown(const SDL_FingerID &fingerId,
+                               const vec2f_t &position, const float pressure) {
+    controller.handleFingerDown(&widget, synth, notes, fingerId, position,
+                                pressure);
+  }
+  inline void handleFingerUp(const SDL_FingerID &fingerId,
+                             const vec2f_t &position, const float pressure) {
+    controller.handleFingerUp(&widget, synth, notes, fingerId, position,
+                              pressure);
+  }
+  inline const std::vector<Button *> &getAllWidgets() {
+    return widget.getAllWidgets();
+  }
+};
+struct OptionMenu {
+  AxisAlignedBoundingBox shape =
+      AxisAlignedBoundingBox{.position = {0, 0}, .halfSize = {100, 100}};
+  UIState state = INACTIVE;
+};
+
+struct MappingWidget {
+  OptionMenu tiltMappingMenu;
+  std::vector<Button *> allWidgets;
+
+  MappingWidget() {}
+
+  void buildLayout(const float width, const float height) {
+    tiltMappingMenu.shape =
+        AxisAlignedBoundingBox{.position = {.x = width / 2, .y = height / 2}};
+  }
+
+  inline const std::vector<Button *> &getAllWidgets() { return allWidgets; }
+};
+
+struct MappingController {
+  inline void handleMouseMove(MappingWidget *widget,
+                              SensorMapping<float> *mapping,
+                              const vec2f_t &mousePosition) {}
+  inline void handleMouseDown(MappingWidget *widget,
+                              SensorMapping<float> *mapping,
+                              const vec2f_t &mousePosition) {}
+  inline void handleMouseUp(MappingWidget *widget,
+                            SensorMapping<float> *mapping,
+                            const vec2f_t &mousePosition) {}
+
+  inline void handleFingerMove(MappingWidget *widget,
+                               SensorMapping<float> *mapping,
+                               const SDL_FingerID &fingerId,
+                               const vec2f_t &position, const float pressure) {}
+  inline void handleFingerDown(MappingWidget *widget,
+                               SensorMapping<float> *mapping,
+                               const SDL_FingerID &fingerId,
+                               const vec2f_t &position, const float pressure) {}
+  inline void handleFingerUp(MappingWidget *widget,
+                             SensorMapping<float> *mapping,
+                             const SDL_FingerID &fingerId,
+                             const vec2f_t &position, const float pressure) {}
+};
+
+struct MappingUI : UI {
+  MappingWidget widget;
+  MappingController controller;
+  SensorMapping<float> *mapping = NULL;
+
+  MappingUI(SensorMapping<float> *_mapping) : mapping(_mapping) {}
+  ~MappingUI() {}
+  void show(const float width, const float height) {
+    widget.buildLayout(width, height);
+  }
+
+  inline void handleMouseMove(const vec2f_t &mousePosition) {
+    controller.handleMouseMove(&widget, mapping, mousePosition);
+  }
+  inline void handleMouseDown(const vec2f_t &mousePosition) {
+    controller.handleMouseDown(&widget, mapping, mousePosition);
+  }
+  inline void handleMouseUp(const vec2f_t &mousePosition) {
+    controller.handleMouseUp(&widget, mapping, mousePosition);
+  }
+
+  inline void handleFingerMove(const SDL_FingerID &fingerId,
+                               const vec2f_t &position, const float pressure) {
+    controller.handleFingerMove(&widget, mapping, fingerId, position, pressure);
+  }
+  inline void handleFingerDown(const SDL_FingerID &fingerId,
+                               const vec2f_t &position, const float pressure) {
+    controller.handleFingerDown(&widget, mapping, fingerId, position, pressure);
+  }
+  inline void handleFingerUp(const SDL_FingerID &fingerId,
+                             const vec2f_t &position, const float pressure) {
+    controller.handleFingerUp(&widget, mapping, fingerId, position, pressure);
+  }
+  inline const std::vector<Button *> &getAllWidgets() {
+    return widget.getAllWidgets();
+  }
+};
+
+struct UIRenderer {
+
+  static inline void drawUI(SDL_Renderer *renderer, UI *ui,
+                            const Style &style) {
+
+    auto allWidgets = ui->getAllWidgets();
+    for (auto button : allWidgets) {
+      DrawButtonRect(*button, renderer, style);
+      DrawButtonLabel(*button, renderer, style);
+    }
+  }
+};
+
+inline const std::optional<SDL_Texture *>
+LoadIconTexture(SDL_Renderer *renderer, std::string path) {
+  bool success = true;
+
+  SDL_Surface *surface = IMG_Load(path.c_str());
+  auto texture = SDL_CreateTextureFromSurface(renderer, surface);
+  SDL_FreeSurface(surface);
+
+  if (texture == NULL) {
+    SDL_LogError(0,
+                 "Unable to load image %s! "
+                 "SDL Error: %s\n",
+                 path.c_str(), SDL_GetError());
+    return std::nullopt;
+  } else {
+
+    return texture;
+  }
+}
 
 class Framework {
 public:
@@ -206,62 +622,7 @@ public:
                       "using mutex fallback!");
     }
 
-    auto pageMargin = 50;
-    auto radiobuttonMargin = 10;
-    auto synthSelectWidth = width / 3.25;
-    auto synthSelectHeight= width / 8.0;
-    synthTypes = {SynthesizerType::SUBTRACTIVE, SynthesizerType::PHYSICAL_MODEL,
-                  SynthesizerType::FREQUENCY_MODULATION};
-    std::vector<std::string> synthTypeLabels = {"sub", "phys", "fm"};
-    const size_t initialSynthTypeSelection = 0;
-    for (size_t i = 0; i < synthTypes.size(); ++i) {
-      synthSelectRadioGroup.push_back(Button{
-          .labelText = synthTypeLabels[i],
-          .shape = AxisAlignedBoundingBox{
-              .position =
-                  vec2f_t{.x = static_cast<float>(
-                              pageMargin + synthSelectWidth / 2.0 +
-                              i * (synthSelectWidth + radiobuttonMargin)),
-                          .y = static_cast<float>(pageMargin +
-                                                  synthSelectHeight / 2.0)},
-              .halfSize =
-                  vec2f_t{.x = static_cast<float>(synthSelectWidth / 2),
-                          .y = static_cast<float>(synthSelectHeight / 2)}}});
-    }
-    synthSelectRadioGroup[initialSynthTypeSelection].state = UIState::ACTIVE;
-    for (auto &button : synthSelectRadioGroup) {
-      buttons.push_back(&button);
-    }
-
-    auto buttonMargin = 5;
-    auto topBarHeight = synthSelectHeight + (1.5 * buttonMargin) + pageMargin;
-    auto keySize = width / 4.5;
-    auto keyboardStartPositionX = 100;
-    int numberOfKeys = 24;
-
-    for (size_t i = 0; i < numberOfKeys; ++i) {
-
-      keyButtons.push_back(Button{
-          .labelText = "",
-          .shape = AxisAlignedBoundingBox{
-              .position =
-                  vec2f_t{.x = static_cast<float>(pageMargin + keySize / 2.0 +
-                                                  (i % 4) *
-                                                      (keySize + buttonMargin)),
-                          .y = static_cast<float>(
-                              topBarHeight + keySize / 2.0 +
-                              floor(i / 4.0) * (keySize + buttonMargin))},
-              .halfSize = vec2f_t{.x = static_cast<float>(keySize / 2),
-                                  .y = static_cast<float>(keySize / 2)}}});
-
-      noteListKeys.push_back(48 + i * 2);
-    }
-
-    for (auto &button : keyButtons) {
-      buttons.push_back(&button);
-    }
-
-    synth.setSynthType(synthTypes[initialSynthTypeSelection]);
+    synth.setSynthType(SUBTRACTIVE);
     synth.setGain(1);
     synth.setFilterCutoff(10000);
     synth.setFilterQuality(0.5);
@@ -269,13 +630,21 @@ public:
     synth.setAttackTime(10.0);
     synth.setReleaseTime(1000.0);
 
+    ui = new KeyboardUI(&synth);
+    ui->show(width, height);
+
+    sensorMapping.addMapping(
+        TILT, ParameterChangeEvent<float>::ParameterType::SOUND_SOURCE);
+    sensorMapping.addMapping(
+        SPIN, ParameterChangeEvent<float>::ParameterType::FILTER_CUTOFF);
+
     lastFrameTime = SDL_GetTicks();
 
     return true;
   }
 
   ~Framework() {
-
+    delete ui;
     for (auto o : gameObjects) {
       delete o;
     }
@@ -289,6 +658,10 @@ public:
     window = NULL;
     SDL_DestroyTexture(gCursor);
     gCursor = NULL;
+    SDL_DestroyTexture(menuIcon);
+    menuIcon = NULL;
+    SDL_DestroyTexture(synthSelectIcon);
+    synthSelectIcon = NULL;
     TTF_CloseFont(style.font);
     style.font = NULL;
     TTF_Quit();
@@ -324,7 +697,7 @@ public:
     }
 
     for (size_t i = 0; i < remainingSamples; ++i) {
-   // for (size_t i = 0; i < numRequestedSamplesPerChannel; ++i) {
+      // for (size_t i = 0; i < numRequestedSamplesPerChannel; ++i) {
       auto nextSample = synth.next();
       *ch1Pointer = nextSample;
       *ch2Pointer = nextSample;
@@ -351,22 +724,31 @@ public:
   }
 
   bool loadMedia() {
-    bool success = true;
 
-    auto path = "images/p04_shape1.bmp";
-    SDL_Surface *surface = IMG_Load(path);
-    gCursor = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);
-
-    if (gCursor == NULL) {
-      SDL_LogError(0,
-                   "Unable to load image %s! "
-                   "SDL Error: %s\n",
-                   path, SDL_GetError());
-      success = false;
+    auto maybeCursor = LoadIconTexture(renderer, "images/p04_shape1.bmp");
+    if (maybeCursor.has_value()) {
+      gCursor = maybeCursor.value();
+    } else {
+      return false;
     }
 
-    return success;
+    auto maybeMenuIcon =
+        LoadIconTexture(renderer, "images/menu-burger-svgrepo-com.svg");
+    if (maybeMenuIcon.has_value()) {
+      menuIcon = maybeMenuIcon.value();
+    } else {
+      return false;
+    }
+
+    auto maybeSynthSelectIcon =
+        LoadIconTexture(renderer, "images/colour-tuneing-svgrepo-com.svg");
+    if (maybeSynthSelectIcon.has_value()) {
+      synthSelectIcon = maybeSynthSelectIcon.value();
+    } else {
+      return false;
+    }
+
+    return true;
   }
 
   void update(SDL_Event &event) {
@@ -410,106 +792,52 @@ public:
       case SDL_MOUSEMOTION:
         mousePosition.x = event.motion.x;
         mousePosition.y = event.motion.y;
-        for (auto& button : synthSelectRadioGroup) {
-          if ((button.state != UIState::ACTIVE) &&
-              button.shape.contains(mousePosition)) {
-            button.state = UIState::HOVER;
-          } else if (button.state == UIState::HOVER) {
-            button.state = UIState::INACTIVE;
-          }
-        }
+        ui->handleMouseMove(mousePosition);
         break;
       case SDL_MOUSEBUTTONDOWN: {
         mouseDownPosition.x = event.motion.x;
         mouseDownPosition.y = event.motion.y;
 
-        auto selected =
-            DoClickRadioGroup(synthSelectRadioGroup.data(),
-                              synthSelectRadioGroup.size(), mousePosition);
-        if (synthTypes[selected] != synth.type) {
-          synth.setSynthType(synthTypes[selected]);
-        };
-
-     //   for (size_t i = 0; i < keyButtons.size(); ++i) {
-     //     // evaluate clicks
-     //     if (UpdateButton(&keyButtons[i], mousePosition, UIState::ACTIVE)) {
-     //       // play sound
-     //       synth.note(noteListKeys[i], 127);
-     //     }
-     //   }
+        ui->handleMouseDown(mouseDownPosition);
 
         break;
       }
       case SDL_MOUSEBUTTONUP: {
 
-       for (size_t i = 0; i < keyButtons.size(); ++i) {
-         if ((keyButtons[i].state == UIState::ACTIVE)) {
-           keyButtons[i].state = UIState::INACTIVE;
-           synth.note(noteListKeys[i], 0);
-           heldKeys.clear();
-         } else if ((keyButtons[i].state == UIState::HOVER)){
-keyButtons[i].state = UIState::INACTIVE;
-         }
-       }
+        ui->handleMouseUp(mousePosition);
 
         break;
       }
       case SDL_MULTIGESTURE: {
 
-
-
         break;
       }
       case SDL_FINGERMOTION: {
-       auto fingerId =  event.tfinger.fingerId;
-       auto position = vec2f_t { .x= event.tfinger.x*width, .y=event.tfinger.y*height};
-       auto velocity = event.tfinger.pressure * 100 + 17;
-        for (auto button : buttons) {
-          if ((button->state != UIState::ACTIVE) && (button->state != UIState::HOVER)&&
-              button->shape.contains(position)) {
-            button->state = UIState::HOVER;
-          }
-        }
+        auto fingerId = event.tfinger.fingerId;
+        auto position = vec2f_t{.x = event.tfinger.x * width,
+                                .y = event.tfinger.y * height};
+        ui->handleFingerMove(fingerId, position, event.tfinger.pressure);
+        break;
+      }
+      case SDL_FINGERDOWN: {
+        auto fingerId = event.tfinger.fingerId;
+        auto position = vec2f_t{.x = event.tfinger.x * width,
+                                .y = event.tfinger.y * height};
 
-                               break;}
-      case SDL_FINGERDOWN:{
-       auto fingerId =  event.tfinger.fingerId;
-       auto position = vec2f_t { .x= event.tfinger.x*width, .y=event.tfinger.y*height};
-       auto velocity = event.tfinger.pressure * 100 + 17;
-SDL_Log("finger down #%d: %f %f", fingerId, position.x, position.y);
-       for (size_t i = 0; i < keyButtons.size(); ++i) {
-          // evaluate clicks
-          if (UpdateButton(&keyButtons[i], position, UIState::ACTIVE)) {
-            // play sound
-           auto note = noteListKeys[i];
-           heldKeys[fingerId] = i;
-          synth.note(note, velocity);
-          }
-        }
+        ui->handleFingerDown(fingerId, position, event.tfinger.pressure);
 
-       break;
-    }
-      case SDL_FINGERUP:{
+        break;
+      }
+      case SDL_FINGERUP: {
 
-       auto fingerId =  event.tfinger.fingerId;
-       auto position = vec2f_t { .x= event.tfinger.x*width, .y=event.tfinger.y*height};
-SDL_Log("finger up #%d: %f %f", fingerId, position.x, position.y);
-       if(auto buttonIdx = heldKeys[fingerId]){
-         keyButtons[buttonIdx].state = UIState::INACTIVE;
-            synth.note(noteListKeys[buttonIdx], 0);
-            heldKeys.erase(fingerId);
-       }
+        auto fingerId = event.tfinger.fingerId;
+        auto position = vec2f_t{.x = event.tfinger.x * width,
+                                .y = event.tfinger.y * height};
+        SDL_Log("finger up #%ld: %f %f", fingerId, position.x, position.y);
+        ui->handleFingerUp(fingerId, position, event.tfinger.pressure);
 
-       if(heldKeys.size()==0){
-        for (auto& button : keyButtons) {
-          // evaluate clicks
-           button.state = UIState::INACTIVE;
-        }
-
-       }
-
-      break;
-                        }
+        break;
+      }
       case SDL_JOYAXISMOTION: {
         break;
       }
@@ -527,9 +855,13 @@ SDL_Log("finger up #%d: %f %f", fingerId, position.x, position.y);
           physics.gravity = vec2f_t{.x = event.sensor.data[0] * -3,
                                     .y = event.sensor.data[1] * 3};
 
-          synth.setFilterCutoff((event.sensor.data[0] / 9.8) );
-          synth.setSoundSource((event.sensor.data[1] / 9.8));
-          synth.setFilterQuality((event.sensor.data[2] / 9.8));
+          auto accVector =
+              vec2f_t{.x = event.sensor.data[0] * -1, .y = event.sensor.data[1]}
+                  .scale(1.0 / 9.8);
+          ;
+
+          // synth.setSoundSource(accVector.length());
+          sensorMapping.emitEvent(&synth, SensorType::TILT, accVector.length());
 
           break;
         }
@@ -537,6 +869,9 @@ SDL_Log("finger up #%d: %f %f", fingerId, position.x, position.y);
           ss << "sensor: " << sensorName << " " << event.sensor.data[0] << ", "
              << event.sensor.data[1] << ", " << event.sensor.data[2];
           // SDL_LogInfo(0, "%s", ss.str().c_str());
+
+          sensorMapping.emitEvent(&synth, SensorType::SPIN,
+                                  event.sensor.data[2]);
           break;
         }
         default:
@@ -546,6 +881,8 @@ SDL_Log("finger up #%d: %f %f", fingerId, position.x, position.y);
       }
       }
     }
+
+    // aoshd
   }
 
   void updatePhysics(SDL_Event &event) {
@@ -562,15 +899,14 @@ SDL_Log("finger up #%d: %f %f", fingerId, position.x, position.y);
 
     for (auto object : gameObjects) {
     }
-    for (auto button : buttons) {
-      DrawButtonRect(*button, renderer, style);
-      DrawButtonLabel(*button, renderer, style);
-    }
+
+    UIRenderer::drawUI(renderer, ui, style);
+
     SDL_RenderPresent(renderer);
   }
 
 private:
-  const int FRAME_RATE_TARGET =  120;
+  const int FRAME_RATE_TARGET = 120;
   const int FRAME_DELTA_MILLIS = (1.0 / float(FRAME_RATE_TARGET)) * 1000.0;
   const size_t BUFFER_SIZE = 256;
   const float SAMPLE_RATE = 48000;
@@ -586,14 +922,15 @@ private:
   SDL_Joystick *gGameController = NULL;
   std::vector<GameObject *> gameObjects;
   GameObject *wall1, *wall2, *wall3, *wall4;
-  std::vector<Button> keyButtons;
   std::vector<float> noteListKeys;
   std::vector<Button> synthSelectRadioGroup;
   std::vector<SynthesizerType> synthTypes;
 
-  std::vector<Button *> buttons;
-
   Style style;
+  SDL_Texture *menuIcon = NULL;
+  SDL_Texture *synthSelectIcon = NULL;
+
+  UI *ui;
 
   SDL_Color textColor = {20, 20, 20};
   SDL_Color textBackgroundColor = {0, 0, 0};
@@ -607,6 +944,7 @@ private:
   float xDir = 0, yDir = 0;
   SDL_AudioSpec config;
   Synthesizer<float> synth;
+  SensorMapping<float> sensorMapping;
   int lastFrameTime = 0;
   int radius = 50;
   bool renderIsOn = true;
