@@ -87,9 +87,16 @@ struct KeyboardUI {
 
   static constexpr size_t SYNTH_SELECTED_RADIO_GROUP_SIZE = 3;
   static constexpr size_t NUM_KEY_BUTTONS = 24;
-  float notes[NUM_KEY_BUTTONS] = {36, 40, 44, 48, 43, 47, 51, 55,
-                                  50, 54, 58, 62, 57, 61, 65, 69,
-                                  64, 68, 72, 76, 71, 75, 79, 83};
+  // float notes[NUM_KEY_BUTTONS] = {36, 40, 44, 48, 43, 47, 51, 55,
+  //                                 50, 54, 58, 62, 57, 61, 65, 69,
+  //                                 64, 68, 72, 76, 71, 75, 79, 83};
+
+  float notes[NUM_KEY_BUTTONS] = {
+      36,         39,         42,         45,         36 + 5,     39 + 5,
+      42 + 5,     45 + 5,     36 + 2 * 5, 39 + 2 * 5, 42 + 2 * 5, 45 + 2 * 5,
+      36 + 3 * 5, 39 + 3 * 5, 42 + 3 * 5, 45 + 3 * 5, 36 + 4 * 5, 39 + 4 * 5,
+      42 + 4 * 5, 45 + 4 * 5, 36 + 5 * 5, 39 + 5 * 5, 42 + 5 * 5, 45 + 5 * 5,
+  };
   Navigation *navigation = NULL;
   Synthesizer<float> *synth = NULL;
 
@@ -339,7 +346,6 @@ DoMultiSelectClick(MultiSelectMenu *menu, const vec2f_t &position) {
 
       if (DoButtonClick(&button, position)) {
         menu->selected = selected;
-        menu->state = INACTIVE;
         break;
       }
       ++selected;

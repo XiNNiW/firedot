@@ -588,12 +588,12 @@ template <typename sample_t> struct FMSynthesizer {
   }
   inline void setAttackTime(sample_t value) {
     for (auto &voice : voices) {
-      // voice.setAttackTime(value);
+      voice.setAttackTime(value);
     }
   }
   inline void setReleaseTime(sample_t value) {
     for (auto &voice : voices) {
-      // voice.releaseTime = value;
+      voice.releaseTime = value;
     }
   }
 };
