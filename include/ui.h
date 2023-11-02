@@ -11,8 +11,8 @@ struct Button {
   UIState state = INACTIVE;
 };
 
-inline const bool UpdateButton(Button *button, const vec2f_t mousePosition,
-                               const UIState newState) {
+inline const bool DoButtonClick(Button *button, const vec2f_t mousePosition,
+                                const UIState newState) {
   if (button->shape.contains(mousePosition)) {
     button->state = newState;
     return true;
@@ -20,6 +20,19 @@ inline const bool UpdateButton(Button *button, const vec2f_t mousePosition,
   return false;
 }
 
+inline const bool DoButtonClick(Button *button, const vec2f_t mousePosition) {
+  if (button->shape.contains(mousePosition)) {
+    return true;
+  };
+  return false;
+}
+
+static void DoButtonHover(Button *button, const vec2f_t &position) {
+  if ((button->state != UIState::ACTIVE) && (button->state != UIState::HOVER) &&
+      button->shape.contains(position)) {
+    button->state = UIState::HOVER;
+  }
+}
 inline const int DoClickRadioGroup(Button *buttons, const size_t &numButtons,
 
                                    const vec2f_t &mousePosition) {
@@ -102,8 +115,8 @@ inline const void DrawButton(const Button &button, SDL_Texture *buttonTexture,
   SDL_RenderCopy(renderer, buttonTexture, NULL, &destRect);
 }
 
-inline const void DrawButtonRect(const Button &button, SDL_Renderer *renderer,
-                                 const Style &style) {
+inline const void DrawButton(const Button &button, SDL_Renderer *renderer,
+                             const Style &style) {
   auto rect = SDL_Rect{
       .x = static_cast<int>(button.shape.position.x - button.shape.halfSize.x),
       .y = static_cast<int>(button.shape.position.y - button.shape.halfSize.y),
@@ -113,9 +126,32 @@ inline const void DrawButtonRect(const Button &button, SDL_Renderer *renderer,
 
   SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 
-  SDL_RenderDrawRect(renderer, &rect);
+  // SDL_RenderDrawRect(renderer, &rect);
   SDL_RenderFillRect(renderer, &rect);
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+
+  auto textColor = style.getButtonLabelColor(button);
+  auto labelText = button.labelText.c_str();
+
+  if (button.labelText.length() > 0) {
+
+    auto textSurface =
+        TTF_RenderUTF8_LCD(style.font, labelText, textColor, color);
+
+    if (textSurface != NULL) {
+      auto textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+      SDL_Rect textSrcRect =
+          SDL_Rect{.x = 0, .y = 0, .w = textSurface->w, .h = textSurface->h};
+
+      auto textDestRect = textSrcRect;
+      textDestRect.x = rect.x;
+      textDestRect.y = rect.y;
+
+      SDL_RenderCopy(renderer, textTexture, &textSrcRect, &textDestRect);
+      SDL_FreeSurface(textSurface);
+      SDL_DestroyTexture(textTexture);
+    }
+  }
 }
 
 inline const void DrawButtonLabel(const Button &button, SDL_Renderer *renderer,

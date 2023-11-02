@@ -416,11 +416,30 @@ template <typename sample_t> struct FMOperator {
 
 template <typename sample_t> struct FM4OpVoice {
 
-  sample_t modMatrix[4][4] = {
-      {0, 1, 1, 1}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
+  static const size_t NUM_RATIOS = 8;
+  sample_t ratios[NUM_RATIOS][4] = {{1.0, 1.0 / 64.0, 2.0, 1.0 / 16.0},
+                                    {1.0, 3.0 / 32.0, 1.5, 2.0},
+                                    {1.0, 1.0 / 8.0, 1.0, 5.0 / 8.0},
+                                    {1.0, 5.0 / 16.0, 1.0 / 2.0, 4.0},
+                                    {1.0, 0.5, 3.0 / 4.0, 1.75},
+                                    {1.0, 5.0 / 8.0, 1.0 / 4.0, 7.0 / 16.0},
+                                    {1.0, 1.0, 5.0 / 32.0, 3.5},
+                                    {1.0, 2.0, 1.0 / 32.0, 1.0}};
 
-  sample_t ratio1 = sample_t(1), ratio2 = sample_t(2), ratio3 = sample_t(3),
-           ratio4 = sample_t(2.0 / 3.0);
+  static const size_t NUM_ALGS = 8;
+  sample_t topologies[NUM_ALGS][4][4] = {
+      {{1, 0, 0, 0}, {1, 0, 0, 0}, {1, 0, 0, 0}, {1, 0, 0, 0}},
+      {{1, 0, 0, 0}, {1, 0, 0, 0}, {0, 1, 0, 0}, {0, 1, 0, 0}},
+      {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 1, 0, 0}, {0, 1, 0, 0}},
+      {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {1, 1, 1, 0}},
+      {{1, 0, 0, 0}, {1, 0, 0, 0}, {1, 0, 0, 0}, {0, 1, 0, 0}},
+      {{1, 0, 0, 0}, {1, 0, 0, 0}, {1, 0, 0, 0}, {0, 0, 1, 0}},
+      {{1, 0, 0, 0}, {1, 0, 0, 0}, {0, 1, 0, 0}, {1, 0, 0, 0}},
+      {{1, 0, 0, 0}, {1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}},
+  };
+
+  size_t activeTopology = 0;
+  size_t activeRatio = 0;
 
   sample_t outputLevels[4] = {1, 0, 0, 0};
 
@@ -438,23 +457,27 @@ template <typename sample_t> struct FM4OpVoice {
 
     auto nextFrequency = frequency.next();
 
-    op1.setFrequency(nextFrequency * ratio1);
-    op2.setFrequency(nextFrequency * ratio2);
-    op3.setFrequency(nextFrequency * ratio3);
-    op4.setFrequency(nextFrequency * ratio4);
+    op1.setFrequency(nextFrequency * ratios[activeRatio][0]);
+    op2.setFrequency(nextFrequency * ratios[activeRatio][1]);
+    op3.setFrequency(nextFrequency * ratios[activeRatio][2]);
+    op4.setFrequency(nextFrequency * ratios[activeRatio][3]);
 
-    sample_t mod1 =
-        index * (op1.last * modMatrix[0][0] + op2.last * modMatrix[0][1] +
-                 op3.last * modMatrix[0][2] + op4.last * modMatrix[0][3]);
-    sample_t mod2 =
-        index * (op1.last * modMatrix[1][0] + op2.last * modMatrix[1][1] +
-                 op3.last * modMatrix[1][2] + op4.last * modMatrix[1][3]);
-    sample_t mod3 =
-        index * (op1.last * modMatrix[2][0] + op2.last * modMatrix[2][1] +
-                 op3.last * modMatrix[2][2] + op4.last * modMatrix[2][3]);
-    sample_t mod4 =
-        index * (op1.last * modMatrix[3][0] + op2.last * modMatrix[3][1] +
-                 op3.last * modMatrix[3][2] + op4.last * modMatrix[3][3]);
+    sample_t mod1 = index * (op1.last * topologies[activeTopology][0][0] +
+                             op2.last * topologies[activeTopology][0][1] +
+                             op3.last * topologies[activeTopology][0][2] +
+                             op4.last * topologies[activeTopology][0][3]);
+    sample_t mod2 = index * (op1.last * topologies[activeTopology][1][0] +
+                             op2.last * topologies[activeTopology][1][1] +
+                             op3.last * topologies[activeTopology][1][2] +
+                             op4.last * topologies[activeTopology][1][3]);
+    sample_t mod3 = index * (op1.last * topologies[activeTopology][2][0] +
+                             op2.last * topologies[activeTopology][2][1] +
+                             op3.last * topologies[activeTopology][2][2] +
+                             op4.last * topologies[activeTopology][2][3]);
+    sample_t mod4 = index * (op1.last * topologies[activeTopology][3][0] +
+                             op2.last * topologies[activeTopology][3][1] +
+                             op3.last * topologies[activeTopology][3][2] +
+                             op4.last * topologies[activeTopology][3][3]);
     sample_t out =
         op1.next(mod1) * outputLevels[0] + op2.next(mod2) * outputLevels[1] +
         op2.next(mod3) * outputLevels[2] + op4.next(mod4) * outputLevels[3];
@@ -477,24 +500,6 @@ template <typename sample_t> struct FMSynthesizer {
   static const size_t MAX_VOICES = 8;
   size_t voiceIndex = 0;
 
-  static const size_t NUM_RATIOS = 8;
-  sample_t ratios[NUM_RATIOS][8] = {
-      {1.0 / 64.0, 2.0, 1.0 / 16.0}, {3.0 / 32.0, 1.5, 2.0},
-      {1.0 / 8.0, 1.0, 5.0 / 8.0},   {5.0 / 16.0, 1.0 / 2.0, 4.0},
-      {0.5, 3.0 / 4.0, 1.75},        {5.0 / 8.0, 1.0 / 4.0, 7.0 / 16.0},
-      {1.0, 5.0 / 32.0, 3.5},        {2.0, 1.0 / 32.0, 1.0}};
-
-  static const size_t NUM_ALGS = 8;
-  sample_t topologies[NUM_ALGS][4][4] = {
-      {{1, 0, 0, 0}, {1, 0, 0, 0}, {1, 0, 0, 0}, {1, 0, 0, 0}},
-      {{1, 0, 0, 0}, {1, 0, 0, 0}, {0, 1, 0, 0}, {0, 1, 0, 0}},
-      {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 1, 0, 0}, {0, 1, 0, 0}},
-      {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {1, 1, 1, 0}},
-      {{1, 0, 0, 0}, {1, 0, 0, 0}, {1, 0, 0, 0}, {0, 1, 0, 0}},
-      {{1, 0, 0, 0}, {1, 0, 0, 0}, {1, 0, 0, 0}, {0, 0, 1, 0}},
-      {{1, 0, 0, 0}, {1, 0, 0, 0}, {0, 1, 0, 0}, {1, 0, 0, 0}},
-      {{1, 0, 0, 0}, {1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}},
-  };
   FM4OpVoice<sample_t> voices[MAX_VOICES];
   sample_t gain = 1;
   sample_t notes[MAX_VOICES] = {-1, -1, -1, -1, -1, -1, -1, -1};
@@ -551,19 +556,19 @@ template <typename sample_t> struct FMSynthesizer {
   }
   inline void setFilterQuality(sample_t value) {
     value = clamp<sample_t>(value, 0, 1);
-    int index = floor(value * (NUM_RATIOS - 1));
-    auto ratioSet = ratios[index];
+    int index = floor(value * (FM4OpVoice<sample_t>::NUM_RATIOS - 1));
 
     for (auto &voice : voices) {
-      voice.ratio2 = ratioSet[0];
-      voice.ratio3 = ratioSet[1];
-      voice.ratio4 = ratioSet[2];
+      voice.activeRatio = index;
     }
   }
   inline void setSoundSource(sample_t value) {
-    // value = clamp<sample_t>(value, 0, 1);
-    // sample_t amount = value * (NUM_ALGS - 1);
-    // int index = floor(amount);
+    value = clamp<sample_t>(value, 0, 1);
+    sample_t amount = value * (FM4OpVoice<sample_t>::NUM_ALGS - 1);
+    int index = floor(amount);
+    for (auto &voice : voices) {
+      voice.activeTopology = index;
+    }
     // auto mantissa = amount - sample_t(index);
     // auto formation0 = topologies[index];
     // auto formation1 = topologies[(index + 1) % NUM_ALGS];
@@ -597,19 +602,37 @@ template <typename sample_t> struct NoteEvent {
   sample_t velocity;
 };
 
+enum ParameterType {
+  GAIN,
+  SOUND_SOURCE,
+  FILTER_CUTOFF,
+  FILTER_QUALITY,
+  ATTACK_TIME,
+  RELEASE_TIME
+};
+
+static const size_t NUM_PARAMETER_TYPES = 6;
+static_assert(RELEASE_TIME == NUM_PARAMETER_TYPES - 1,
+              "synth type table and enum must agree");
+static const ParameterType ParameterTypes[NUM_PARAMETER_TYPES] = {
+    GAIN,           SOUND_SOURCE, FILTER_CUTOFF,
+    FILTER_QUALITY, ATTACK_TIME,  RELEASE_TIME};
+static const char *ParameterTypeDisplayNames[NUM_PARAMETER_TYPES] = {
+    "gain",           "sound source", "filter cutoff",
+    "filter quality", "attack time",  "release time"};
+
 template <typename sample_t> struct ParameterChangeEvent {
-  enum ParameterType {
-    GAIN,
-    SOUND_SOURCE,
-    FILTER_CUTOFF,
-    FILTER_QUALITY,
-    ATTACK_TIME,
-    RELEASE_TIME
-  } type;
+  ParameterType type;
   sample_t value;
 };
 
 enum SynthesizerType { SUBTRACTIVE, PHYSICAL_MODEL, FREQUENCY_MODULATION };
+static const size_t NUM_SYNTH_TYPES = 3;
+static_assert(FREQUENCY_MODULATION == NUM_SYNTH_TYPES - 1,
+              "synth type table and enum must agree");
+static const SynthesizerType SynthTypes[NUM_SYNTH_TYPES] = {
+    SynthesizerType::SUBTRACTIVE, SynthesizerType::PHYSICAL_MODEL,
+    SynthesizerType::FREQUENCY_MODULATION};
 
 template <typename sample_t> struct SynthesizerEvent {
   enum EventType { NOTE, PARAMETER_CHANGE, SYNTHESIZER_CHANGE } type;
@@ -763,27 +786,27 @@ template <typename sample_t> struct Synthesizer {
       case SynthesizerEvent<sample_t>::PARAMETER_CHANGE: {
         auto value = event.data.paramChange.value;
         switch (event.data.paramChange.type) {
-        case ParameterChangeEvent<sample_t>::GAIN: {
+        case GAIN: {
           gain.set(value, 32, sampleRate);
           break;
         }
-        case ParameterChangeEvent<sample_t>::SOUND_SOURCE: {
+        case SOUND_SOURCE: {
           soundSource.set(value, 32, sampleRate);
           break;
         }
-        case ParameterChangeEvent<sample_t>::FILTER_CUTOFF: {
+        case FILTER_CUTOFF: {
           filterCutoff.set(value, 32, sampleRate);
           break;
         }
-        case ParameterChangeEvent<sample_t>::FILTER_QUALITY: {
+        case FILTER_QUALITY: {
           filterQuality.set(value, 32, sampleRate);
           break;
         }
-        case ParameterChangeEvent<sample_t>::ATTACK_TIME: {
+        case ATTACK_TIME: {
           attackTime.set(value, 32, sampleRate);
           break;
         }
-        case ParameterChangeEvent<sample_t>::RELEASE_TIME: {
+        case RELEASE_TIME: {
           releaseTime.set(value, 32, sampleRate);
           break;
         }
@@ -798,8 +821,8 @@ template <typename sample_t> struct Synthesizer {
     eventQueue.push(SynthesizerEvent<sample_t>(type));
   }
   inline void setSoundSource(sample_t value) {
-    eventQueue.push(SynthesizerEvent<sample_t>(ParameterChangeEvent<sample_t>{
-        .type = ParameterChangeEvent<sample_t>::SOUND_SOURCE, .value = value}));
+    eventQueue.push(SynthesizerEvent<sample_t>(
+        ParameterChangeEvent<sample_t>{.type = SOUND_SOURCE, .value = value}));
   }
   inline void note(sample_t note, sample_t velocity) {
     auto event = SynthesizerEvent<sample_t>(
@@ -807,34 +830,30 @@ template <typename sample_t> struct Synthesizer {
 
     eventQueue.push(event);
   }
-  inline void pushParameterChangeEvent(
-      typename ParameterChangeEvent<sample_t>::ParameterType type,
-      sample_t value) {
+  inline void pushParameterChangeEvent(ParameterType type, sample_t value) {
     eventQueue.push(SynthesizerEvent<sample_t>(
         ParameterChangeEvent<sample_t>{.type = type, .value = value}));
   }
 
   inline void setGain(sample_t value) {
-    eventQueue.push(SynthesizerEvent<sample_t>(ParameterChangeEvent<sample_t>{
-        .type = ParameterChangeEvent<sample_t>::GAIN, .value = value}));
+    eventQueue.push(SynthesizerEvent<sample_t>(
+        ParameterChangeEvent<sample_t>{.type = GAIN, .value = value}));
   }
 
   inline void setFilterCutoff(sample_t value) {
-    eventQueue.push(SynthesizerEvent<sample_t>(ParameterChangeEvent<sample_t>{
-        .type = ParameterChangeEvent<sample_t>::FILTER_CUTOFF,
-        .value = value}));
+    eventQueue.push(SynthesizerEvent<sample_t>(
+        ParameterChangeEvent<sample_t>{.type = FILTER_CUTOFF, .value = value}));
   }
   inline void setFilterQuality(sample_t value) {
     eventQueue.push(SynthesizerEvent<sample_t>(ParameterChangeEvent<sample_t>{
-        .type = ParameterChangeEvent<sample_t>::FILTER_QUALITY,
-        .value = value}));
+        .type = FILTER_QUALITY, .value = value}));
   }
   inline void setAttackTime(sample_t value) {
-    eventQueue.push(SynthesizerEvent<sample_t>(ParameterChangeEvent<sample_t>{
-        .type = ParameterChangeEvent<sample_t>::ATTACK_TIME, .value = value}));
+    eventQueue.push(SynthesizerEvent<sample_t>(
+        ParameterChangeEvent<sample_t>{.type = ATTACK_TIME, .value = value}));
   }
   inline void setReleaseTime(sample_t value) {
-    eventQueue.push(SynthesizerEvent<sample_t>(ParameterChangeEvent<sample_t>{
-        .type = ParameterChangeEvent<sample_t>::RELEASE_TIME, .value = value}));
+    eventQueue.push(SynthesizerEvent<sample_t>(
+        ParameterChangeEvent<sample_t>{.type = RELEASE_TIME, .value = value}));
   }
 };

@@ -49,20 +49,18 @@
 
 enum IconType { MENU, SYNTH_SELECT };
 
-static const size_t NUM_SYNTH_TYPES = 3;
-static const SynthesizerType synthTypes[NUM_SYNTH_TYPES] = {
-    SynthesizerType::SUBTRACTIVE, SynthesizerType::PHYSICAL_MODEL,
-    SynthesizerType::FREQUENCY_MODULATION};
-
 enum SensorType { TILT, SPIN };
+static const size_t NUM_SENSOR_TYPES = 2;
+static_assert(SPIN == NUM_SENSOR_TYPES - 1, "enum and table size must agree");
+static const SensorType SensorTypes[NUM_SENSOR_TYPES] = {TILT, SPIN};
+static const char *SensorTypesDisplayNames[NUM_SENSOR_TYPES] = {"tilt", "spin"};
 
 template <typename sample_t> struct SensorMapping {
-  std::set<std::pair<SensorType,
-                     typename ParameterChangeEvent<sample_t>::ParameterType>>
-      mapping;
+  // std::set<std::pair<SensorType, ParameterType>> mapping;
+  std::map<SensorType, ParameterType> mapping;
 
   inline void emitEvent(Synthesizer<sample_t> *synth, SensorType type,
-                        float value) {
+                        sample_t value) {
     for (auto &pair : mapping) {
       auto sensorType = pair.first;
       auto parameterEventType = pair.second;
@@ -72,36 +70,43 @@ template <typename sample_t> struct SensorMapping {
     }
   }
 
-  inline void
-  addMapping(SensorType sensorType,
-             typename ParameterChangeEvent<sample_t>::ParameterType paramType) {
-    mapping.insert(std::pair(sensorType, paramType));
+  inline void addMapping(SensorType sensorType, ParameterType paramType) {
+    // mapping.insert(std::pair(sensorType, paramType));
+    mapping[sensorType] = paramType;
   }
 
-  inline void removeMapping(
-      SensorType sensorType,
-      typename ParameterChangeEvent<sample_t>::ParameterType paramType) {
-    mapping.erase(std::pair(sensorType, paramType));
+  inline void removeMapping(SensorType sensorType, ParameterType paramType) {
+    // mapping.erase(std::pair(sensorType, paramType));
+    mapping.erase(sensorType);
   }
 };
+struct Navigation {
+  enum Page { KEYBOARD, MAPPING } page = KEYBOARD;
+};
+struct KeyboardUI {
 
-enum UIPage { KEYBOARD, MAPPING };
-
-struct KeyboardWidget {
   static constexpr size_t SYNTH_SELECTED_RADIO_GROUP_SIZE = 3;
   static constexpr size_t NUM_KEY_BUTTONS = 24;
+  float notes[NUM_KEY_BUTTONS] = {36, 40, 44, 48, 43, 47, 51, 55,
+                                  50, 54, 58, 62, 57, 61, 65, 69,
+                                  64, 68, 72, 76, 71, 75, 79, 83};
+  Navigation *navigation = NULL;
+  Synthesizer<float> *synth = NULL;
+
+  std::map<SDL_FingerID, int> heldKeys;
+
   Button menuButton;
   Button synthSelectRadioGroup[SYNTH_SELECTED_RADIO_GROUP_SIZE];
   Button keyButtons[NUM_KEY_BUTTONS];
 
-  template <typename sample_t>
-  inline void buildLayout(const float width, const float height,
-                          const std::array<sample_t, NUM_KEY_BUTTONS> &notes) {
-
+  float synthSelectWidth = 50;
+  float synthSelectHeight = 50;
+  float buttonMargin = 5;
+  void buildLayout(const float width, const float height) {
     auto pageMargin = 50;
     auto radiobuttonMargin = 10;
-    auto synthSelectWidth = width / 6;
-    auto synthSelectHeight = width / 8.0;
+    synthSelectWidth = width / 6;
+    synthSelectHeight = width / 8.0;
 
     std::array<std::string, NUM_SYNTH_TYPES> synthTypeLabels = {"sub", "phys",
                                                                 "fm"};
@@ -131,12 +136,11 @@ struct KeyboardWidget {
                 vec2f_t{.x = static_cast<float>(synthSelectWidth / 2),
                         .y = static_cast<float>(synthSelectHeight / 2)}}};
 
-    auto buttonMargin = 5;
     auto topBarHeight = synthSelectHeight + (1.5 * buttonMargin) + pageMargin;
     auto keySize = width / 4.5;
     auto keyboardStartPositionX = 100;
 
-    for (size_t i = 0; i < notes.size(); ++i) {
+    for (size_t i = 0; i < NUM_KEY_BUTTONS; ++i) {
 
       keyButtons[i] = Button{
           .labelText = "",
@@ -151,51 +155,24 @@ struct KeyboardWidget {
               .halfSize = vec2f_t{.x = static_cast<float>(keySize / 2),
                                   .y = static_cast<float>(keySize / 2)}}};
     }
+  }
 
+  inline void handleFingerMove(const SDL_FingerID &fingerId,
+                               const vec2f_t &position, const float pressure) {
+    for (auto &button : synthSelectRadioGroup) {
+      DoButtonHover(&button, position);
+    }
     for (auto &button : keyButtons) {
-      allButtons.push_back(&button);
+      DoButtonHover(&button, position);
     }
+    DoButtonHover(&menuButton, position);
   }
 
-  inline void draw(SDL_Renderer *renderer, const Style &style) {
-    DrawButtonRect(backButton, renderer, style);
-    DrawButtonLabel(backButton, renderer, style);
-  }
-};
-
-struct KeyboardController {
-
-  std::map<SDL_FingerID, int> heldKeys;
-  void (*navigateToMenuPage)(void);
-
-  KeyboardController(void (*_navigateToMenuPage)(void))
-      : navigateToMenuPage(_navigateToMenuPage) {}
-
-  template <typename sample_t>
-  inline void handleFingerMove(KeyboardWidget *keyboardWidget,
-                               Synthesizer<sample_t> *synth,
-                               const std::vector<sample_t> &notes,
-                               const SDL_FingerID &fingerId,
+  inline void handleFingerDown(const SDL_FingerID &fingerId,
                                const vec2f_t &position, const float pressure) {
-    for (auto button : keyboardWidget->getAllWidgets()) {
-      if ((button->state != UIState::ACTIVE) &&
-          (button->state != UIState::HOVER) &&
-          button->shape.contains(position)) {
-        button->state = UIState::HOVER;
-      }
-    }
-  }
-
-  template <typename sample_t>
-  inline void handleFingerDown(KeyboardWidget *keyboardWidget,
-                               Synthesizer<sample_t> *synth,
-                               const std::vector<sample_t> &notes,
-                               const SDL_FingerID &fingerId,
-                               const vec2f_t &position, const float pressure) {
-    for (size_t i = 0; i < keyboardWidget->keyButtons.size(); ++i) {
+    for (size_t i = 0; i < NUM_KEY_BUTTONS; ++i) {
       // evaluate clicks
-      if (UpdateButton(&keyboardWidget->keyButtons[i], position,
-                       UIState::ACTIVE)) {
+      if (DoButtonClick(&keyButtons[i], position, UIState::ACTIVE)) {
         // play sound
         auto note = notes[i];
         heldKeys[fingerId] = i;
@@ -204,33 +181,24 @@ struct KeyboardController {
     }
   }
 
-  template <typename sample_t>
-  inline void handleFingerUp(KeyboardWidget *keyboardWidget,
-                             Synthesizer<sample_t> *synth,
-                             const std::vector<sample_t> &notes,
-                             const SDL_FingerID &fingerId,
+  inline void handleFingerUp(const SDL_FingerID &fingerId,
                              const vec2f_t &position, const float pressure) {
 
     if (auto buttonIdx = heldKeys[fingerId]) {
-      keyboardWidget->keyButtons[buttonIdx].state = UIState::INACTIVE;
+      keyButtons[buttonIdx].state = UIState::INACTIVE;
       synth->note(notes[buttonIdx], 0);
       heldKeys.erase(fingerId);
     }
 
     if (heldKeys.size() == 0) {
-      for (auto &button : keyboardWidget->keyButtons) {
-        // evaluate clicks
+      for (auto &button : keyButtons) {
         button.state = UIState::INACTIVE;
       }
     }
   }
 
-  template <typename sample_t>
-  inline void handleMouseMove(KeyboardWidget *keyboardWidget,
-                              Synthesizer<sample_t> *synth,
-                              const std::vector<sample_t> &notes,
-                              const vec2f_t &mousePosition) {
-    for (auto &button : keyboardWidget->synthSelectRadioGroup) {
+  inline void handleMouseMove(const vec2f_t &mousePosition) {
+    for (auto &button : synthSelectRadioGroup) {
       if ((button.state != UIState::ACTIVE) &&
           button.shape.contains(mousePosition)) {
         button.state = UIState::HOVER;
@@ -240,20 +208,15 @@ struct KeyboardController {
     }
   }
 
-  template <typename sample_t>
-  inline void handleMouseDown(KeyboardWidget *keyboardWidget,
-                              Synthesizer<sample_t> *synth,
-                              const std::vector<sample_t> &notes,
-                              const vec2f_t &mousePosition) {
+  inline void handleMouseDown(const vec2f_t &mousePosition) {
     auto selected = DoClickRadioGroup(
-        keyboardWidget->synthSelectRadioGroup,
-        KeyboardWidget::SYNTH_SELECTED_RADIO_GROUP_SIZE, mousePosition);
-    if (synthTypes[selected] != synth->type) {
-      synth->setSynthType(synthTypes[selected]);
+        synthSelectRadioGroup, SYNTH_SELECTED_RADIO_GROUP_SIZE, mousePosition);
+    if (SynthTypes[selected] != synth->type) {
+      synth->setSynthType(SynthTypes[selected]);
     };
 
-    if (UpdateButton(&keyboardWidget->menuButton, mousePosition, ACTIVE)) {
-      navigateToMenuPage();
+    if (DoButtonClick(&menuButton, mousePosition, ACTIVE)) {
+      navigation->page = Navigation::MAPPING;
     };
 
     //  for (size_t i = 0; i < keyboardWidget->keyButtons.size(); ++i) {
@@ -266,174 +229,274 @@ struct KeyboardController {
     //  }
   }
 
-  template <typename sample_t>
-  inline void handleMouseUp(KeyboardWidget *keyboardWidget,
-                            Synthesizer<sample_t> *synth,
-                            const std::vector<sample_t> &notes,
-                            const vec2f_t &mousePosition) {
+  inline void handleMouseUp(const vec2f_t &mousePosition) {
 
-    for (size_t i = 0; i < keyboardWidget->keyButtons.size(); ++i) {
-      if (keyboardWidget->keyButtons[i].state == UIState::ACTIVE) {
-        keyboardWidget->keyButtons[i].state = UIState::INACTIVE;
+    menuButton.state = INACTIVE;
+
+    for (size_t i = 0; i < NUM_KEY_BUTTONS; ++i) {
+      if (keyButtons[i].state == UIState::ACTIVE) {
+        keyButtons[i].state = UIState::INACTIVE;
         synth->note(notes[i], 0);
         heldKeys.clear();
-      } else if (keyboardWidget->keyButtons[i].state == UIState::HOVER) {
-        keyboardWidget->keyButtons[i].state = UIState::INACTIVE;
+      } else if (keyButtons[i].state == UIState::HOVER) {
+        keyButtons[i].state = UIState::INACTIVE;
+      }
+    }
+  }
+
+  inline void draw(SDL_Renderer *renderer, const Style &style) {
+    DrawButton(menuButton, renderer, style);
+
+    auto radiogroupBackgroundRect = SDL_Rect{
+        .x = static_cast<int>(synthSelectRadioGroup[0].shape.position.x -
+                              synthSelectRadioGroup[0].shape.halfSize.x - 5),
+        .y = static_cast<int>(synthSelectRadioGroup[0].shape.position.y -
+                              synthSelectRadioGroup[0].shape.halfSize.y - 5),
+        .w = static_cast<int>(
+            (synthSelectWidth + buttonMargin) * NUM_SYNTH_TYPES + 15),
+        .h = static_cast<int>(synthSelectHeight + 10)};
+    SDL_SetRenderDrawColor(renderer, style.hoverColor.r, style.hoverColor.g,
+                           style.hoverColor.b, style.hoverColor.a);
+    SDL_RenderFillRect(renderer, &radiogroupBackgroundRect);
+    for (size_t i = 0; i < NUM_SYNTH_TYPES; i++) {
+      DrawButton(synthSelectRadioGroup[i], renderer, style);
+    }
+
+    for (size_t i = 0; i < NUM_KEY_BUTTONS; i++) {
+      DrawButton(keyButtons[i], renderer, style);
+    }
+  }
+};
+
+struct MultiSelectMenu {
+  enum Action { NOTHING, MENU_OPEN_CLICKED, MENU_SELECTION_CHANGED };
+  UIState state = INACTIVE;
+  float width = 500, height = 500, topMargin = 50, sideMargin = 15,
+        titleBarHeight = 100;
+  size_t selected = 0;
+  Button closeButton;
+  Button menuButton;
+  std::string menuLabel;
+  std::vector<Button> options;
+
+  inline void buildLayout(const float _width, const float _height) {
+    width = _width;
+    height = _height;
+    rebuildLayout();
+  }
+  inline void rebuildLayout() {
+    auto numOptions = options.size();
+    auto menuHeight = height - 2 * topMargin - titleBarHeight;
+    auto menuWidth = width - 2 * sideMargin;
+    auto menuCenter = vec2f_t{.x = static_cast<float>(width / 2.0),
+                              .y = static_cast<float>(height / 2.0)};
+
+    auto closeButtonSize = vec2f_t{.x = static_cast<float>(width / 8.0),
+                                   .y = static_cast<float>(height / 12.0)};
+    closeButton =
+        Button{.labelText = "<- close",
+               .shape = AxisAlignedBoundingBox{
+                   .position = {.x = static_cast<float>(
+                                    sideMargin + closeButtonSize.x / 2.0),
+                                .y = static_cast<float>(
+                                    topMargin + closeButtonSize.y / 2.0)},
+                   .halfSize = closeButtonSize.scale(0.5)}};
+
+    for (size_t i = 0; i < numOptions; ++i) {
+      auto buttonSize = vec2f_t{.x = menuWidth, .y = menuHeight / numOptions};
+      auto buttonPosition =
+          vec2f_t{.x = static_cast<float>(width / 2.0),
+                  .y = static_cast<float>((i * buttonSize.y) + titleBarHeight +
+                                          topMargin + buttonSize.y / 2.0)};
+      options[i].shape = AxisAlignedBoundingBox{
+          .position = buttonPosition, .halfSize = buttonSize.scale(0.5)};
+      if (i == selected) {
+        options[i].state = ACTIVE;
+      }
+    }
+  }
+  inline void setOptions(const std::vector<Button> &optionButtons) {
+    options = optionButtons;
+    rebuildLayout();
+  }
+};
+
+inline static MultiSelectMenu::Action
+DoMultiSelectClick(MultiSelectMenu *menu, const vec2f_t &position) {
+  if (menu->state != ACTIVE && menu->menuButton.shape.contains(position)) {
+    menu->state = ACTIVE;
+    return MultiSelectMenu::MENU_OPEN_CLICKED;
+  } else if (menu->state == ACTIVE) {
+
+    if (DoButtonClick(&menu->closeButton, position)) {
+      menu->state = INACTIVE;
+      return MultiSelectMenu::NOTHING;
+    }
+
+    size_t selected = 0;
+    auto previousSelection = menu->selected;
+    for (auto &button : menu->options) {
+
+      if (DoButtonClick(&button, position)) {
+        menu->selected = selected;
+        menu->state = INACTIVE;
+        break;
+      }
+      ++selected;
+    }
+    if (menu->selected != previousSelection) {
+      for (size_t i = 0; i < menu->options.size(); ++i) {
+        if (i == menu->selected) {
+          menu->options[i].state = ACTIVE;
+        } else {
+          menu->options[i].state = INACTIVE;
+        }
+      }
+      return MultiSelectMenu::MENU_SELECTION_CHANGED;
+    }
+  }
+  return MultiSelectMenu::NOTHING;
+}
+
+inline static void DrawMultiSelectMenu(const MultiSelectMenu &menu,
+                                       SDL_Renderer *renderer,
+                                       const Style &style) {
+  if (menu.state == ACTIVE) {
+
+    auto screenRect = SDL_Rect{.x = 0,
+                               .y = 0,
+                               .w = static_cast<int>(menu.width),
+                               .h = static_cast<int>(menu.height)};
+
+    SDL_SetRenderDrawColor(renderer, style.inactiveColor.r,
+                           style.inactiveColor.g, style.inactiveColor.b, 0xb0);
+    SDL_RenderFillRect(renderer, &screenRect);
+    DrawButton(menu.closeButton, renderer, style);
+    for (auto &button : menu.options) {
+      DrawButton(button, renderer, style);
+    }
+  } else {
+    DrawButton(menu.menuButton, renderer, style);
+  }
+}
+
+struct MappingUI {
+  Button backButton;
+  MultiSelectMenu sensorMenus[NUM_SENSOR_TYPES];
+
+  SensorMapping<float> *sensorMapping = NULL;
+  Navigation *navigation = NULL;
+
+  float titleBarHeight = 100;
+  float sideMargin = 15;
+  float topMargin = 50;
+
+  void buildLayout(const float width, const float height) {
+    auto backButtonSize = vec2f_t{
+        .x = static_cast<float>(width / 8.0),
+        .y = static_cast<float>(width / 16.0),
+    };
+    backButton = Button{
+        .labelText = "<- back",
+        .shape = AxisAlignedBoundingBox{
+            .position = {.x = static_cast<float>(backButtonSize.x / 2.0),
+                         .y = static_cast<float>(backButtonSize.y / 2.0)},
+            .halfSize = backButtonSize.scale(0.5)}};
+
+    std::vector<Button> options;
+    for (size_t i = 0; i < NUM_PARAMETER_TYPES; ++i) {
+      options.push_back(Button{.labelText = ParameterTypeDisplayNames[i]});
+    }
+
+    auto menuButtonSize =
+        vec2f_t{.x = width - 2 * sideMargin,
+                .y = (height - 2 * topMargin - titleBarHeight) /
+                     float(NUM_SENSOR_TYPES)};
+    auto menuButtonHalfSize = menuButtonSize.scale(0.5);
+    for (auto &sensorType : SensorTypes) {
+
+      sensorMenus[sensorType] = MultiSelectMenu{
+          .selected = sensorMapping->mapping[sensorType],
+          .menuButton =
+              Button{.labelText = SensorTypesDisplayNames[sensorType],
+                     .shape =
+                         AxisAlignedBoundingBox{
+                             .position = {.x = static_cast<float>(width / 2.0),
+                                          .y = sensorType * menuButtonSize.y +
+                                               menuButtonHalfSize.y +
+                                               topMargin + titleBarHeight},
+                             .halfSize = menuButtonHalfSize.scale(0.5)}},
+          .options = options,
+      };
+      sensorMenus[sensorType].buildLayout(width, height);
+    }
+  }
+
+  inline void handleMouseMove(const vec2f_t &mousePosition) {
+
+    DoButtonHover(&backButton, mousePosition);
+  }
+  inline void handleMouseDown(const vec2f_t &mousePosition) {
+    bool anyMenusActive = false;
+
+    for (auto &sensorType : SensorTypes) {
+      auto &menu = sensorMenus[sensorType];
+      if (menu.state == ACTIVE) {
+        anyMenusActive = true;
+      }
+
+      auto previousSelection = menu.selected;
+      switch (DoMultiSelectClick(&menu, mousePosition)) {
+      case MultiSelectMenu::MENU_OPEN_CLICKED:
+        break;
+      case MultiSelectMenu::MENU_SELECTION_CHANGED:
+        sensorMapping->removeMapping(TILT, ParameterTypes[previousSelection]);
+        sensorMapping->addMapping(TILT, ParameterTypes[menu.selected]);
+        break;
+      case MultiSelectMenu::NOTHING:
+        break;
+      }
+    }
+
+    if (!anyMenusActive && DoButtonClick(&backButton, mousePosition)) {
+      navigation->page = Navigation::KEYBOARD;
+    }
+  }
+  inline void handleMouseUp(const vec2f_t &mousePosition) {
+    backButton.state = INACTIVE;
+  }
+
+  inline void handleFingerMove(const SDL_FingerID &fingerId,
+                               const vec2f_t &position, const float pressure) {}
+  inline void handleFingerDown(const SDL_FingerID &fingerId,
+                               const vec2f_t &position, const float pressure) {}
+  inline void handleFingerUp(const SDL_FingerID &fingerId,
+                             const vec2f_t &position, const float pressure) {}
+
+  inline void draw(SDL_Renderer *renderer, const Style &style) {
+
+    bool anyMenusActive = false;
+    int activeSensorType = 0;
+
+    for (auto &sensorType : SensorTypes) {
+      if (sensorMenus[sensorType].state == ACTIVE) {
+        anyMenusActive = true;
+        activeSensorType = sensorType;
+      }
+    }
+
+    if (anyMenusActive) {
+      DrawMultiSelectMenu(sensorMenus[activeSensorType], renderer, style);
+    } else {
+      DrawButton(backButton, renderer, style);
+      for (auto &menu : sensorMenus) {
+        DrawMultiSelectMenu(menu, renderer, style);
       }
     }
   }
 };
 
-struct KeyboardUI {
-  KeyboardWidget widget;
-  KeyboardController controller;
-  Synthesizer<float> *synth = NULL;
-  std::vector<float> notes = {36, 40, 44, 48, 43, 47, 51, 55, 50, 54, 58, 62,
-                              57, 61, 65, 69, 64, 68, 72, 76, 71, 75, 79, 83};
-
-  KeyboardUI(Synthesizer<float> *_synth, void (*menuButtonCallback)(void))
-      : synth(_synth), controller(KeyboardController(menuButtonCallback)) {}
-
-  void show(const float width, const float height) {
-    widget.buildLayout(width, height, notes);
-  }
-
-  inline void handleMouseMove(const vec2f_t &mousePosition) {
-    controller.handleMouseMove(&widget, synth, notes, mousePosition);
-  }
-  inline void handleMouseDown(const vec2f_t &mousePosition) {
-    controller.handleMouseDown(&widget, synth, notes, mousePosition);
-  }
-  inline void handleMouseUp(const vec2f_t &mousePosition) {
-    controller.handleMouseUp(&widget, synth, notes, mousePosition);
-  }
-
-  inline void handleFingerMove(const SDL_FingerID &fingerId,
-                               const vec2f_t &position, const float pressure) {
-    controller.handleFingerMove(&widget, synth, notes, fingerId, position,
-                                pressure);
-  }
-  inline void handleFingerDown(const SDL_FingerID &fingerId,
-                               const vec2f_t &position, const float pressure) {
-    controller.handleFingerDown(&widget, synth, notes, fingerId, position,
-                                pressure);
-  }
-  inline void handleFingerUp(const SDL_FingerID &fingerId,
-                             const vec2f_t &position, const float pressure) {
-    controller.handleFingerUp(&widget, synth, notes, fingerId, position,
-                              pressure);
-  }
-  inline const std::vector<Button *> &getAllWidgets() {
-    return widget.getAllWidgets();
-  }
-};
-
-struct MappingWidget {
-  Button backButton;
-  Button tiltMappingMenu;
-  std::vector<Button *> allWidgets;
-
-  MappingWidget() {}
-
-  void buildLayout(const float width, const float height) {
-    auto buttonSize = width / 16.0;
-    backButton =
-        Button{.shape = AxisAlignedBoundingBox{
-                   .position = {.x = static_cast<float>(buttonSize / 2.0),
-                                .y = static_cast<float>(buttonSize / 2.0)},
-                   .halfSize = {.x = static_cast<float>(buttonSize / 2.0),
-                                .y = static_cast<float>(buttonSize / 2.0)}}};
-    tiltMappingMenu =
-        Button{.shape = AxisAlignedBoundingBox{
-                   .position = {.x = static_cast<float>(buttonSize / 2.0),
-                                .y = static_cast<float>(buttonSize / 2.0)},
-                   .halfSize = {.x = static_cast<float>(buttonSize / 2.0),
-                                .y = static_cast<float>(buttonSize / 2.0)}}};
-  }
-
-  inline void draw(SDL_Renderer *renderer, const Style &style) {
-    DrawButtonRect(backButton, renderer, style);
-    DrawButtonLabel(backButton, renderer, style);
-  }
-};
-
-struct MappingController {
-  inline void handleMouseMove(MappingWidget *widget,
-                              SensorMapping<float> *mapping,
-                              const vec2f_t &mousePosition) {}
-  inline void handleMouseDown(MappingWidget *widget,
-                              SensorMapping<float> *mapping,
-                              const vec2f_t &mousePosition) {}
-  inline void handleMouseUp(MappingWidget *widget,
-                            SensorMapping<float> *mapping,
-                            const vec2f_t &mousePosition) {}
-
-  inline void handleFingerMove(MappingWidget *widget,
-                               SensorMapping<float> *mapping,
-                               const SDL_FingerID &fingerId,
-                               const vec2f_t &position, const float pressure) {}
-  inline void handleFingerDown(MappingWidget *widget,
-                               SensorMapping<float> *mapping,
-                               const SDL_FingerID &fingerId,
-                               const vec2f_t &position, const float pressure) {}
-  inline void handleFingerUp(MappingWidget *widget,
-                             SensorMapping<float> *mapping,
-                             const SDL_FingerID &fingerId,
-                             const vec2f_t &position, const float pressure) {}
-};
-
-struct MappingUI {
-  MappingWidget widget;
-  MappingController controller;
-  SensorMapping<float> *mapping = NULL;
-
-  MappingUI(SensorMapping<float> *_mapping, void (*backButtonCallback)())
-      : mapping(_mapping), controller() {}
-  void show(const float width, const float height) {
-    widget.buildLayout(width, height);
-  }
-
-  inline void handleMouseMove(const vec2f_t &mousePosition) {
-    controller.handleMouseMove(&widget, mapping, mousePosition);
-  }
-  inline void handleMouseDown(const vec2f_t &mousePosition) {
-    controller.handleMouseDown(&widget, mapping, mousePosition);
-  }
-  inline void handleMouseUp(const vec2f_t &mousePosition) {
-    controller.handleMouseUp(&widget, mapping, mousePosition);
-  }
-
-  inline void handleFingerMove(const SDL_FingerID &fingerId,
-                               const vec2f_t &position, const float pressure) {
-    controller.handleFingerMove(&widget, mapping, fingerId, position, pressure);
-  }
-  inline void handleFingerDown(const SDL_FingerID &fingerId,
-                               const vec2f_t &position, const float pressure) {
-    controller.handleFingerDown(&widget, mapping, fingerId, position, pressure);
-  }
-  inline void handleFingerUp(const SDL_FingerID &fingerId,
-                             const vec2f_t &position, const float pressure) {
-    controller.handleFingerUp(&widget, mapping, fingerId, position, pressure);
-  }
-  inline const std::vector<Button *> &getAllWidgets() {
-    return widget.getAllWidgets();
-  }
-};
-
-struct UIRenderer {
-
-  static inline void drawUI(SDL_Renderer *renderer, UI *ui,
-                            const Style &style) {
-
-    auto allWidgets = ui->getAllWidgets();
-    for (auto button : allWidgets) {
-      DrawButtonRect(*button, renderer, style);
-      DrawButtonLabel(*button, renderer, style);
-    }
-  }
-};
-
-inline const std::optional<SDL_Texture *>
+static inline const std::optional<SDL_Texture *>
 LoadIconTexture(SDL_Renderer *renderer, std::string path) {
   bool success = true;
 
@@ -461,9 +524,7 @@ public:
   }
   Framework(int width_, int height_)
       : height(height_), width(width_),
-        synth(Synthesizer<float>(SubtractiveSynthesizer<float>())) {
-    ;
-  }
+        synth(Synthesizer<float>(SubtractiveSynthesizer<float>())) {}
 
   inline const bool init() {
 
@@ -538,7 +599,7 @@ public:
       return false;
     }
 
-    auto font = TTF_OpenFont("fonts/Roboto-Medium.ttf", 16);
+    auto font = TTF_OpenFont("fonts/Roboto-Medium.ttf", 36);
     if (font == NULL) {
       SDL_LogError(0, "failed to load font: %s\n", SDL_GetError());
       return false;
@@ -622,13 +683,16 @@ public:
     synth.setAttackTime(10.0);
     synth.setReleaseTime(1000.0);
 
-    ui = new KeyboardUI(&synth);
-    ui->show(width, height);
+    sensorMapping.addMapping(TILT, ParameterType::SOUND_SOURCE);
+    sensorMapping.addMapping(SPIN, ParameterType::FILTER_CUTOFF);
 
-    sensorMapping.addMapping(
-        TILT, ParameterChangeEvent<float>::ParameterType::SOUND_SOURCE);
-    sensorMapping.addMapping(
-        SPIN, ParameterChangeEvent<float>::ParameterType::FILTER_CUTOFF);
+    mappingUI.sensorMapping = &sensorMapping;
+    mappingUI.navigation = &navigation;
+    mappingUI.buildLayout(width, height);
+
+    keyboardUI.synth = &synth;
+    keyboardUI.navigation = &navigation;
+    keyboardUI.buildLayout(width, height);
 
     lastFrameTime = SDL_GetTicks();
 
@@ -636,7 +700,6 @@ public:
   }
 
   ~Framework() {
-    delete ui;
     for (auto o : gameObjects) {
       delete o;
     }
@@ -784,19 +847,42 @@ public:
       case SDL_MOUSEMOTION:
         mousePosition.x = event.motion.x;
         mousePosition.y = event.motion.y;
-        ui->handleMouseMove(mousePosition);
+        switch (navigation.page) {
+        case Navigation::KEYBOARD:
+          keyboardUI.handleMouseMove(mousePosition);
+          break;
+        case Navigation::MAPPING:
+          mappingUI.handleMouseMove(mousePosition);
+          break;
+        }
+
         break;
       case SDL_MOUSEBUTTONDOWN: {
         mouseDownPosition.x = event.motion.x;
         mouseDownPosition.y = event.motion.y;
 
-        ui->handleMouseDown(mouseDownPosition);
+        switch (navigation.page) {
+        case Navigation::KEYBOARD:
+          keyboardUI.handleMouseDown(mouseDownPosition);
+          break;
+        case Navigation::MAPPING:
+          mappingUI.handleMouseDown(mouseDownPosition);
+          break;
+        }
 
         break;
       }
       case SDL_MOUSEBUTTONUP: {
 
-        ui->handleMouseUp(mousePosition);
+        keyboardUI.handleMouseUp(mousePosition);
+        switch (navigation.page) {
+        case Navigation::KEYBOARD:
+          keyboardUI.handleMouseUp(mouseDownPosition);
+          break;
+        case Navigation::MAPPING:
+          mappingUI.handleMouseUp(mouseDownPosition);
+          break;
+        }
 
         break;
       }
@@ -808,7 +894,17 @@ public:
         auto fingerId = event.tfinger.fingerId;
         auto position = vec2f_t{.x = event.tfinger.x * width,
                                 .y = event.tfinger.y * height};
-        ui->handleFingerMove(fingerId, position, event.tfinger.pressure);
+
+        switch (navigation.page) {
+        case Navigation::KEYBOARD:
+          keyboardUI.handleFingerMove(fingerId, position,
+                                      event.tfinger.pressure);
+          break;
+        case Navigation::MAPPING:
+          mappingUI.handleFingerMove(fingerId, position,
+                                     event.tfinger.pressure);
+          break;
+        }
         break;
       }
       case SDL_FINGERDOWN: {
@@ -816,7 +912,17 @@ public:
         auto position = vec2f_t{.x = event.tfinger.x * width,
                                 .y = event.tfinger.y * height};
 
-        ui->handleFingerDown(fingerId, position, event.tfinger.pressure);
+        switch (navigation.page) {
+        case Navigation::KEYBOARD:
+          keyboardUI.handleFingerDown(fingerId, position,
+                                      event.tfinger.pressure);
+
+          break;
+        case Navigation::MAPPING:
+          mappingUI.handleFingerDown(fingerId, position,
+                                     event.tfinger.pressure);
+          break;
+        }
 
         break;
       }
@@ -826,7 +932,15 @@ public:
         auto position = vec2f_t{.x = event.tfinger.x * width,
                                 .y = event.tfinger.y * height};
         SDL_Log("finger up #%ld: %f %f", fingerId, position.x, position.y);
-        ui->handleFingerUp(fingerId, position, event.tfinger.pressure);
+
+        switch (navigation.page) {
+        case Navigation::KEYBOARD:
+          keyboardUI.handleFingerUp(fingerId, position, event.tfinger.pressure);
+          break;
+        case Navigation::MAPPING:
+          mappingUI.handleFingerUp(fingerId, position, event.tfinger.pressure);
+          break;
+        }
 
         break;
       }
@@ -892,7 +1006,15 @@ public:
     for (auto object : gameObjects) {
     }
 
-    UIRenderer::drawUI(renderer, ui, style);
+    switch (navigation.page) {
+
+    case Navigation::KEYBOARD:
+      keyboardUI.draw(renderer, style);
+      break;
+    case Navigation::MAPPING:
+      mappingUI.draw(renderer, style);
+      break;
+    }
 
     SDL_RenderPresent(renderer);
   }
@@ -922,7 +1044,9 @@ private:
   SDL_Texture *menuIcon = NULL;
   SDL_Texture *synthSelectIcon = NULL;
 
-  UI *ui;
+  Navigation navigation;
+  KeyboardUI keyboardUI;
+  MappingUI mappingUI;
 
   SDL_Color textColor = {20, 20, 20};
   SDL_Color textBackgroundColor = {0, 0, 0};
