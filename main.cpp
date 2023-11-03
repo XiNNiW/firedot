@@ -12,6 +12,7 @@
 #include "SDL_surface.h"
 #include "SDL_timer.h"
 #include "SDL_video.h"
+#include "include/collider.h"
 #include "include/game_object.h"
 #include "include/physics.h"
 #include "include/synthesis.h"
@@ -81,7 +82,7 @@ template <typename sample_t> struct SensorMapping {
   }
 };
 struct Navigation {
-  enum Page { KEYBOARD, MAPPING } page = KEYBOARD;
+  enum Page { KEYBOARD, MAPPING, SOUND_EDIT } page = KEYBOARD;
 };
 struct KeyboardUI {
 
@@ -102,11 +103,11 @@ struct KeyboardUI {
 
   std::map<SDL_FingerID, int> heldKeys;
 
-  Button menuButton;
-  Button synthSelectRadioGroup[SYNTH_SELECTED_RADIO_GROUP_SIZE];
+  Button mappingMenuButton;
+  Button soundEditMenuButton;
   Button keyButtons[NUM_KEY_BUTTONS];
 
-  float synthSelectWidth = 50;
+  float synthSelectWidth = 150;
   float synthSelectHeight = 50;
   float buttonMargin = 5;
   void buildLayout(const float width, const float height) {
@@ -115,26 +116,18 @@ struct KeyboardUI {
     synthSelectWidth = width / 6;
     synthSelectHeight = width / 8.0;
 
-    std::array<std::string, NUM_SYNTH_TYPES> synthTypeLabels = {"sub", "phys",
-                                                                "fm"};
-    const size_t initialSynthTypeSelection = 0;
-    for (size_t i = 0; i < NUM_SYNTH_TYPES; ++i) {
-      synthSelectRadioGroup[i] = Button{
-          .labelText = synthTypeLabels[i],
-          .shape = AxisAlignedBoundingBox{
-              .position =
-                  vec2f_t{.x = static_cast<float>(
-                              pageMargin + synthSelectWidth / 2.0 +
-                              i * (synthSelectWidth + radiobuttonMargin)),
-                          .y = static_cast<float>(pageMargin +
-                                                  synthSelectHeight / 2.0)},
-              .halfSize =
-                  vec2f_t{.x = static_cast<float>(synthSelectWidth / 2),
-                          .y = static_cast<float>(synthSelectHeight / 2)}}};
-    }
-    synthSelectRadioGroup[initialSynthTypeSelection].state = UIState::ACTIVE;
-    menuButton = Button{
-        .labelText = "menu",
+    soundEditMenuButton = Button{
+        .labelText = "sound edit",
+        .shape = AxisAlignedBoundingBox{
+            .position = vec2f_t{.x = static_cast<float>(pageMargin +
+                                                        synthSelectWidth / 2),
+                                .y = static_cast<float>(pageMargin +
+                                                        synthSelectHeight / 2)},
+            .halfSize =
+                vec2f_t{.x = static_cast<float>(synthSelectWidth / 2),
+                        .y = static_cast<float>(synthSelectHeight / 2)}}};
+    mappingMenuButton = Button{
+        .labelText = "sensor mapping",
         .shape = AxisAlignedBoundingBox{
             .position = vec2f_t{.x = width - synthSelectWidth / 2 - pageMargin,
                                 .y = static_cast<float>(pageMargin +
@@ -166,13 +159,11 @@ struct KeyboardUI {
 
   inline void handleFingerMove(const SDL_FingerID &fingerId,
                                const vec2f_t &position, const float pressure) {
-    for (auto &button : synthSelectRadioGroup) {
-      DoButtonHover(&button, position);
-    }
     for (auto &button : keyButtons) {
       DoButtonHover(&button, position);
     }
-    DoButtonHover(&menuButton, position);
+    DoButtonHover(&soundEditMenuButton, position);
+    DoButtonHover(&mappingMenuButton, position);
   }
 
   inline void handleFingerDown(const SDL_FingerID &fingerId,
@@ -204,25 +195,14 @@ struct KeyboardUI {
     }
   }
 
-  inline void handleMouseMove(const vec2f_t &mousePosition) {
-    for (auto &button : synthSelectRadioGroup) {
-      if ((button.state != UIState::ACTIVE) &&
-          button.shape.contains(mousePosition)) {
-        button.state = UIState::HOVER;
-      } else if (button.state == UIState::HOVER) {
-        button.state = UIState::INACTIVE;
-      }
-    }
-  }
+  inline void handleMouseMove(const vec2f_t &mousePosition) {}
 
   inline void handleMouseDown(const vec2f_t &mousePosition) {
-    auto selected = DoClickRadioGroup(
-        synthSelectRadioGroup, SYNTH_SELECTED_RADIO_GROUP_SIZE, mousePosition);
-    if (SynthTypes[selected] != synth->type) {
-      synth->setSynthType(SynthTypes[selected]);
+    if (DoButtonClick(&soundEditMenuButton, mousePosition)) {
+      navigation->page = Navigation::SOUND_EDIT;
     };
 
-    if (DoButtonClick(&menuButton, mousePosition, ACTIVE)) {
+    if (DoButtonClick(&mappingMenuButton, mousePosition)) {
       navigation->page = Navigation::MAPPING;
     };
 
@@ -238,7 +218,7 @@ struct KeyboardUI {
 
   inline void handleMouseUp(const vec2f_t &mousePosition) {
 
-    menuButton.state = INACTIVE;
+    mappingMenuButton.state = INACTIVE;
 
     for (size_t i = 0; i < NUM_KEY_BUTTONS; ++i) {
       if (keyButtons[i].state == UIState::ACTIVE) {
@@ -252,22 +232,8 @@ struct KeyboardUI {
   }
 
   inline void draw(SDL_Renderer *renderer, const Style &style) {
-    DrawButton(menuButton, renderer, style);
-
-    auto radiogroupBackgroundRect = SDL_Rect{
-        .x = static_cast<int>(synthSelectRadioGroup[0].shape.position.x -
-                              synthSelectRadioGroup[0].shape.halfSize.x - 5),
-        .y = static_cast<int>(synthSelectRadioGroup[0].shape.position.y -
-                              synthSelectRadioGroup[0].shape.halfSize.y - 5),
-        .w = static_cast<int>(
-            (synthSelectWidth + buttonMargin) * NUM_SYNTH_TYPES + 15),
-        .h = static_cast<int>(synthSelectHeight + 10)};
-    SDL_SetRenderDrawColor(renderer, style.hoverColor.r, style.hoverColor.g,
-                           style.hoverColor.b, style.hoverColor.a);
-    SDL_RenderFillRect(renderer, &radiogroupBackgroundRect);
-    for (size_t i = 0; i < NUM_SYNTH_TYPES; i++) {
-      DrawButton(synthSelectRadioGroup[i], renderer, style);
-    }
+    DrawButton(soundEditMenuButton, renderer, style);
+    DrawButton(mappingMenuButton, renderer, style);
 
     for (size_t i = 0; i < NUM_KEY_BUTTONS; i++) {
       DrawButton(keyButtons[i], renderer, style);
@@ -442,6 +408,7 @@ struct MappingUI {
 
     DoButtonHover(&backButton, mousePosition);
   }
+
   inline void handleMouseDown(const vec2f_t &mousePosition) {
     bool anyMenusActive = false;
 
@@ -499,6 +466,185 @@ struct MappingUI {
         DrawMultiSelectMenu(menu, renderer, style);
       }
     }
+  }
+};
+
+struct RadioGroup {
+  int selectedIndex = 0;
+  float buttonMargin = 10;
+  float buttonHeight = 100;
+  AxisAlignedBoundingBox shape;
+  std::vector<Button> options;
+
+  inline void buildLayout(const AxisAlignedBoundingBox &bounds) {
+    shape = bounds;
+    const size_t initialSynthTypeSelection = 0;
+    const float buttonWidth =
+        (bounds.halfSize.x * 2 - float(options.size() * buttonMargin)) /
+        float(options.size());
+    buttonHeight = bounds.halfSize.y;
+    for (size_t i = 0; i < options.size(); ++i) {
+      options[i].shape = AxisAlignedBoundingBox{
+          .position =
+              vec2f_t{.x = static_cast<float>(
+                          bounds.position.x - bounds.halfSize.x +
+                          buttonWidth / 2 + i * (buttonWidth + buttonMargin)),
+                      .y = static_cast<float>(bounds.position.y)},
+          .halfSize = vec2f_t{.x = static_cast<float>(buttonWidth / 2),
+                              .y = static_cast<float>(bounds.halfSize.y)}};
+
+      options[i].state = INACTIVE;
+    }
+    options[selectedIndex].state = UIState::ACTIVE;
+  }
+};
+
+inline void DrawRadioGroup(const RadioGroup &group, SDL_Renderer *renderer,
+                           const Style &style) {
+  auto radiogroupBackgroundRect = SDL_Rect{
+      .x =
+          static_cast<int>(group.shape.position.x - group.shape.halfSize.x - 5),
+      .y =
+          static_cast<int>(group.shape.position.y - group.shape.halfSize.y - 5),
+      .w = static_cast<int>(group.shape.halfSize.x * 2 + 10),
+      .h = static_cast<int>(group.shape.halfSize.y * 2 + 10)};
+  SDL_SetRenderDrawColor(renderer, style.hoverColor.r, style.hoverColor.g,
+                         style.hoverColor.b, style.hoverColor.a);
+  SDL_RenderFillRect(renderer, &radiogroupBackgroundRect);
+  for (auto &button : group.options) {
+    DrawButton(button, renderer, style);
+  }
+}
+inline const bool DoClickRadioGroup(RadioGroup *group,
+
+                                    const vec2f_t &mousePosition) {
+  auto numButtons = group->options.size();
+  auto selected = 0;
+  for (size_t i = 0; i < numButtons; ++i) {
+    Button *button = &(group->options[i]);
+    if ((button->state != UIState::ACTIVE) &&
+        button->shape.contains(mousePosition)) {
+      button->state = UIState::ACTIVE;
+      selected = i;
+      for (size_t j = 0; j < numButtons; ++j) {
+        if (j != selected) {
+          group->options[j].state = UIState::INACTIVE;
+        }
+      }
+    } else if (button->state == UIState::ACTIVE) {
+      selected = i;
+    }
+  }
+
+  bool selectionChanged = selected == group->selectedIndex;
+  group->selectedIndex = selected;
+
+  return selectionChanged;
+}
+
+struct SoundEditUI {
+  Navigation *navigation = NULL;
+  Synthesizer<float> *synth = NULL;
+
+  Button backButton;
+  RadioGroup synthSelectRadioGroup;
+
+  float titleBarHeight = 100;
+  float synthSelectWidth = 50;
+  float synthSelectHeight = 50;
+  float buttonMargin = 5;
+  float topMargin = 50;
+  float pageMargin = 50;
+
+  void buildLayout(const float width, const float height) {
+    auto radiobuttonMargin = 10;
+
+    auto backButtonSize = vec2f_t{
+        .x = static_cast<float>(width / 8.0),
+        .y = static_cast<float>(width / 16.0),
+    };
+    backButton = Button{
+        .labelText = "<- back",
+        .shape = AxisAlignedBoundingBox{
+            .position = {.x = static_cast<float>(backButtonSize.x / 2.0),
+                         .y = static_cast<float>(backButtonSize.y / 2.0)},
+            .halfSize = backButtonSize.scale(0.5)}};
+    synthSelectWidth =
+        (width - (2 * pageMargin) - (NUM_SYNTH_TYPES * radiobuttonMargin)) /
+        float(NUM_SYNTH_TYPES);
+    synthSelectHeight = width / 8.0;
+
+    const size_t initialSynthTypeSelection = 0;
+    synthSelectRadioGroup.options.clear();
+    synthSelectRadioGroup.options.reserve(NUM_SYNTH_TYPES);
+    for (auto &synthType : SynthTypes) {
+      synthSelectRadioGroup.options.push_back(Button{
+          .labelText = SynthTypeDisplayNames[synthType],
+      });
+    }
+    synthSelectRadioGroup.selectedIndex = initialSynthTypeSelection;
+    synthSelectRadioGroup.buildLayout(AxisAlignedBoundingBox{
+        .position = {.x = width / 2,
+                     .y = static_cast<float>(topMargin + titleBarHeight +
+                                             height / 24.0)},
+
+        .halfSize = {.x = (width - 2 * pageMargin) / 2,
+                     .y = static_cast<float>(height / 24.0)}});
+  }
+
+  inline void handleFingerMove(const SDL_FingerID &fingerId,
+                               const vec2f_t &position, const float pressure) {
+    for (auto &button : synthSelectRadioGroup.options) {
+      DoButtonHover(&button, position);
+    }
+  }
+
+  inline void handleFingerDown(const SDL_FingerID &fingerId,
+                               const vec2f_t &position, const float pressure) {}
+
+  inline void handleFingerUp(const SDL_FingerID &fingerId,
+                             const vec2f_t &position, const float pressure) {}
+
+  inline void handleMouseMove(const vec2f_t &mousePosition) {
+    for (auto &button : synthSelectRadioGroup.options) {
+      if ((button.state != UIState::ACTIVE) &&
+          button.shape.contains(mousePosition)) {
+        button.state = UIState::HOVER;
+      } else if (button.state == UIState::HOVER) {
+        button.state = UIState::INACTIVE;
+      }
+    }
+  }
+
+  inline void handleMouseDown(const vec2f_t &mousePosition) {
+
+    if (DoClickRadioGroup(&synthSelectRadioGroup, mousePosition)) {
+      synth->setSynthType(SynthTypes[synthSelectRadioGroup.selectedIndex]);
+    };
+
+    if (DoButtonClick(&backButton, mousePosition, ACTIVE)) {
+      navigation->page = Navigation::KEYBOARD;
+    };
+
+    //  for (size_t i = 0; i < keyboardWidget->keyButtons.size(); ++i) {
+    //    // evaluate clicks
+    //    if (UpdateButton(&keyboardWidget->keyButtons[i], mousePosition,
+    //                     UIState::ACTIVE)) {
+    //      // play sound
+    //      synth->note(notes[i], 127);
+    //    }
+    //  }
+  }
+
+  inline void handleMouseUp(const vec2f_t &mousePosition) {
+
+    backButton.state = INACTIVE;
+  }
+
+  void draw(SDL_Renderer *renderer, const Style &style) {
+    DrawButton(backButton, renderer, style);
+    //
+    DrawRadioGroup(synthSelectRadioGroup, renderer, style);
   }
 };
 
@@ -700,6 +846,10 @@ public:
     keyboardUI.navigation = &navigation;
     keyboardUI.buildLayout(width, height);
 
+    soundEditUI.synth = &synth;
+    soundEditUI.navigation = &navigation;
+    soundEditUI.buildLayout(width, height);
+
     lastFrameTime = SDL_GetTicks();
 
     return true;
@@ -860,6 +1010,9 @@ public:
         case Navigation::MAPPING:
           mappingUI.handleMouseMove(mousePosition);
           break;
+        case Navigation::SOUND_EDIT:
+          soundEditUI.handleMouseMove(mouseDownPosition);
+          break;
         }
 
         break;
@@ -874,6 +1027,9 @@ public:
         case Navigation::MAPPING:
           mappingUI.handleMouseDown(mouseDownPosition);
           break;
+        case Navigation::SOUND_EDIT:
+          soundEditUI.handleMouseDown(mouseDownPosition);
+          break;
         }
 
         break;
@@ -887,6 +1043,9 @@ public:
           break;
         case Navigation::MAPPING:
           mappingUI.handleMouseUp(mouseDownPosition);
+          break;
+        case Navigation::SOUND_EDIT:
+          soundEditUI.handleMouseUp(mouseDownPosition);
           break;
         }
 
@@ -910,6 +1069,9 @@ public:
           mappingUI.handleFingerMove(fingerId, position,
                                      event.tfinger.pressure);
           break;
+        case Navigation::SOUND_EDIT:
+          soundEditUI.handleFingerMove(fingerId, position,
+                                       event.tfinger.pressure);
         }
         break;
       }
@@ -928,6 +1090,10 @@ public:
           mappingUI.handleFingerDown(fingerId, position,
                                      event.tfinger.pressure);
           break;
+        case Navigation::SOUND_EDIT:
+          soundEditUI.handleFingerDown(fingerId, position,
+                                       event.tfinger.pressure);
+          break;
         }
 
         break;
@@ -945,6 +1111,10 @@ public:
           break;
         case Navigation::MAPPING:
           mappingUI.handleFingerUp(fingerId, position, event.tfinger.pressure);
+          break;
+        case Navigation::SOUND_EDIT:
+          soundEditUI.handleFingerUp(fingerId, position,
+                                     event.tfinger.pressure);
           break;
         }
 
@@ -1020,6 +1190,9 @@ public:
     case Navigation::MAPPING:
       mappingUI.draw(renderer, style);
       break;
+    case Navigation::SOUND_EDIT:
+      soundEditUI.draw(renderer, style);
+      break;
     }
 
     SDL_RenderPresent(renderer);
@@ -1053,6 +1226,7 @@ private:
   Navigation navigation;
   KeyboardUI keyboardUI;
   MappingUI mappingUI;
+  SoundEditUI soundEditUI;
 
   SDL_Color textColor = {20, 20, 20};
   SDL_Color textBackgroundColor = {0, 0, 0};

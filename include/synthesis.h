@@ -49,6 +49,20 @@ struct Onezero : _Filter<sample_t, Onezero<sample_t>> {
     return out * 0.5;
   }
 };
+template <typename sample_t>
+inline const sample_t linearXFade4(sample_t one, sample_t two, sample_t three,
+                                   sample_t four, sample_t mixAmount) {
+  mixAmount = mixAmount * 4.0;
+  sample_t twoMix = std::min(std::max(mixAmount - 1.0, 0.0), 1.0);
+  sample_t threeMix = std::min(std::max(mixAmount - 2.0, 0.0), 1.0);
+  sample_t fourMix = std::min(std::max(mixAmount - 3.0, 0.0), 1.0);
+  sample_t channelOneMixLevel = std::max(1.0 - mixAmount, 0.0);
+  sample_t channelTwoMixLevel = twoMix - threeMix;
+  sample_t channelThreeMixLevel = threeMix - fourMix;
+  sample_t channelFourMixLevel = fourMix;
+  return (one * channelOneMixLevel) + (two * channelTwoMixLevel) +
+         (three * channelThreeMixLevel) + (four * channelFourMixLevel);
+};
 
 template <typename sample_t> struct KarplusStringVoice {
   sample_t active = false;
@@ -61,6 +75,7 @@ template <typename sample_t> struct KarplusStringVoice {
   Parameter<sample_t> frequency = Parameter<sample_t>(440);
   sample_t feedback = 0.99;
   sample_t b1Coefficient = 1.0;
+  sample_t h1 = 1.0;
   sample_t gain = 1.0;
   sample_t attackTime = 1;
   sample_t releaseTime = 1000;
@@ -74,10 +89,10 @@ template <typename sample_t> struct KarplusStringVoice {
   InterpolatedDelay<sample_t, MAX_DELAY_SAMPS> delay;
   Onepole<sample_t, sample_t> inputFilter;
   Onezero<sample_t> lp;
+  sample_t soundSource = 0;
 
   sample_t sampleRate = 48000;
   sample_t y1 = 0;
-  sample_t h1 = 1.0;
 
   KarplusStringVoice<sample_t>() { init(); }
   KarplusStringVoice<sample_t>(const sample_t sr) : sampleRate(sr) { init(); }
@@ -86,6 +101,8 @@ template <typename sample_t> struct KarplusStringVoice {
     inputFilter.lowpass(19000, sampleRate);
     exciterEnvelope.set(0.1, 1, sampleRate);
   }
+
+  void setAllpassHarmonic(const sample_t ratio) { h1 = ratio; }
 
   void setSampleRate(sample_t sr) { sampleRate = sr; }
 
@@ -100,8 +117,12 @@ template <typename sample_t> struct KarplusStringVoice {
     sample_t noise = exciterNoise.next();
 
     sample_t exciterLevel = exciterEnvelope.next();
-    sample_t exciter = lerp<sample_t>(noise, tone, exciterLevel);
-    exciter *= exciterLevel;
+    // sample_t exciter = lerp<sample_t>(noise, tone, exciterLevel);
+    sample_t exciter = linearXFade4<sample_t>(
+        noise, exciterLevel > 0.99, exciterLevel * 2.0 - 1.0,
+        algae::dsp::oscillator::SineTable<sample_t, 256>::lookup(exciterLevel),
+        soundSource);
+    exciter = exciter *= exciterLevel;
     exciter *= gain;
 
     exciter = inputFilter.next(exciter);
@@ -189,9 +210,9 @@ template <typename sample_t> struct KarplusStrongSynthesizer {
   inline void setGain(sample_t value) { gain = value; }
   inline void setFilterCutoff(sample_t value) {
     value = clamp<sample_t>(value, 0, 1);
-    value = lerp<sample_t>(0.8, 1, value);
+    value = lerp<sample_t>(0.125, 2, value);
     for (auto &voice : voices) {
-      // voice.inputFilter.lowpass(value, sampleRate);
+      voice.h1 = value;
     }
   }
   inline void setFilterQuality(sample_t value) {
@@ -216,21 +237,6 @@ template <typename sample_t> struct KarplusStrongSynthesizer {
       voice.releaseTime = value;
     }
   }
-};
-
-template <typename sample_t>
-inline const sample_t linearXFade4(sample_t one, sample_t two, sample_t three,
-                                   sample_t four, sample_t mixAmount) {
-  mixAmount = mixAmount * 4.0;
-  sample_t twoMix = std::min(std::max(mixAmount - 1.0, 0.0), 1.0);
-  sample_t threeMix = std::min(std::max(mixAmount - 2.0, 0.0), 1.0);
-  sample_t fourMix = std::min(std::max(mixAmount - 3.0, 0.0), 1.0);
-  sample_t channelOneMixLevel = std::max(1.0 - mixAmount, 0.0);
-  sample_t channelTwoMixLevel = twoMix - threeMix;
-  sample_t channelThreeMixLevel = threeMix - fourMix;
-  sample_t channelFourMixLevel = fourMix;
-  return (one * channelOneMixLevel) + (two * channelTwoMixLevel) +
-         (three * channelThreeMixLevel) + (four * channelFourMixLevel);
 };
 
 template <typename sample_t> struct MultiOscillator {
@@ -428,20 +434,22 @@ template <typename sample_t> struct FM4OpVoice {
 
   static const size_t NUM_ALGS = 8;
   sample_t topologies[NUM_ALGS][4][4] = {
-      {{1, 0, 0, 0}, {1, 0, 0, 0}, {1, 0, 0, 0}, {1, 0, 0, 0}},
-      {{1, 0, 0, 0}, {1, 0, 0, 0}, {0, 1, 0, 0}, {0, 1, 0, 0}},
-      {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 1, 0, 0}, {0, 1, 0, 0}},
-      {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {1, 1, 1, 0}},
-      {{1, 0, 0, 0}, {1, 0, 0, 0}, {1, 0, 0, 0}, {0, 1, 0, 0}},
-      {{1, 0, 0, 0}, {1, 0, 0, 0}, {1, 0, 0, 0}, {0, 0, 1, 0}},
-      {{1, 0, 0, 0}, {1, 0, 0, 0}, {0, 1, 0, 0}, {1, 0, 0, 0}},
-      {{1, 0, 0, 0}, {1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}},
+      {{0, 1, 1, 0}, {0, 0, 0, 1}, {0, 0, 0, 1}, {0, 0, 0, 0}},
+      {{0, 1, 1, 0}, {0, 0, 0, 0}, {0, 0, 0, 1}, {0, 0, 0, 0}},
+      {{0, 1, 1, 1}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}},
+      {{0, 0, 1, 0}, {0, 0, 0, 1}, {0, 0, 0, 0}, {0, 0, 0, 0}},
+      {{0, 0, 0, 1}, {0, 0, 0, 1}, {0, 0, 0, 1}, {0, 0, 0, 0}},
+      {{0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}, {0, 0, 0, 0}},
+      {{0, 1, 0, 0}, {0, 0, 1, 1}, {0, 0, 0, 1}, {0, 0, 0, 0}},
+      {{0, 1, 1, 1}, {0, 0, 1, 1}, {0, 0, 0, 1}, {0, 0, 0, 1}},
+  };
+  sample_t gainSettings[NUM_ALGS][4] = {
+      {1, 0, 0, 0}, {1, 0, 0, 0}, {1, 0, 0, 0}, {1, 1, 0, 0},
+      {1, 1, 1, 0}, {1, 0, 0, 0}, {1, 0, 1, 0}, {1, 0, 0, 0},
   };
 
-  size_t activeTopology = 0;
-  size_t activeRatio = 0;
-
-  sample_t outputLevels[4] = {1, 0, 0, 0};
+  sample_t activeTopology = 0;
+  sample_t activeRatio = 0;
 
   sample_t index = 0.1;
 
@@ -457,30 +465,45 @@ template <typename sample_t> struct FM4OpVoice {
 
     auto nextFrequency = frequency.next();
 
-    op1.setFrequency(nextFrequency * ratios[activeRatio][0]);
-    op2.setFrequency(nextFrequency * ratios[activeRatio][1]);
-    op3.setFrequency(nextFrequency * ratios[activeRatio][2]);
-    op4.setFrequency(nextFrequency * ratios[activeRatio][3]);
+    int ratioIndex = floor(activeRatio);
 
-    sample_t mod1 = index * (op1.last * topologies[activeTopology][0][0] +
-                             op2.last * topologies[activeTopology][0][1] +
-                             op3.last * topologies[activeTopology][0][2] +
-                             op4.last * topologies[activeTopology][0][3]);
-    sample_t mod2 = index * (op1.last * topologies[activeTopology][1][0] +
-                             op2.last * topologies[activeTopology][1][1] +
-                             op3.last * topologies[activeTopology][1][2] +
-                             op4.last * topologies[activeTopology][1][3]);
-    sample_t mod3 = index * (op1.last * topologies[activeTopology][2][0] +
-                             op2.last * topologies[activeTopology][2][1] +
-                             op3.last * topologies[activeTopology][2][2] +
-                             op4.last * topologies[activeTopology][2][3]);
-    sample_t mod4 = index * (op1.last * topologies[activeTopology][3][0] +
-                             op2.last * topologies[activeTopology][3][1] +
-                             op3.last * topologies[activeTopology][3][2] +
-                             op4.last * topologies[activeTopology][3][3]);
-    sample_t out =
-        op1.next(mod1) * outputLevels[0] + op2.next(mod2) * outputLevels[1] +
-        op2.next(mod3) * outputLevels[2] + op4.next(mod4) * outputLevels[3];
+    op1.setFrequency(nextFrequency * ratios[ratioIndex][0]);
+    op2.setFrequency(nextFrequency * ratios[ratioIndex][1]);
+    op3.setFrequency(nextFrequency * ratios[ratioIndex][2]);
+    op4.setFrequency(nextFrequency * ratios[ratioIndex][3]);
+
+    int topologyIndex = floor(activeTopology);
+    int nextTopologyIndex = (topologyIndex + 1) % NUM_ALGS;
+    sample_t topologyMantissa = activeTopology - sample_t(topologyIndex);
+
+    sample_t mod1 = index * (op1.last * topologies[topologyIndex][0][0] +
+                             op2.last * topologies[topologyIndex][0][1] +
+                             op3.last * topologies[topologyIndex][0][2] +
+                             op4.last * topologies[topologyIndex][0][3]);
+    sample_t mod2 = index * (op1.last * topologies[topologyIndex][1][0] +
+                             op2.last * topologies[topologyIndex][1][1] +
+                             op3.last * topologies[topologyIndex][1][2] +
+                             op4.last * topologies[topologyIndex][1][3]);
+    sample_t mod3 = index * (op1.last * topologies[topologyIndex][2][0] +
+                             op2.last * topologies[topologyIndex][2][1] +
+                             op3.last * topologies[topologyIndex][2][2] +
+                             op4.last * topologies[topologyIndex][2][3]);
+    sample_t mod4 = index * (op1.last * topologies[topologyIndex][3][0] +
+                             op2.last * topologies[topologyIndex][3][1] +
+                             op3.last * topologies[topologyIndex][3][2] +
+                             op4.last * topologies[topologyIndex][3][3]);
+    sample_t out = op1.next(mod1) * lerp(gainSettings[topologyIndex][0],
+                                         gainSettings[nextTopologyIndex][0],
+                                         topologyMantissa) +
+                   op2.next(mod2) * lerp(gainSettings[topologyIndex][1],
+                                         gainSettings[nextTopologyIndex][1],
+                                         topologyMantissa) +
+                   op2.next(mod3) * lerp(gainSettings[topologyIndex][2],
+                                         gainSettings[nextTopologyIndex][2],
+                                         topologyMantissa) +
+                   op4.next(mod4) * lerp(gainSettings[topologyIndex][3],
+                                         gainSettings[nextTopologyIndex][3],
+                                         topologyMantissa);
     out *= gain;
     active = (op1.env.stage != ASREnvelope<sample_t>::OFF) ||
              (op2.env.stage != ASREnvelope<sample_t>::OFF) ||
@@ -546,17 +569,16 @@ template <typename sample_t> struct FMSynthesizer {
   inline void setGain(sample_t value) { gain = value; }
   inline void setFilterCutoff(sample_t value) {
     value = clamp<sample_t>(value, 0, 1);
-    // auto index = value;
+    value *= value;
+    value *= value;
     //  auto fb = lerp<sample_t>(0.0, 1.0, pow(1, value));
     for (auto &voice : voices) {
-      // voice.modMatrix[0][0] = voice.modMatrix[1][1] = voice.modMatrix[2][2] =
-      //     voice.modMatrix[3][3] = fb;
       voice.index = value;
     }
   }
   inline void setFilterQuality(sample_t value) {
     value = clamp<sample_t>(value, 0, 1);
-    int index = floor(value * (FM4OpVoice<sample_t>::NUM_RATIOS - 1));
+    int index = value * (FM4OpVoice<sample_t>::NUM_RATIOS - 1);
 
     for (auto &voice : voices) {
       voice.activeRatio = index;
@@ -564,36 +586,25 @@ template <typename sample_t> struct FMSynthesizer {
   }
   inline void setSoundSource(sample_t value) {
     value = clamp<sample_t>(value, 0, 1);
-    sample_t amount = value * (FM4OpVoice<sample_t>::NUM_ALGS - 1);
-    int index = floor(amount);
+    sample_t index = value * (FM4OpVoice<sample_t>::NUM_ALGS - 1);
     for (auto &voice : voices) {
       voice.activeTopology = index;
     }
-    // auto mantissa = amount - sample_t(index);
-    // auto formation0 = topologies[index];
-    // auto formation1 = topologies[(index + 1) % NUM_ALGS];
-    // for (auto &voice : voices) {
-    //   for (size_t i = 0; i < 4; ++i) {
-    //     for (size_t j = 0; j < 4; ++j) {
-    //       if (i == j) {
-    //         voice.outputLevels[i] =
-    //             lerp(formation0[i][j], formation1[i][j], mantissa);
-    //       } else {
-    //         voice.modMatrix[i][j] =
-    //             lerp(formation0[i][j], formation1[i][j], mantissa);
-    //       }
-    //     }
-    //   }
-    // }
   }
   inline void setAttackTime(sample_t value) {
     for (auto &voice : voices) {
-      voice.setAttackTime(value);
+      voice.op1.env.setAttackTime(value, sampleRate);
+      voice.op2.env.setAttackTime(value, sampleRate);
+      voice.op3.env.setAttackTime(value, sampleRate);
+      voice.op4.env.setAttackTime(value, sampleRate);
     }
   }
   inline void setReleaseTime(sample_t value) {
     for (auto &voice : voices) {
-      voice.releaseTime = value;
+      voice.op1.env.setReleaseTime(value, sampleRate);
+      voice.op2.env.setReleaseTime(value, sampleRate);
+      voice.op3.env.setReleaseTime(value, sampleRate);
+      voice.op4.env.setReleaseTime(value, sampleRate);
     }
   }
 };
@@ -633,6 +644,8 @@ static_assert(FREQUENCY_MODULATION == NUM_SYNTH_TYPES - 1,
 static const SynthesizerType SynthTypes[NUM_SYNTH_TYPES] = {
     SynthesizerType::SUBTRACTIVE, SynthesizerType::PHYSICAL_MODEL,
     SynthesizerType::FREQUENCY_MODULATION};
+static const char *SynthTypeDisplayNames[NUM_SYNTH_TYPES] = {
+    "subtractive", "physical model", "frequency modulation"};
 
 template <typename sample_t> struct SynthesizerEvent {
   enum EventType { NOTE, PARAMETER_CHANGE, SYNTHESIZER_CHANGE } type;

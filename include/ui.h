@@ -33,29 +33,6 @@ static void DoButtonHover(Button *button, const vec2f_t &position) {
     button->state = UIState::HOVER;
   }
 }
-inline const int DoClickRadioGroup(Button *buttons, const size_t &numButtons,
-
-                                   const vec2f_t &mousePosition) {
-  auto selected = 0;
-  for (size_t i = 0; i < numButtons; ++i) {
-    Button *button = &(buttons[i]);
-    if ((button->state != UIState::ACTIVE) &&
-        button->shape.contains(mousePosition)) {
-      button->state = UIState::ACTIVE;
-      selected = i;
-      for (size_t j = 0; j < numButtons; ++j) {
-        if (j != selected) {
-          buttons[j].state = UIState::INACTIVE;
-        }
-      }
-    } else if (button->state == UIState::ACTIVE) {
-      selected = i;
-    }
-  }
-
-  return selected;
-}
-
 struct Style {
   TTF_Font *font;
 
