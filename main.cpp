@@ -542,12 +542,69 @@ inline const bool DoClickRadioGroup(RadioGroup *group,
   return selectionChanged;
 }
 
+inline void DoRadioGroupHover(RadioGroup *group, const vec2f_t &position) {
+  for (auto &button : group->options) {
+    DoButtonHover(&button, position);
+  }
+}
+
+struct HSlider {
+  UIState state = INACTIVE;
+  std::string labelText;
+  float value;
+  AxisAlignedBoundingBox shape;
+};
+
+inline void SetHSliderValue(HSlider *slider, const vec2f_t &mousePosition) {
+  float width = slider->shape.halfSize.x * 2;
+  float relativePosition =
+      mousePosition.x - (slider->shape.position.x - slider->shape.halfSize.x);
+  SDL_Log("slider %f/%f", relativePosition, width);
+  slider->value = fmax(fmin(relativePosition / width, 1.0), 0.0);
+}
+
+inline bool DoHSliderClick(HSlider *slider, const vec2f_t &mousePosition) {
+  if (slider->shape.contains(mousePosition)) {
+    SetHSliderValue(slider, mousePosition);
+    slider->state = ACTIVE;
+    return true;
+  }
+  return false;
+}
+
+inline bool DoHSliderDrag(HSlider *slider, const vec2f_t &mousePosition) {
+  if (slider->state == ACTIVE) {
+    SetHSliderValue(slider, mousePosition);
+    return true;
+  }
+  return false;
+}
+
+inline void DrawHSlider(const HSlider &slider, SDL_Renderer *renderer,
+                        const Style &style) {
+  auto sliderBounds = ConvertAxisAlignedBoxToSDL_Rect(slider.shape);
+  auto dataBounds = sliderBounds;
+  dataBounds.w *= slider.value;
+  SDL_SetRenderDrawColor(renderer, style.inactiveColor.r, style.inactiveColor.g,
+                         style.inactiveColor.b, style.inactiveColor.a);
+
+  SDL_RenderFillRect(renderer, &sliderBounds);
+  SDL_SetRenderDrawColor(renderer, style.color0.r, style.color0.g,
+                         style.color0.b, style.color0.a);
+  SDL_RenderFillRect(renderer, &dataBounds);
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+
+  DrawLabel(slider.labelText, style.getWidgetLabelColor(slider.state),
+            style.getWidgetColor(slider.state), sliderBounds, renderer, style);
+}
+
 struct SoundEditUI {
   Navigation *navigation = NULL;
   Synthesizer<float> *synth = NULL;
 
   Button backButton;
   RadioGroup synthSelectRadioGroup;
+  HSlider parameterSliders[NUM_PARAMETER_TYPES];
 
   float titleBarHeight = 100;
   float synthSelectWidth = 50;
@@ -574,7 +631,7 @@ struct SoundEditUI {
         float(NUM_SYNTH_TYPES);
     synthSelectHeight = width / 8.0;
 
-    const size_t initialSynthTypeSelection = 0;
+    const size_t initialSynthTypeSelection = synth->type;
     synthSelectRadioGroup.options.clear();
     synthSelectRadioGroup.options.reserve(NUM_SYNTH_TYPES);
     for (auto &synthType : SynthTypes) {
@@ -590,13 +647,32 @@ struct SoundEditUI {
 
         .halfSize = {.x = (width - 2 * pageMargin) / 2,
                      .y = static_cast<float>(height / 24.0)}});
+
+    for (auto &parameter : ParameterTypes) {
+      parameterSliders[parameter] = HSlider{
+          .labelText = ParameterTypeDisplayNames[parameter],
+          .value = synth->getParameter(parameter),
+          .shape =
+              AxisAlignedBoundingBox{
+                  .position =
+                      {
+                          .x = width / 2,
+                          .y = synthSelectRadioGroup.shape.position.y +
+                               synthSelectRadioGroup.shape.halfSize.y +
+                               buttonMargin +
+                               (parameter + 1) *
+                                   (static_cast<float>(height / 12.0) +
+                                    buttonMargin),
+                      },
+                  .halfSize = {.x = (width - 2 * pageMargin) / 2,
+                               .y = static_cast<float>(height / 24.0)}},
+      };
+    }
   }
 
   inline void handleFingerMove(const SDL_FingerID &fingerId,
                                const vec2f_t &position, const float pressure) {
-    for (auto &button : synthSelectRadioGroup.options) {
-      DoButtonHover(&button, position);
-    }
+    DoRadioGroupHover(&synthSelectRadioGroup, position);
   }
 
   inline void handleFingerDown(const SDL_FingerID &fingerId,
@@ -606,12 +682,12 @@ struct SoundEditUI {
                              const vec2f_t &position, const float pressure) {}
 
   inline void handleMouseMove(const vec2f_t &mousePosition) {
-    for (auto &button : synthSelectRadioGroup.options) {
-      if ((button.state != UIState::ACTIVE) &&
-          button.shape.contains(mousePosition)) {
-        button.state = UIState::HOVER;
-      } else if (button.state == UIState::HOVER) {
-        button.state = UIState::INACTIVE;
+    DoRadioGroupHover(&synthSelectRadioGroup, mousePosition);
+
+    for (auto &parameterType : ParameterTypes) {
+      if (DoHSliderDrag(&parameterSliders[parameterType], mousePosition)) {
+        synth->pushParameterChangeEvent(parameterType,
+                                        parameterSliders[parameterType].value);
       }
     }
   }
@@ -626,18 +702,18 @@ struct SoundEditUI {
       navigation->page = Navigation::KEYBOARD;
     };
 
-    //  for (size_t i = 0; i < keyboardWidget->keyButtons.size(); ++i) {
-    //    // evaluate clicks
-    //    if (UpdateButton(&keyboardWidget->keyButtons[i], mousePosition,
-    //                     UIState::ACTIVE)) {
-    //      // play sound
-    //      synth->note(notes[i], 127);
-    //    }
-    //  }
+    for (auto &parameterType : ParameterTypes) {
+      if (DoHSliderClick(&parameterSliders[parameterType], mousePosition)) {
+        synth->pushParameterChangeEvent(parameterType,
+                                        parameterSliders[parameterType].value);
+      }
+    }
   }
 
   inline void handleMouseUp(const vec2f_t &mousePosition) {
-
+    for (auto &parameterType : ParameterTypes) {
+      parameterSliders[parameterType].state = INACTIVE;
+    }
     backButton.state = INACTIVE;
   }
 
@@ -645,6 +721,9 @@ struct SoundEditUI {
     DrawButton(backButton, renderer, style);
     //
     DrawRadioGroup(synthSelectRadioGroup, renderer, style);
+    for (auto &parameterType : ParameterTypes) {
+      DrawHSlider(parameterSliders[parameterType], renderer, style);
+    }
   }
 };
 
@@ -829,11 +908,11 @@ public:
 
     synth.setSynthType(SUBTRACTIVE);
     synth.setGain(1);
-    synth.setFilterCutoff(10000);
+    synth.setFilterCutoff(1);
     synth.setFilterQuality(0.5);
     synth.setSoundSource(0.5);
-    synth.setAttackTime(10.0);
-    synth.setReleaseTime(1000.0);
+    synth.setAttackTime(0.001);
+    synth.setReleaseTime(1);
 
     sensorMapping.addMapping(TILT, ParameterType::SOUND_SOURCE);
     sensorMapping.addMapping(SPIN, ParameterType::FILTER_CUTOFF);
@@ -1011,7 +1090,7 @@ public:
           mappingUI.handleMouseMove(mousePosition);
           break;
         case Navigation::SOUND_EDIT:
-          soundEditUI.handleMouseMove(mouseDownPosition);
+          soundEditUI.handleMouseMove(mousePosition);
           break;
         }
 

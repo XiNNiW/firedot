@@ -228,11 +228,13 @@ template <typename sample_t> struct KarplusStrongSynthesizer {
     }
   }
   inline void setAttackTime(sample_t value) {
+    value *= 1000;
     for (auto &voice : voices) {
       voice.attackTime = value;
     }
   }
   inline void setReleaseTime(sample_t value) {
+    value *= 1000;
     for (auto &voice : voices) {
       voice.releaseTime = value;
     }
@@ -381,21 +383,26 @@ template <typename sample_t> struct SubtractiveSynthesizer {
     }
   }
   inline void setFilterQuality(sample_t value) {
+    value = clamp<sample_t>(value, 0.001, 1);
+    value *= 3;
     for (auto &voice : voices) {
       voice.filterQuality = value;
     }
   }
   inline void setSoundSource(sample_t value) {
+    value = clamp<sample_t>(value, 0, 1);
     for (auto &voice : voices) {
       voice.osc.oscMix = value;
     }
   }
   inline void setAttackTime(sample_t value) {
+    value *= 1000;
     for (auto &voice : voices) {
       voice.attackTime = value;
     }
   }
   inline void setReleaseTime(sample_t value) {
+    value *= 1000;
     for (auto &voice : voices) {
       voice.releaseTime = value;
     }
@@ -592,6 +599,7 @@ template <typename sample_t> struct FMSynthesizer {
     }
   }
   inline void setAttackTime(sample_t value) {
+    value *= 1000;
     for (auto &voice : voices) {
       voice.op1.env.setAttackTime(value, sampleRate);
       voice.op2.env.setAttackTime(value, sampleRate);
@@ -600,6 +608,7 @@ template <typename sample_t> struct FMSynthesizer {
     }
   }
   inline void setReleaseTime(sample_t value) {
+    value *= 1000;
     for (auto &voice : voices) {
       voice.op1.env.setReleaseTime(value, sampleRate);
       voice.op2.env.setReleaseTime(value, sampleRate);
@@ -670,11 +679,11 @@ template <typename sample_t> struct SynthesizerEvent {
 template <typename sample_t> struct Synthesizer {
 
   Parameter<sample_t> gain = Parameter<sample_t>(1);
-  Parameter<sample_t> filterCutoff = Parameter<sample_t>(17000);
+  Parameter<sample_t> filterCutoff = Parameter<sample_t>(1);
   Parameter<sample_t> filterQuality = Parameter<sample_t>(0.3);
   Parameter<sample_t> soundSource = Parameter<sample_t>(0);
-  Parameter<sample_t> attackTime = Parameter<sample_t>(10);
-  Parameter<sample_t> releaseTime = Parameter<sample_t>(1000);
+  Parameter<sample_t> attackTime = Parameter<sample_t>(0);
+  Parameter<sample_t> releaseTime = Parameter<sample_t>(1);
   sample_t sampleRate = 48000;
   SynthesizerType type;
   union uSynthesizer {
@@ -868,5 +877,27 @@ template <typename sample_t> struct Synthesizer {
   inline void setReleaseTime(sample_t value) {
     eventQueue.push(SynthesizerEvent<sample_t>(
         ParameterChangeEvent<sample_t>{.type = RELEASE_TIME, .value = value}));
+  }
+
+  inline const sample_t getParameter(const ParameterType parameterType) {
+
+    // TODO this also needs threading consideration
+    switch (parameterType) {
+
+    case GAIN:
+      return gain.value;
+    case SOUND_SOURCE:
+      return soundSource.value;
+    case FILTER_CUTOFF:
+      return filterCutoff.value;
+    case FILTER_QUALITY:
+      return filterQuality.value;
+    case ATTACK_TIME:
+      return attackTime.value;
+    case RELEASE_TIME:
+      return releaseTime.value;
+      break;
+    }
+    return 0;
   }
 };
