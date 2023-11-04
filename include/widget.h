@@ -304,11 +304,11 @@ inline void DrawRadioGroup(const RadioGroup &group, SDL_Renderer *renderer,
           static_cast<int>(group.shape.position.x - group.shape.halfSize.x - 5),
       .y =
           static_cast<int>(group.shape.position.y - group.shape.halfSize.y - 5),
-      .w = static_cast<int>(group.shape.halfSize.x * 2 + 10),
+      .w = static_cast<int>(group.shape.halfSize.x * 2 + 5),
       .h = static_cast<int>(group.shape.halfSize.y * 2 + 10)};
-  SDL_SetRenderDrawColor(renderer, style.hoverColor.r, style.hoverColor.g,
-                         style.hoverColor.b, style.hoverColor.a);
-  SDL_RenderFillRect(renderer, &radiogroupBackgroundRect);
+  //  SDL_SetRenderDrawColor(renderer, style.color2.r, style.color2.g,
+  //                         style.color2.b, style.color2.a);
+  //  SDL_RenderFillRect(renderer, &radiogroupBackgroundRect);
   for (auto &button : group.options) {
     DrawButton(button, renderer, style);
   }
