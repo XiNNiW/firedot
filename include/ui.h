@@ -4,6 +4,7 @@
 #include "synthesis.h"
 #include "widget.h"
 #include <map>
+#include <sstream>
 enum IconType { MENU, SYNTH_SELECT };
 struct Navigation {
   enum Page { KEYBOARD, MAPPING, SOUND_EDIT } page = KEYBOARD;
@@ -244,11 +245,12 @@ struct MappingUI {
                      float(NUM_SENSOR_TYPES)};
     auto menuButtonHalfSize = menuButtonSize.scale(0.5);
     for (auto &sensorType : SensorTypes) {
-
+      std::stringstream formatter = std::stringstream();
+      formatter << "map " << SensorTypesDisplayNames[sensorType] << " to...";
       sensorMenus[sensorType] = MultiSelectMenu{
           .selected = sensorMapping->mapping[sensorType],
           .menuButton =
-              Button{.labelText = SensorTypesDisplayNames[sensorType],
+              Button{.labelText = formatter.str(),
                      .shape =
                          AxisAlignedBoundingBox{
                              .position = {.x = static_cast<float>(width / 2.0),
