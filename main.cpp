@@ -238,16 +238,9 @@ public:
     sensorMapping.addMapping(TILT, ParameterType::SOUND_SOURCE);
     sensorMapping.addMapping(SPIN, ParameterType::FILTER_CUTOFF);
 
-    mappingUI.sensorMapping = &sensorMapping;
-    mappingUI.navigation = &navigation;
+    navigationUI.buildLayout(width, height);
     mappingUI.buildLayout(width, height);
-
-    keyboardUI.synth = &synth;
-    keyboardUI.navigation = &navigation;
     keyboardUI.buildLayout(width, height);
-
-    soundEditUI.synth = &synth;
-    soundEditUI.navigation = &navigation;
     soundEditUI.buildLayout(width, height);
 
     lastFrameTime = SDL_GetTicks();
@@ -615,18 +608,21 @@ private:
   SDL_Joystick *gGameController = NULL;
   std::vector<GameObject *> gameObjects;
   GameObject *wall1, *wall2, *wall3, *wall4;
-  std::vector<float> noteListKeys;
-  std::vector<Button> synthSelectRadioGroup;
-  std::vector<SynthesizerType> synthTypes;
 
   Style style;
   SDL_Texture *menuIcon = NULL;
   SDL_Texture *synthSelectIcon = NULL;
 
-  Navigation navigation;
-  KeyboardUI keyboardUI;
-  MappingUI mappingUI;
-  SoundEditUI soundEditUI;
+  // Model objects
+  Navigation navigation = Navigation{.page = Navigation::KEYBOARD};
+  Synthesizer<float> synth;
+  SensorMapping<float> sensorMapping;
+
+  // UI objects
+  NavigationUI navigationUI = NavigationUI::MakeNavigationUI(&navigation);
+  KeyboardUI keyboardUI = KeyboardUI::MakeKeyboardUI(&navigationUI, &synth);
+  MappingUI mappingUI = MappingUI::MakeMappingUI(&navigationUI, &sensorMapping);
+  SoundEditUI soundEditUI = SoundEditUI::MakeSoundEditUI(&navigationUI, &synth);
 
   SDL_Color textColor = {20, 20, 20};
   SDL_Color textBackgroundColor = {0, 0, 0};
@@ -639,8 +635,7 @@ private:
   int joystickYPosition = 0;
   float xDir = 0, yDir = 0;
   SDL_AudioSpec config;
-  Synthesizer<float> synth;
-  SensorMapping<float> sensorMapping;
+
   int lastFrameTime = 0;
   int radius = 50;
   bool renderIsOn = true;

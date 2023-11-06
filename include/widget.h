@@ -36,11 +36,13 @@ inline const bool DoButtonClick(Button *button, const vec2f_t mousePosition) {
   return false;
 }
 
-static void DoButtonHover(Button *button, const vec2f_t &position) {
+static bool DoButtonHover(Button *button, const vec2f_t &position) {
   if ((button->state != UIState::ACTIVE) && (button->state != UIState::HOVER) &&
       button->shape.contains(position)) {
     button->state = UIState::HOVER;
+    return true;
   }
+  return false;
 }
 struct Style {
   TTF_Font *font;
@@ -200,17 +202,17 @@ inline void DrawRadioButtonSingle(const Button &button, SDL_Renderer *renderer,
                          backgroundColor.b, backgroundColor.a);
 
   SDL_RenderFillRect(renderer, &rect);
-  SDL_SetRenderDrawColor(renderer, outlineColor.r, outlineColor.g,
-                         outlineColor.b, outlineColor.a);
-  SDL_RenderDrawRect(renderer, &rect);
+  //  SDL_SetRenderDrawColor(renderer, outlineColor.r, outlineColor.g,
+  //                         outlineColor.b, outlineColor.a);
+  //  SDL_RenderDrawRect(renderer, &rect);
 
   if (button.state == ACTIVE) {
-    auto smallerRectAABB = button.shape;
-    smallerRectAABB.halfSize = smallerRectAABB.halfSize.scale(0.33);
-    auto smallerRect = ConvertAxisAlignedBoxToSDL_Rect(smallerRectAABB);
+    //  auto smallerRectAABB = button.shape;
+    // smallerRectAABB.halfSize = smallerRectAABB.halfSize.scale(0.33);
+    // auto smallerRect = ConvertAxisAlignedBoxToSDL_Rect(smallerRectAABB);
     SDL_SetRenderDrawColor(renderer, style.color1.r, style.color1.g,
                            style.color1.b, style.color1.a);
-    SDL_RenderFillRect(renderer, &smallerRect);
+    SDL_RenderFillRect(renderer, &rect);
   }
 
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
@@ -375,24 +377,38 @@ struct RadioGroup {
   float buttonMargin = 10;
   float buttonHeight = 100;
   AxisAlignedBoundingBox shape;
-  std::vector<Button> options;
+  std::vector<Button> options = std::vector<Button>();
+
+  static const RadioGroup
+  MakeRadioGroup(const std::vector<std::string> &optionLabels,
+                 const int initialSelection) {
+    auto group = RadioGroup{
+        .selectedIndex = initialSelection,
+    };
+    for (auto &label : optionLabels) {
+      group.options.push_back(Button{
+          .labelText = label,
+      });
+    }
+    return group;
+  }
 
   inline void buildLayout(const AxisAlignedBoundingBox &bounds) {
     shape = bounds;
     const size_t initialSynthTypeSelection = 0;
     const float buttonWidth =
-        (bounds.halfSize.x * 2 - float(options.size() * buttonMargin)) /
+        (shape.halfSize.x * 2 - float(options.size() * buttonMargin)) /
         float(options.size());
-    buttonHeight = bounds.halfSize.y;
+    buttonHeight = shape.halfSize.y;
     for (size_t i = 0; i < options.size(); ++i) {
       options[i].shape = AxisAlignedBoundingBox{
           .position =
               vec2f_t{.x = static_cast<float>(
-                          bounds.position.x - bounds.halfSize.x +
+                          shape.position.x - shape.halfSize.x +
                           buttonWidth / 2 + i * (buttonWidth + buttonMargin)),
-                      .y = static_cast<float>(bounds.position.y)},
+                      .y = static_cast<float>(shape.position.y)},
           .halfSize = vec2f_t{.x = static_cast<float>(buttonWidth / 2),
-                              .y = static_cast<float>(bounds.halfSize.y)}};
+                              .y = static_cast<float>(shape.halfSize.y)}};
 
       options[i].state = INACTIVE;
     }
@@ -418,29 +434,21 @@ inline void DrawRadioGroup(const RadioGroup &group, SDL_Renderer *renderer,
   }
 }
 inline const bool DoClickRadioGroup(RadioGroup *group,
-
                                     const vec2f_t &mousePosition) {
-  auto numButtons = group->options.size();
-  auto selected = 0;
-  for (size_t i = 0; i < numButtons; ++i) {
-    Button *button = &(group->options[i]);
-    if ((button->state != UIState::ACTIVE) &&
-        button->shape.contains(mousePosition)) {
-      button->state = UIState::ACTIVE;
-      selected = i;
-      for (size_t j = 0; j < numButtons; ++j) {
-        if (j != selected) {
-          group->options[j].state = UIState::INACTIVE;
-        }
-      }
-    } else if (button->state == UIState::ACTIVE) {
-      selected = i;
+
+  bool selectionChanged = false;
+
+  auto selection = 0;
+  for (auto &button : group->options) {
+    if (DoButtonClick(&button, mousePosition)) {
+      group->selectedIndex = selection;
+      selectionChanged = true;
+    } else {
+      button.state = INACTIVE;
     }
+    ++selection;
   }
-
-  bool selectionChanged = selected == group->selectedIndex;
-  group->selectedIndex = selected;
-
+  group->options[group->selectedIndex].state = ACTIVE;
   return selectionChanged;
 }
 
