@@ -56,6 +56,8 @@ struct Style {
   SDL_Color inactiveColor =
       SDL_Color{.r = 0x1b, .g = 0x1b, .b = 0x1b, .a = 0xff};
   SDL_Color hoverColor = SDL_Color{.r = 0xa0, .g = 0xa0, .b = 0xa0, .a = 0xff};
+  SDL_Color unavailableColor =
+      SDL_Color{.r = 0x2b, .g = 0x2b, .b = 0x2b, .a = 0xff};
 
   inline const SDL_Color getWidgetColor(const UIState state) const {
 

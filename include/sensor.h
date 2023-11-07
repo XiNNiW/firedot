@@ -33,4 +33,12 @@ template <typename sample_t> struct SensorMapping {
     // mapping.erase(std::pair(sensorType, paramType));
     mapping.erase(sensorType);
   }
+
+  inline const bool isMapped(const ParameterType parameterType) {
+    for (auto &pair : mapping) {
+      if (pair.second == parameterType)
+        return true;
+    }
+    return false;
+  }
 };

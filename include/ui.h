@@ -505,6 +505,7 @@ struct SoundEditUI {
   NavigationUI *navigationUI;
   // Navigation *navigation = NULL;
   Synthesizer<float> *synth = NULL;
+  SensorMapping<float> *sensorMapping = NULL;
 
   // Button backButton;
   RadioGroup synthSelectRadioGroup;
@@ -518,17 +519,21 @@ struct SoundEditUI {
   float topMargin = 50;
   float pageMargin = 50;
 
-  static inline const SoundEditUI MakeSoundEditUI(NavigationUI *navUI,
-                                                  Synthesizer<float> *synth) {
+  static inline const SoundEditUI
+  MakeSoundEditUI(NavigationUI *navUI, Synthesizer<float> *synth,
+                  SensorMapping<float> *mapping) {
     const size_t initialSynthTypeSelection = synth->type;
     std::vector<std::string> synthOptionLabels = {};
     for (auto &synthType : SynthTypes) {
       synthOptionLabels.push_back(SynthTypeDisplayNames[synthType]);
     }
-    return SoundEditUI{.navigationUI = navUI,
-                       .synth = synth,
-                       .synthSelectRadioGroup = RadioGroup::MakeRadioGroup(
-                           synthOptionLabels, initialSynthTypeSelection)};
+    return SoundEditUI{
+        .navigationUI = navUI,
+        .synth = synth,
+        .sensorMapping = mapping,
+        .synthSelectRadioGroup = RadioGroup::MakeRadioGroup(
+            synthOptionLabels, initialSynthTypeSelection),
+    };
   }
 
   void buildLayout(const float width, const float height) {
@@ -671,7 +676,25 @@ struct SoundEditUI {
     //
     DrawRadioGroup(synthSelectRadioGroup, renderer, style);
     for (auto &parameterType : ParameterTypes) {
-      DrawHSlider(parameterSliders[parameterType], renderer, style);
+      if (sensorMapping->isMapped(parameterType)) {
+        auto rect = ConvertAxisAlignedBoxToSDL_Rect(
+            parameterSliders[parameterType].shape);
+        SDL_SetRenderDrawColor(
+            renderer, style.unavailableColor.r, style.unavailableColor.g,
+            style.unavailableColor.b, style.unavailableColor.a);
+        SDL_RenderFillRect(renderer, &rect);
+        auto percentRect = rect;
+        percentRect.w *= synth->getParameter(parameterType);
+        SDL_SetRenderDrawColor(renderer, style.hoverColor.r, style.hoverColor.g,
+                               style.hoverColor.b, style.hoverColor.a);
+        SDL_RenderFillRect(renderer, &percentRect);
+        DrawLabel(parameterSliders[parameterType].labelText, style.hoverColor,
+                  style.unavailableColor, rect, renderer, style);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+      } else {
+
+        DrawHSlider(parameterSliders[parameterType], renderer, style);
+      }
     }
   }
 };

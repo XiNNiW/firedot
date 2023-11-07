@@ -622,7 +622,8 @@ private:
   NavigationUI navigationUI = NavigationUI::MakeNavigationUI(&navigation);
   KeyboardUI keyboardUI = KeyboardUI::MakeKeyboardUI(&navigationUI, &synth);
   MappingUI mappingUI = MappingUI::MakeMappingUI(&navigationUI, &sensorMapping);
-  SoundEditUI soundEditUI = SoundEditUI::MakeSoundEditUI(&navigationUI, &synth);
+  SoundEditUI soundEditUI =
+      SoundEditUI::MakeSoundEditUI(&navigationUI, &synth, &sensorMapping);
 
   SDL_Color textColor = {20, 20, 20};
   SDL_Color textBackgroundColor = {0, 0, 0};
