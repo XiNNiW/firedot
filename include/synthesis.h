@@ -1,8 +1,10 @@
 #pragma once
 
+#include "SDL_log.h"
 #include <algae.h>
 #include <atomic>
 #include <cstddef>
+#include <cstdlib>
 #include <new>
 #include <rigtorp/SPSCQueue.h>
 
@@ -206,7 +208,14 @@ template <typename sample_t> struct KarplusStrongSynthesizer {
       }
     }
   }
+  inline void bendNote(const sample_t note, const sample_t destinationNote) {
+    for (size_t i = 0; i < MAX_VOICES; ++i) {
+      if (notes[i] == note) {
 
+        voices[i].frequency.set(mtof(destinationNote), 30.0, sampleRate);
+      }
+    }
+  }
   inline void setGain(sample_t value) { gain = value; }
   inline void setFilterCutoff(sample_t value) {
     value = clamp<sample_t>(value, 0, 1);
@@ -374,7 +383,15 @@ template <typename sample_t> struct SubtractiveSynthesizer {
       }
     }
   }
-
+  inline void bendNote(const sample_t note, const sample_t destinationNote) {
+    SDL_Log("pitch bend for %d to %d", note, destinationNote);
+    for (size_t i = 0; i < MAX_VOICES; ++i) {
+      if (notes[i] == note) {
+        SDL_Log("found note!");
+        voices[i].frequency.set(mtof(destinationNote), 30.0, sampleRate);
+      }
+    }
+  }
   inline void setGain(sample_t value) { gain = value; }
   inline void setFilterCutoff(sample_t value) {
     value = lerp<sample_t>(500, 19000, value);
@@ -573,6 +590,14 @@ template <typename sample_t> struct FMSynthesizer {
     }
   }
 
+  inline void bendNote(const sample_t note, const sample_t destinationNote) {
+    for (size_t i = 0; i < MAX_VOICES; ++i) {
+      if (notes[i] == note) {
+        voices[i].frequency.set(mtof(destinationNote), 30.0, sampleRate);
+      }
+    }
+  }
+
   inline void setGain(sample_t value) { gain = value; }
   inline void setFilterCutoff(sample_t value) {
     value = clamp<sample_t>(value, 0, 1);
@@ -656,15 +681,27 @@ static const SynthesizerType SynthTypes[NUM_SYNTH_TYPES] = {
 static const char *SynthTypeDisplayNames[NUM_SYNTH_TYPES] = {
     "subtractive", "physical model", "frequency modulation"};
 
+template <typename sample_t> struct PitchBendEvent {
+  sample_t note = 0;
+  sample_t destinationNote = 0;
+};
+
 template <typename sample_t> struct SynthesizerEvent {
-  enum EventType { NOTE, PARAMETER_CHANGE, SYNTHESIZER_CHANGE } type;
+  enum EventType {
+    NOTE,
+    PARAMETER_CHANGE,
+    SYNTHESIZER_CHANGE,
+    PITCH_BEND
+  } type;
   union uEventData {
     NoteEvent<sample_t> note;
     ParameterChangeEvent<sample_t> paramChange;
     SynthesizerType newSynthType;
+    PitchBendEvent<sample_t> pitchBend;
     uEventData(const NoteEvent<sample_t> &n) : note(n) {}
     uEventData(const ParameterChangeEvent<sample_t> &p) : paramChange(p) {}
     uEventData(const SynthesizerType &s) : newSynthType(s) {}
+    uEventData(const PitchBendEvent<sample_t> &b) : pitchBend(b) {}
   } data;
   SynthesizerEvent<sample_t>() {}
   SynthesizerEvent<sample_t>(const NoteEvent<sample_t> &noteEvent)
@@ -674,7 +711,30 @@ template <typename sample_t> struct SynthesizerEvent {
       : data(parameterChangeEvent), type(PARAMETER_CHANGE) {}
   SynthesizerEvent<sample_t>(const SynthesizerType &synthType)
       : data(synthType), type(SYNTHESIZER_CHANGE) {}
+  SynthesizerEvent<sample_t>(const PitchBendEvent<sample_t> &bend)
+      : data(bend), type(PITCH_BEND) {}
 };
+
+// template <typename sample_t> struct SampleMemory {
+//   sample_t *buffer;
+//   size_t size;
+//   size_t head = 0;
+//   SampleMemory(const size_t _size) : size(size) { buffer = malloc(size); }
+//   ~SampleMemory() {
+//     for (size_t i = 0; i < size; ++i) {
+//       delete buffer[i];
+//     }
+//     delete buffer;
+//   }
+//   inline const bool allocate(size_t requestedSize, sample_t *location) {
+//     if ((requestedSize > size) || ((head + requestedSize) >= size - 1)) {
+//       return false;
+//     }
+//     location = &buffer[head];
+//     head += size;
+//     return true;
+//   };
+// };
 
 template <typename sample_t> struct Synthesizer {
 
@@ -835,6 +895,27 @@ template <typename sample_t> struct Synthesizer {
         }
         break;
       }
+      case SynthesizerEvent<sample_t>::PITCH_BEND: {
+        switch (type) {
+
+        case SUBTRACTIVE: {
+          object.subtractive.bendNote(event.data.pitchBend.note,
+                                      event.data.pitchBend.destinationNote);
+          break;
+        }
+        case PHYSICAL_MODEL: {
+          object.physicalModel.bendNote(event.data.pitchBend.note,
+                                        event.data.pitchBend.destinationNote);
+          break;
+        }
+        case FREQUENCY_MODULATION: {
+          object.fm.bendNote(event.data.pitchBend.note,
+                             event.data.pitchBend.destinationNote);
+          break;
+        }
+        }
+        break;
+      }
       }
     }
   }
@@ -877,6 +958,11 @@ template <typename sample_t> struct Synthesizer {
   inline void setReleaseTime(sample_t value) {
     eventQueue.push(SynthesizerEvent<sample_t>(
         ParameterChangeEvent<sample_t>{.type = RELEASE_TIME, .value = value}));
+  }
+
+  inline void bendNote(sample_t note, sample_t destinationNote) {
+    eventQueue.push(PitchBendEvent<sample_t>{
+        .note = note, .destinationNote = destinationNote});
   }
 
   inline const sample_t getParameter(const ParameterType parameterType) {

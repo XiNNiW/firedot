@@ -5,6 +5,7 @@
 #include "sensor.h"
 #include "synthesis.h"
 #include "widget.h"
+#include <cstddef>
 #include <map>
 #include <sstream>
 enum IconType { MENU, SYNTH_SELECT };
@@ -30,7 +31,7 @@ struct NavigationUI {
   float pageMargin = 25;
   float bottomMargin = 15;
   float seperatorHeight = 2;
-  float buttonHeight = 75;
+  float buttonHeight = 200;
   AxisAlignedBoundingBox shape;
   static inline const NavigationUI MakeNavigationUI(Navigation *navigation) {
 
@@ -47,7 +48,7 @@ struct NavigationUI {
   }
   inline void buildLayout(const float width, const float height) {
 
-    buttonHeight = height / 24.0;
+    buttonHeight = height / 18.0;
     pages.buildLayout(
         {.position = {.x = static_cast<float>(width / 2.0),
                       .y = static_cast<float>((buttonHeight / 2) + topMargin)},
@@ -154,6 +155,7 @@ struct KeyboardUI {
   Synthesizer<float> *synth = NULL;
 
   std::map<SDL_FingerID, int> heldKeys;
+  int fingerPositions[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 
   // Button mappingMenuButton;
   //  Button soundEditMenuButton;
@@ -235,9 +237,18 @@ struct KeyboardUI {
                                const vec2f_t &position, const float pressure) {
     for (size_t i = 0; i < NUM_KEY_BUTTONS; ++i) {
       if (DoButtonHover(&keyButtons[i], position)) {
-        auto bentNote = heldKeys[fingerId];
+        auto bentNote = notes[heldKeys[fingerId]];
         auto bendDestination = notes[i];
-        // synth->bendNote(bentNote, bendDestination);
+        synth->bendNote(bentNote, bendDestination);
+        fingerPositions[fingerId] = i;
+      }
+    }
+
+    for (size_t i = 0; i < NUM_KEY_BUTTONS; ++i) {
+      for (size_t j = 0; j < 10; ++j) {
+        if ((fingerPositions[j] == i) && (keyButtons[i].state != ACTIVE)) {
+          keyButtons[i].state = HOVER;
+        }
       }
     }
     //  DoButtonHover(&soundEditMenuButton, position);
@@ -266,11 +277,16 @@ struct KeyboardUI {
       heldKeys.erase(fingerId);
     }
 
+    if (fingerPositions[fingerId] > -1) {
+      keyButtons[fingerPositions[fingerId]].state = INACTIVE;
+    }
+
     if (heldKeys.size() == 0) {
       for (auto &button : keyButtons) {
         button.state = UIState::INACTIVE;
       }
     }
+    fingerPositions[fingerId] = -1;
   }
 
   inline void handleMouseMove(const vec2f_t &mousePosition) {}
@@ -326,12 +342,15 @@ struct MappingUI {
   SensorMapping<float> *sensorMapping = NULL;
   // Button backButton;
   MultiSelectMenu sensorMenus[NUM_SENSOR_TYPES];
-
+  std::string titleLabel = "map the phone sensors to sound parameters: ";
+  std::string sensorLabels[NUM_SENSOR_TYPES];
   // Navigation *navigation = NULL;
 
   float titleBarHeight = 100;
   float sideMargin = 15;
   float topMargin = 50;
+  float buttonMargin = 50;
+  float sensorLabelWidth = 150;
 
   static inline const MappingUI MakeMappingUI(NavigationUI *navUI,
                                               SensorMapping<float> *mapping) {
@@ -358,25 +377,31 @@ struct MappingUI {
       options.push_back(Button{.labelText = ParameterTypeDisplayNames[i]});
     }
 
-    auto menuButtonSize =
-        vec2f_t{.x = width - 2 * sideMargin,
-                .y = (height - 2 * topMargin - titleBarHeight) /
-                     float(NUM_SENSOR_TYPES)};
+    auto menuButtonSize = vec2f_t{.x = (width - (2 * sideMargin)) / 3,
+                                  .y = static_cast<float>(100)};
     auto menuButtonHalfSize = menuButtonSize.scale(0.5);
     for (auto &sensorType : SensorTypes) {
       std::stringstream formatter = std::stringstream();
-      formatter << "map " << SensorTypesDisplayNames[sensorType] << " to...";
+      formatter << SensorTypesDisplayNames[sensorType] << " --> ";
+      sensorLabels[sensorType] = formatter.str();
+
       sensorMenus[sensorType] = MultiSelectMenu{
           .selected = sensorMapping->mapping[sensorType],
           .menuButton =
-              Button{.labelText = formatter.str(),
+              Button{.labelText =
+                         ParameterTypeDisplayNames[sensorMapping
+                                                       ->mapping[sensorType]],
                      .shape =
                          AxisAlignedBoundingBox{
-                             .position = {.x = static_cast<float>(width / 2.0),
-                                          .y = sensorType * menuButtonSize.y +
+                             .position = {.x = static_cast<float>(
+                                              sensorLabelWidth +
+                                              menuButtonSize.x + sideMargin),
+                                          .y = (sensorType * (menuButtonSize.y +
+                                                              buttonMargin)) +
                                                menuButtonHalfSize.y +
-                                               topMargin + titleBarHeight},
-                             .halfSize = menuButtonHalfSize.scale(0.5)}},
+                                               buttonMargin + topMargin +
+                                               titleBarHeight},
+                             .halfSize = menuButtonHalfSize}},
           .options = options,
       };
       sensorMenus[sensorType].buildLayout(width, height);
@@ -405,6 +430,7 @@ struct MappingUI {
         sensorMapping->removeMapping(sensorType,
                                      ParameterTypes[previousSelection]);
         sensorMapping->addMapping(sensorType, ParameterTypes[menu.selected]);
+        menu.menuButton.labelText = ParameterTypeDisplayNames[menu.selected];
         SDL_Log("mapping changed");
         for (auto &pair : sensorMapping->mapping) {
           SDL_Log("%s -> %s", SensorTypesDisplayNames[pair.first],
@@ -450,8 +476,25 @@ struct MappingUI {
       DrawMultiSelectMenu(sensorMenus[activeSensorType], renderer, style);
     } else {
       //   DrawButton(backButton, renderer, style);
-      for (auto &menu : sensorMenus) {
-        DrawMultiSelectMenu(menu, renderer, style);
+      DrawLabel(titleLabel, style.inactiveColor, style.hoverColor,
+                {.x = static_cast<int>(sideMargin),
+                 .y = static_cast<int>(titleBarHeight),
+                 .w = 300,
+                 .h = static_cast<int>(titleBarHeight)},
+                renderer, style);
+      for (size_t i = 0; i < NUM_SENSOR_TYPES; ++i) {
+        DrawMultiSelectMenu(sensorMenus[i], renderer, style);
+        DrawLabel(sensorLabels[i], style.hoverColor, style.inactiveColor,
+                  SDL_Rect{.x = static_cast<int>(
+                               sensorMenus[i].menuButton.shape.position.x -
+                               sensorMenus[i].menuButton.shape.halfSize.x -
+                               sensorLabelWidth),
+                           .y = static_cast<int>(
+                               sensorMenus[i].menuButton.shape.position.y -
+                               sensorMenus[i].menuButton.shape.halfSize.y),
+                           .w = static_cast<int>(sensorLabelWidth),
+                           .h = 100},
+                  renderer, style);
       }
     }
   }
@@ -466,6 +509,7 @@ struct SoundEditUI {
   // Button backButton;
   RadioGroup synthSelectRadioGroup;
   HSlider parameterSliders[NUM_PARAMETER_TYPES];
+  int fingerPositions[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 
   float titleBarHeight = 100;
   float synthSelectWidth = 50;
@@ -541,13 +585,45 @@ struct SoundEditUI {
   inline void handleFingerMove(const SDL_FingerID &fingerId,
                                const vec2f_t &position, const float pressure) {
     DoRadioGroupHover(&synthSelectRadioGroup, position);
+    if (fingerPositions[fingerId] > -1) {
+      auto parameterType = ParameterTypes[fingerPositions[fingerId]];
+      if (DoHSliderDrag(&parameterSliders[parameterType], position)) {
+        synth->pushParameterChangeEvent(parameterType,
+                                        parameterSliders[parameterType].value);
+      }
+    }
+    //   for (auto &parameterType : ParameterTypes) {
+
+    //     if (DoHSliderDrag(&parameterSliders[parameterType], position)) {
+    //       synth->pushParameterChangeEvent(parameterType,
+    //                                       parameterSliders[parameterType].value);
+    //     }
+    //   }
   }
 
   inline void handleFingerDown(const SDL_FingerID &fingerId,
-                               const vec2f_t &position, const float pressure) {}
+                               const vec2f_t &position, const float pressure) {
+    if (DoClickRadioGroup(&synthSelectRadioGroup, position)) {
+      synth->setSynthType(SynthTypes[synthSelectRadioGroup.selectedIndex]);
+      synth->note(60, 100);
+    };
+    for (size_t i = 0; i < NUM_PARAMETER_TYPES; ++i) {
+      auto &parameterType = ParameterTypes[i];
+      if (DoHSliderClick(&parameterSliders[parameterType], position)) {
+        fingerPositions[fingerId] = i;
+        synth->pushParameterChangeEvent(parameterType,
+                                        parameterSliders[parameterType].value);
+      }
+    }
+  }
 
   inline void handleFingerUp(const SDL_FingerID &fingerId,
-                             const vec2f_t &position, const float pressure) {}
+                             const vec2f_t &position, const float pressure) {
+    if (fingerPositions[fingerId] > -1) {
+      parameterSliders[fingerPositions[fingerId]].state = INACTIVE;
+    }
+    fingerPositions[fingerId] = -1;
+  }
 
   inline void handleMouseMove(const vec2f_t &mousePosition) {
     DoRadioGroupHover(&synthSelectRadioGroup, mousePosition);
@@ -563,21 +639,21 @@ struct SoundEditUI {
   inline void handleMouseDown(const vec2f_t &mousePosition) {
     navigationUI->handleMouseDown(mousePosition);
 
-    if (DoClickRadioGroup(&synthSelectRadioGroup, mousePosition)) {
-      synth->setSynthType(SynthTypes[synthSelectRadioGroup.selectedIndex]);
-      synth->note(60, 100);
-    };
+    //  if (DoClickRadioGroup(&synthSelectRadioGroup, mousePosition)) {
+    //    synth->setSynthType(SynthTypes[synthSelectRadioGroup.selectedIndex]);
+    //    synth->note(60, 100);
+    //  };
 
     //  if (DoButtonClick(&backButton, mousePosition, ACTIVE)) {
     //    navigation->page = Navigation::KEYBOARD;
     //  };
 
-    for (auto &parameterType : ParameterTypes) {
-      if (DoHSliderClick(&parameterSliders[parameterType], mousePosition)) {
-        synth->pushParameterChangeEvent(parameterType,
-                                        parameterSliders[parameterType].value);
-      }
-    }
+    // for (auto &parameterType : ParameterTypes) {
+    //   if (DoHSliderClick(&parameterSliders[parameterType], mousePosition)) {
+    //     synth->pushParameterChangeEvent(parameterType,
+    //                                     parameterSliders[parameterType].value);
+    //   }
+    // }
   }
 
   inline void handleMouseUp(const vec2f_t &mousePosition) {

@@ -37,10 +37,13 @@ inline const bool DoButtonClick(Button *button, const vec2f_t mousePosition) {
 }
 
 static bool DoButtonHover(Button *button, const vec2f_t &position) {
-  if ((button->state != UIState::ACTIVE) && (button->state != UIState::HOVER) &&
-      button->shape.contains(position)) {
-    button->state = UIState::HOVER;
+  if (button->shape.contains(position)) {
+    if ((button->state != UIState::ACTIVE))
+      button->state = UIState::HOVER;
     return true;
+  } else {
+    if ((button->state != UIState::ACTIVE))
+      button->state = UIState::INACTIVE;
   }
   return false;
 }
@@ -104,8 +107,9 @@ inline const void DrawButton(const Button &button, SDL_Texture *buttonTexture,
 }
 
 inline const void DrawLabel(const std::string &text, const SDL_Color &textColor,
-                            const SDL_Color &backgroundColor, SDL_Rect labelBox,
-                            SDL_Renderer *renderer, const Style &style,
+                            const SDL_Color &backgroundColor,
+                            const SDL_Rect &labelBox, SDL_Renderer *renderer,
+                            const Style &style,
                             const Alignment alignment = LEFT) {
 
   auto labelText = text.c_str();
