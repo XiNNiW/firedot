@@ -15,6 +15,7 @@
 #include "include/collider.h"
 #include "include/game_object.h"
 #include "include/physics.h"
+#include "include/sensor.h"
 #include "include/synthesis.h"
 #include "include/ui.h"
 #include "include/vector_math.h"
@@ -235,13 +236,10 @@ public:
     synth.setAttackTime(0.001);
     synth.setReleaseTime(1);
 
+    userInterface.buildLayout(width, height);
+
     sensorMapping.addMapping(TILT, ParameterType::SOUND_SOURCE);
     sensorMapping.addMapping(SPIN, ParameterType::FILTER_CUTOFF);
-
-    navigationUI.buildLayout(width, height);
-    mappingUI.buildLayout(width, height);
-    keyboardUI.buildLayout(width, height);
-    soundEditUI.buildLayout(width, height);
 
     lastFrameTime = SDL_GetTicks();
 
@@ -396,51 +394,19 @@ public:
       case SDL_MOUSEMOTION:
         mousePosition.x = event.motion.x;
         mousePosition.y = event.motion.y;
-        switch (navigation.page) {
-        case Navigation::KEYBOARD:
-          keyboardUI.handleMouseMove(mousePosition);
-          break;
-        case Navigation::MAPPING:
-          mappingUI.handleMouseMove(mousePosition);
-          break;
-        case Navigation::SOUND_EDIT:
-          soundEditUI.handleMouseMove(mousePosition);
-          break;
-        }
-
+        userInterface.handleMouseMove(mousePosition);
         break;
       case SDL_MOUSEBUTTONDOWN: {
         mouseDownPosition.x = event.motion.x;
         mouseDownPosition.y = event.motion.y;
 
-        switch (navigation.page) {
-        case Navigation::KEYBOARD:
-          keyboardUI.handleMouseDown(mouseDownPosition);
-          break;
-        case Navigation::MAPPING:
-          mappingUI.handleMouseDown(mouseDownPosition);
-          break;
-        case Navigation::SOUND_EDIT:
-          soundEditUI.handleMouseDown(mouseDownPosition);
-          break;
-        }
+        userInterface.handleMouseDown(mousePosition);
 
         break;
       }
       case SDL_MOUSEBUTTONUP: {
 
-        keyboardUI.handleMouseUp(mousePosition);
-        switch (navigation.page) {
-        case Navigation::KEYBOARD:
-          keyboardUI.handleMouseUp(mouseDownPosition);
-          break;
-        case Navigation::MAPPING:
-          mappingUI.handleMouseUp(mouseDownPosition);
-          break;
-        case Navigation::SOUND_EDIT:
-          soundEditUI.handleMouseUp(mouseDownPosition);
-          break;
-        }
+        userInterface.handleMouseUp(mousePosition);
 
         break;
       }
@@ -452,20 +418,9 @@ public:
         auto fingerId = event.tfinger.fingerId;
         auto position = vec2f_t{.x = event.tfinger.x * width,
                                 .y = event.tfinger.y * height};
+        auto pressure = event.tfinger.pressure;
 
-        switch (navigation.page) {
-        case Navigation::KEYBOARD:
-          keyboardUI.handleFingerMove(fingerId, position,
-                                      event.tfinger.pressure);
-          break;
-        case Navigation::MAPPING:
-          mappingUI.handleFingerMove(fingerId, position,
-                                     event.tfinger.pressure);
-          break;
-        case Navigation::SOUND_EDIT:
-          soundEditUI.handleFingerMove(fingerId, position,
-                                       event.tfinger.pressure);
-        }
+        userInterface.handleFingerMove(fingerId, position, pressure);
         break;
       }
       case SDL_FINGERDOWN: {
@@ -473,22 +428,9 @@ public:
         auto position = vec2f_t{.x = event.tfinger.x * width,
                                 .y = event.tfinger.y * height};
 
-        switch (navigation.page) {
-        case Navigation::KEYBOARD:
-          keyboardUI.handleFingerDown(fingerId, position,
-                                      event.tfinger.pressure);
+        auto pressure = event.tfinger.pressure;
 
-          break;
-        case Navigation::MAPPING:
-          mappingUI.handleFingerDown(fingerId, position,
-                                     event.tfinger.pressure);
-          break;
-        case Navigation::SOUND_EDIT:
-          soundEditUI.handleFingerDown(fingerId, position,
-                                       event.tfinger.pressure);
-          break;
-        }
-
+        userInterface.handleFingerDown(fingerId, position, pressure);
         break;
       }
       case SDL_FINGERUP: {
@@ -496,20 +438,10 @@ public:
         auto fingerId = event.tfinger.fingerId;
         auto position = vec2f_t{.x = event.tfinger.x * width,
                                 .y = event.tfinger.y * height};
-        SDL_Log("finger up #%ld: %f %f", fingerId, position.x, position.y);
 
-        switch (navigation.page) {
-        case Navigation::KEYBOARD:
-          keyboardUI.handleFingerUp(fingerId, position, event.tfinger.pressure);
-          break;
-        case Navigation::MAPPING:
-          mappingUI.handleFingerUp(fingerId, position, event.tfinger.pressure);
-          break;
-        case Navigation::SOUND_EDIT:
-          soundEditUI.handleFingerUp(fingerId, position,
-                                     event.tfinger.pressure);
-          break;
-        }
+        auto pressure = event.tfinger.pressure;
+
+        userInterface.handleFingerUp(fingerId, position, pressure);
 
         break;
       }
@@ -546,7 +478,7 @@ public:
           // SDL_LogInfo(0, "%s", ss.str().c_str());
 
           sensorMapping.emitEvent(&synth, SensorType::SPIN,
-                                  event.sensor.data[2]);
+                                  fmax(0, fmin(1, abs(event.sensor.data[2]))));
           break;
         }
         default:
@@ -575,19 +507,7 @@ public:
     for (auto object : gameObjects) {
     }
 
-    switch (navigation.page) {
-
-    case Navigation::KEYBOARD:
-      keyboardUI.draw(renderer, style);
-      break;
-    case Navigation::MAPPING:
-      mappingUI.draw(renderer, style);
-      break;
-    case Navigation::SOUND_EDIT:
-      soundEditUI.draw(renderer, style);
-      break;
-    }
-
+    userInterface.draw(renderer, style);
     SDL_RenderPresent(renderer);
   }
 
@@ -614,16 +534,11 @@ private:
   SDL_Texture *synthSelectIcon = NULL;
 
   // Model objects
-  Navigation navigation = Navigation{.page = Navigation::KEYBOARD};
   Synthesizer<float> synth;
   SensorMapping<float> sensorMapping;
 
   // UI objects
-  NavigationUI navigationUI = NavigationUI::MakeNavigationUI(&navigation);
-  KeyboardUI keyboardUI = KeyboardUI::MakeKeyboardUI(&navigationUI, &synth);
-  MappingUI mappingUI = MappingUI::MakeMappingUI(&navigationUI, &sensorMapping);
-  SoundEditUI soundEditUI =
-      SoundEditUI::MakeSoundEditUI(&navigationUI, &synth, &sensorMapping);
+  UserInterface userInterface = UserInterface(&synth, &sensorMapping);
 
   SDL_Color textColor = {20, 20, 20};
   SDL_Color textBackgroundColor = {0, 0, 0};
