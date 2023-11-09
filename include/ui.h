@@ -728,7 +728,6 @@ struct UserInterface {
   inline void handleFingerMove(const SDL_FingerID &fingerId,
                                const vec2f_t &position, const float pressure) {
 
-    navigationUI.handleFingerMove(fingerId, position, pressure);
     switch (navigation.page) {
     case Navigation::KEYBOARD:
       keyboardUI.handleFingerMove(fingerId, position, pressure);
@@ -745,7 +744,6 @@ struct UserInterface {
   inline void handleFingerDown(const SDL_FingerID &fingerId,
                                const vec2f_t &position, const float pressure) {
 
-    navigationUI.handleFingerDown(fingerId, position, pressure);
     switch (navigation.page) {
     case Navigation::KEYBOARD:
       keyboardUI.handleFingerDown(fingerId, position, pressure);
@@ -761,7 +759,6 @@ struct UserInterface {
 
   inline void handleFingerUp(const SDL_FingerID &fingerId,
                              const vec2f_t &position, const float pressure) {
-    navigationUI.handleFingerUp(fingerId, position, pressure);
     switch (navigation.page) {
     case Navigation::KEYBOARD:
       keyboardUI.handleFingerUp(fingerId, position, pressure);
@@ -776,7 +773,6 @@ struct UserInterface {
   }
 
   inline void handleMouseMove(const vec2f_t &mousePosition) {
-    navigationUI.handleMouseMove(mousePosition);
     switch (navigation.page) {
     case Navigation::KEYBOARD:
       keyboardUI.handleMouseMove(mousePosition);
@@ -791,7 +787,6 @@ struct UserInterface {
   }
 
   inline void handleMouseDown(const vec2f_t &mousePosition) {
-    navigationUI.handleMouseDown(mousePosition);
     switch (navigation.page) {
     case Navigation::KEYBOARD:
       keyboardUI.handleMouseDown(mousePosition);
@@ -806,7 +801,6 @@ struct UserInterface {
   }
 
   inline void handleMouseUp(const vec2f_t &mousePosition) {
-    navigationUI.handleMouseUp(mousePosition);
     switch (navigation.page) {
     case Navigation::KEYBOARD:
       keyboardUI.handleMouseUp(mousePosition);
@@ -832,7 +826,5 @@ struct UserInterface {
       soundEditUI.draw(renderer, style);
       break;
     }
-
-    navigationUI.draw(renderer, style);
   }
 };

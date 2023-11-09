@@ -31,6 +31,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <functional>
 #include <map>
 #include <math.h>
@@ -49,12 +50,13 @@
 #define SDL_AUDIODRIVER "jack"
 #endif // !SDL_AUDIODRIVER
 
-static inline const std::optional<SDL_Texture *>
-LoadIconTexture(SDL_Renderer *renderer, std::string path) {
+static inline const bool LoadIconTexture(SDL_Renderer *renderer,
+                                         std::string path,
+                                         SDL_Texture *texture) {
   bool success = true;
 
   SDL_Surface *surface = IMG_Load(path.c_str());
-  auto texture = SDL_CreateTextureFromSurface(renderer, surface);
+  texture = SDL_CreateTextureFromSurface(renderer, surface);
   SDL_FreeSurface(surface);
 
   if (texture == NULL) {
@@ -62,10 +64,96 @@ LoadIconTexture(SDL_Renderer *renderer, std::string path) {
                  "Unable to load image %s! "
                  "SDL Error: %s\n",
                  path.c_str(), SDL_GetError());
-    return std::nullopt;
+    return false;
+  } else {
+    return true;
+  }
+}
+
+struct SampleInfo {
+  SDL_AudioSpec wavSpec;
+  long size;
+  float *buffer;
+};
+
+inline void FreeSampleInfo(SampleInfo *sampleInfo) { delete sampleInfo; }
+
+static inline bool LoadWAVSample(std::string samplePath,
+                                 SampleInfo *sampleInfo) {
+
+  SDL_AudioSpec wavSpec;
+  Uint32 wavLength;
+  Uint8 *wavBuffer;
+  float *buffer;
+
+  SDL_LoadWAV(samplePath.c_str(), &wavSpec, &wavBuffer, &wavLength);
+
+  bool isSupportedFormat = false;
+
+  switch (wavSpec.format) {
+  case AUDIO_S8: {
+    const int bytesPerSample = sizeof(int8_t);
+    SDL_Log("its a signed 8bit int!");
+    break;
+  }
+  case AUDIO_U8: {
+    const int bytesPerSample = sizeof(uint8_t);
+    SDL_Log("its a unsigned 8bit int!");
+    break;
+  }
+  case AUDIO_S16: {
+    const int bytesPerSample = sizeof(int16_t);
+    isSupportedFormat = true;
+    SDL_Log("its a signed 16bit int!");
+    int16_t *stream = (int16_t *)wavBuffer;
+
+    SDL_Log("sample info: %d %f %d - %f", wavLength,
+            wavLength / float(bytesPerSample), wavSpec.freq,
+            float(wavLength / float(bytesPerSample * wavSpec.channels)) /
+                float(wavSpec.freq));
+    size_t numSamples = wavLength / bytesPerSample;
+    // buffer = new float[numSamples];
+    buffer = (float *)calloc(numSamples, sizeof(float));
+    if (buffer == NULL) {
+      return false;
+    }
+    for (size_t i = 0; i < numSamples; ++i) {
+      buffer[i] = 0;
+      for (size_t ch = 0; ch < wavSpec.channels; ++ch) {
+        buffer[i] +=
+            float(stream[i + ch]) / float(std::numeric_limits<int16_t>::max());
+      }
+    }
+    break;
+  }
+  case AUDIO_U16: {
+    const int bytesPerSample = sizeof(uint16_t);
+    SDL_Log("its a unsigned 16 bit int!");
+    break;
+  }
+  case AUDIO_S32: {
+    const int bytesPerSample = sizeof(int32_t);
+    SDL_Log("its a signed 32 bit int!");
+    break;
+  }
+  case AUDIO_F32: {
+    const int bytesPerSample = sizeof(float);
+    isSupportedFormat = true;
+    SDL_Log("its a float!");
+    break;
+  }
+  default:
+    SDL_Log("could not detect datatype");
+  }
+
+  if (!isSupportedFormat) {
+    delete[] wavBuffer;
+    return false;
   } else {
 
-    return texture;
+    sampleInfo =
+        new SampleInfo{.wavSpec = wavSpec, .size = wavLength, .buffer = buffer};
+    return true;
   }
 }
 
@@ -204,21 +292,23 @@ public:
     ss << "padding: " << config.padding << "\n";
     ss << "size: " << config.size << "\n";
     ss << "silence: " << config.silence << "\n";
+
+    if (!LoadWAVSample("sounds/autoharp 13 C3.wav", audioSample)) {
+      SDL_LogError(0, "could not read sample!");
+    };
+
     SDL_LogInfo(0, "%s", ss.str().c_str());
 
-    SDL_PauseAudioDevice(audioDeviceID,
-                         0); // start playback
+    SDL_PauseAudioDevice(audioDeviceID, 0); // start playback
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0,
-                           0);   // setting draw color
-    SDL_RenderClear(renderer);   // Clear the newly
-                                 // created window
-    SDL_RenderPresent(renderer); // Reflects the
-                                 // changes done in the
-    //  window.
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0); // setting draw color
+    SDL_RenderClear(renderer);                    // Clear the newly
+                                                  // created window
+    SDL_RenderPresent(renderer);                  // Reflects the
+                                                  // changes done in the window.
     if (!loadMedia()) {
-      printf("Media could not be "
-             "loaded...\n");
+      SDL_LogError(0, "Media could not be "
+                      "loaded...\n");
     }
 
     if (std::atomic<float>{}.is_lock_free()) {
@@ -251,6 +341,8 @@ public:
       delete o;
     }
     gameObjects.clear();
+
+    FreeSampleInfo(audioSample);
 
     SDL_JoystickClose(gGameController);
     gGameController = NULL;
@@ -327,26 +419,17 @@ public:
 
   bool loadMedia() {
 
-    auto maybeCursor = LoadIconTexture(renderer, "images/p04_shape1.bmp");
-    if (maybeCursor.has_value()) {
-      gCursor = maybeCursor.value();
-    } else {
+    if (!LoadIconTexture(renderer, "images/p04_shape1.bmp", gCursor)) {
       return false;
     }
 
-    auto maybeMenuIcon =
-        LoadIconTexture(renderer, "images/menu-burger-svgrepo-com.svg");
-    if (maybeMenuIcon.has_value()) {
-      menuIcon = maybeMenuIcon.value();
-    } else {
+    if (!LoadIconTexture(renderer, "images/menu-burger-svgrepo-com.svg",
+                         menuIcon)) {
       return false;
     }
 
-    auto maybeSynthSelectIcon =
-        LoadIconTexture(renderer, "images/colour-tuneing-svgrepo-com.svg");
-    if (maybeSynthSelectIcon.has_value()) {
-      synthSelectIcon = maybeSynthSelectIcon.value();
-    } else {
+    if (!LoadIconTexture(renderer, "images/colour-tuneing-svgrepo-com.svg",
+                         synthSelectIcon)) {
       return false;
     }
 
@@ -528,6 +611,7 @@ private:
   SDL_Joystick *gGameController = NULL;
   std::vector<GameObject *> gameObjects;
   GameObject *wall1, *wall2, *wall3, *wall4;
+  SampleInfo *audioSample;
 
   Style style;
   SDL_Texture *menuIcon = NULL;
