@@ -547,12 +547,7 @@ struct SoundEditUI {
         .x = static_cast<float>(width / 8.0),
         .y = static_cast<float>(width / 16.0),
     };
-    //   backButton = Button{
-    //       .labelText = "<- back",
-    //       .shape = AxisAlignedBoundingBox{
-    //           .position = {.x = static_cast<float>(backButtonSize.x / 2.0),
-    //                        .y = static_cast<float>(backButtonSize.y / 2.0)},
-    //           .halfSize = backButtonSize.scale(0.5)}};
+
     synthSelectWidth =
         (width - (2 * pageMargin) - (NUM_SYNTH_TYPES * radiobuttonMargin)) /
         float(NUM_SYNTH_TYPES);
@@ -611,7 +606,7 @@ struct SoundEditUI {
                                const vec2f_t &position, const float pressure) {
     if (DoClickRadioGroup(&synthSelectRadioGroup, position)) {
       synth->setSynthType(SynthTypes[synthSelectRadioGroup.selectedIndex]);
-      synth->note(60, 100);
+      synth->note(36, 100);
     };
     for (size_t i = 0; i < NUM_PARAMETER_TYPES; ++i) {
       auto &parameterType = ParameterTypes[i];
@@ -645,10 +640,10 @@ struct SoundEditUI {
   inline void handleMouseDown(const vec2f_t &mousePosition) {
     navigationUI->handleMouseDown(mousePosition);
 
-    //  if (DoClickRadioGroup(&synthSelectRadioGroup, mousePosition)) {
-    //    synth->setSynthType(SynthTypes[synthSelectRadioGroup.selectedIndex]);
-    //    synth->note(60, 100);
-    //  };
+    if (DoClickRadioGroup(&synthSelectRadioGroup, mousePosition)) {
+      synth->setSynthType(SynthTypes[synthSelectRadioGroup.selectedIndex]);
+      synth->note(36, 100);
+    };
 
     //  if (DoButtonClick(&backButton, mousePosition, ACTIVE)) {
     //    navigation->page = Navigation::KEYBOARD;
@@ -667,7 +662,8 @@ struct SoundEditUI {
       parameterSliders[parameterType].state = INACTIVE;
     }
 
-    synth->note(60, 0);
+    synth->note(36, 0);
+    synth->note(36, 0);
     // backButton.state = INACTIVE;
   }
 

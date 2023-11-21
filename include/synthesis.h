@@ -19,14 +19,34 @@ using algae::dsp::filter::Onepole;
 using algae::dsp::filter::ResonantBandpass2ndOrderIIR;
 using algae::dsp::filter::SmoothParameter;
 using algae::dsp::math::clamp;
+using algae::dsp::math::clip;
 using algae::dsp::math::lerp;
 using algae::dsp::math::mtof;
 using algae::dsp::oscillator::blep;
+using algae::dsp::oscillator::computePhaseIncrement;
 using algae::dsp::oscillator::PolyBLEPSaw;
 using algae::dsp::oscillator::PolyBLEPSquare;
 using algae::dsp::oscillator::PolyBLEPTri;
 using algae::dsp::oscillator::SinOscillator;
 using algae::dsp::oscillator::WhiteNoise;
+
+struct AudioSample {
+  float sampleRate;
+  size_t numChannels;
+  size_t size;
+  float *buffer;
+  AudioSample(const float _sampleRate, const size_t _numChannels,
+              const size_t _bufferSize)
+      : sampleRate(_sampleRate), numChannels(_numChannels), size(_bufferSize),
+        buffer((float *)calloc(size, sizeof(float))) {}
+  ~AudioSample() {
+    if (buffer) {
+      // delete[] buffer;
+      free(buffer);
+    }
+  }
+};
+
 template <typename sample_t> struct Parameter {
   sample_t value = 0;
   SmoothParameter<sample_t> smoothingFilter;
@@ -64,6 +84,416 @@ inline const sample_t linearXFade4(sample_t one, sample_t two, sample_t three,
   sample_t channelFourMixLevel = fourMix;
   return (one * channelOneMixLevel) + (two * channelTwoMixLevel) +
          (three * channelThreeMixLevel) + (four * channelFourMixLevel);
+};
+
+template <typename sample_t> struct MultiOscillator {
+  WhiteNoise<sample_t> noise;
+  sample_t oscMix = 0;
+  sample_t phase_increment = 0;
+  sample_t phase = 0;
+  sample_t y1 = 0;
+
+  inline void setFrequency(const sample_t frequency,
+                           const sample_t sampleRate) {
+    phase_increment = computePhaseIncrement<sample_t>(frequency, sampleRate);
+  }
+
+  inline const sample_t next() {
+
+    auto phi = phase_increment;
+
+    // compute SAW
+    sample_t sawSample = (2.0 * phase) - 1.0;
+    sample_t endOfPhaseStep = blep<sample_t>(phase, phi);
+    sawSample -= endOfPhaseStep;
+
+    // compute SQUARE
+    const sample_t pwidth = 0.5;
+    sample_t squareSample = phase < pwidth ? 1 : -1;
+    squareSample += endOfPhaseStep;
+    sample_t dutyCycleStep =
+        blep<sample_t>(fmod(phase + (1.0 - pwidth), 1.0), phi);
+    squareSample -= dutyCycleStep;
+
+    // compute TRIANGLE
+    sample_t triangleSample = phi * squareSample + (1.0 - phi) * y1;
+    y1 = triangleSample;
+
+    // compute noise
+    sample_t noiseSample = noise.next();
+
+    // update phase
+    phase += phase_increment; // + pm
+    phase = phase > 1 ? phase - 1 : phase;
+
+    // mix output
+    return linearXFade4(triangleSample * 2, squareSample, sawSample,
+                        noiseSample, oscMix);
+  }
+};
+
+template <typename sample_t> struct DrumSynthVoice {
+  Parameter<sample_t> frequency;
+  ASREnvelope<sample_t> env;
+  ADEnvelope<sample_t> timbreEnv;
+  ADEnvelope<sample_t> pitchEnv;
+  Biquad<sample_t, sample_t> lp1;
+  Biquad<sample_t, sample_t> lp2;
+  Biquad<sample_t, sample_t> bp1;
+  Biquad<sample_t, sample_t> bp2;
+  Biquad<sample_t, sample_t> hp1;
+  MultiOscillator<sample_t> osc1;
+  MultiOscillator<sample_t> osc2;
+  sample_t attackTime = 1;
+  sample_t releaseTime = 1000;
+  sample_t soundSource = 0;
+  sample_t filterCutoff = 0;
+  sample_t filterQuality = 0;
+  sample_t detune = 100;
+  sample_t pitchModulationDepth = 1000;
+  sample_t phi = 0;
+  sample_t gain = 0;
+  sample_t active = 0;
+  sample_t sampleRate = 48000;
+
+  DrumSynthVoice() { init(); }
+
+  inline void init() {
+    env.set(1, 500, sampleRate);
+    timbreEnv.set(0, 10, sampleRate);
+    pitchEnv.set(0, 25, sampleRate);
+  }
+
+  inline void setSampleRate(sample_t _sampleRate) { sampleRate = _sampleRate; }
+
+  inline const sample_t next() {
+    soundSource = 0;
+    auto soundSourceMappedToHalfCircle =
+        algae::dsp::oscillator::SineTable<sample_t, 1024>::lookup(soundSource);
+    timbreEnv.set(lerp<sample_t>(10, 50, soundSource),
+                  lerp<sample_t>(10, 300, soundSourceMappedToHalfCircle),
+                  sampleRate);
+    pitchEnv.set(0, lerp<sample_t>(15, 75, soundSourceMappedToHalfCircle),
+                 sampleRate);
+
+    auto f = frequency.next();
+    auto pitchEnvSample = pitchEnv.next();
+    f += pitchEnvSample * pitchModulationDepth;
+    auto f1 = fmax(f - detune * soundSource, 0);
+    auto f2 = f + detune * soundSource;
+
+    osc1.setFrequency(f1, sampleRate);
+    osc2.setFrequency(f2, sampleRate);
+    auto timbre = clip(timbreEnv.next() + soundSource);
+    osc1.oscMix = timbre;
+    osc2.oscMix = timbre;
+
+    // auto oscillatorSample = osc1.next();
+    auto oscillatorSample = osc1.next();
+    oscillatorSample += osc2.next();
+
+    lp1.lowpass(pitchEnvSample * pitchModulationDepth +
+                    lerp<sample_t>(65, 10000, soundSource),
+                1 - pitchEnvSample, sampleRate);
+    lp2.lowpass(15000 * filterCutoff, 0.01, sampleRate);
+    auto bp1Freq = lerp<sample_t>(100, 10000, soundSource);
+    auto bp2Freq = bp1Freq - detune;
+    bp1Freq += detune;
+    bp1.bandpass(bp1Freq, filterQuality, sampleRate);
+    bp2.bandpass(bp2Freq, filterQuality, sampleRate);
+    hp1.highpass(lerp<sample_t>(15, 80, soundSource), 0.1, sampleRate);
+    auto out = bp1.next(oscillatorSample) + bp2.next(oscillatorSample);
+    out *= soundSource;
+    out += lp1.next(oscillatorSample) * (1 - soundSource);
+    out = lp2.next(out);
+    out = hp1.next(out);
+
+    // auto out = oscillatorSample;
+
+    env.set(attackTime, releaseTime, sampleRate);
+    auto envelopeSample = env.next();
+    envelopeSample *= envelopeSample;
+    envelopeSample *= envelopeSample;
+    envelopeSample *= envelopeSample;
+    // envelopeSample *= envelopeSample;
+
+    if (env.stage == ASREnvelope<sample_t>::OFF) {
+      active = false;
+    }
+    // SDL_Log("val: %f", f);
+
+    return clip(out * (envelopeSample + pitchEnvSample * 2)) * gain;
+  }
+};
+
+template <typename sample_t> struct DrumSynth {
+  static const size_t MAX_VOICES = 8;
+  DrumSynthVoice<sample_t> voices[MAX_VOICES];
+  int notes[MAX_VOICES] = {-1, -1, -1, -1, -1, -1, -1, -1};
+  sample_t gain = 1;
+  int voiceIndex = 0;
+  sample_t sampleRate = 48000;
+
+  inline void setSampleRate(sample_t sr) {
+    sampleRate = sr;
+    for (auto &voice : voices) {
+      voice.setSampleRate(sampleRate);
+    }
+  }
+
+  DrumSynth<sample_t>() {
+    for (auto &voice : voices) {
+      voice.setSampleRate(sampleRate);
+    }
+    setSampleRate(sampleRate);
+  }
+
+  inline const sample_t next() {
+    sample_t out = 0;
+    for (auto &voice : voices) {
+      if (voice.active) {
+        out += voice.next();
+      }
+    }
+    return out * gain * 0.5;
+  }
+
+  inline void process(sample_t *buffer, const size_t bufferSize) {
+    for (size_t i = 0; i < bufferSize; ++i) {
+      buffer[i] = next();
+    }
+  }
+
+  inline void note(sample_t note, sample_t velocity) {
+
+    if (velocity > 0) {
+      SDL_Log("drum note on (%f, %f) for %d", note, velocity, voiceIndex);
+      voices[voiceIndex].frequency.set(mtof(note), 5, sampleRate);
+      voices[voiceIndex].gain = velocity / 127.0;
+      voices[voiceIndex].env.setGate(true);
+      voices[voiceIndex].pitchEnv.setGate(true);
+      voices[voiceIndex].timbreEnv.setGate(true);
+      voices[voiceIndex].active = true;
+      notes[voiceIndex] = note;
+      voiceIndex = (voiceIndex + 1) % MAX_VOICES;
+    } else {
+      for (size_t i = 0; i < MAX_VOICES; i++) {
+        if (notes[i] == note) {
+          voices[i].env.setGate(false);
+          notes[i] = -1;
+          break;
+        }
+      }
+    }
+  }
+  inline void bendNote(const sample_t note, const sample_t destinationNote) {
+    for (size_t i = 0; i < MAX_VOICES; ++i) {
+      if (notes[i] == note) {
+
+        voices[i].frequency.set(mtof(destinationNote), 30.0, sampleRate);
+      }
+    }
+  }
+  inline void setGain(sample_t value) { gain = value; }
+  inline void setFilterCutoff(sample_t value) {
+    value = lerp<sample_t>(500, 19000, value);
+    for (auto &voice : voices) {
+      voice.filterCutoff = value;
+    }
+  }
+  inline void setFilterQuality(sample_t value) {
+    value = clamp<sample_t>(value, 0.001, 1);
+    value *= 3;
+    for (auto &voice : voices) {
+      voice.filterQuality = value;
+    }
+  }
+  inline void setSoundSource(sample_t value) {
+    for (auto &voice : voices) {
+      voice.soundSource = value;
+    }
+  }
+  inline void setAttackTime(sample_t value) {
+    value *= 1000;
+    for (auto &voice : voices) {
+      voice.attackTime = value;
+    }
+  }
+  inline void setReleaseTime(sample_t value) {
+    value *= 1000;
+    for (auto &voice : voices) {
+      voice.releaseTime = value;
+    }
+  }
+};
+
+template <typename sample_t> struct SamplerVoice {
+  Parameter<sample_t> frequency;
+  ASREnvelope<sample_t> env;
+  Biquad<sample_t, sample_t> filter;
+  sample_t *buffer = NULL;
+  size_t bufferSize = 0;
+  sample_t sampleRate = 48000;
+  sample_t originalSampleRate = 48000;
+  sample_t gain = 0;
+  sample_t phase = 0;
+  sample_t phaseIncrement = 0;
+  sample_t attackTime = 10;
+  sample_t releaseTime = 1000;
+  sample_t active = 0;
+  sample_t filterCutoff = 10000;
+  sample_t filterQuality = 0.01;
+
+  SamplerVoice<sample_t>() { init(); }
+
+  inline void init() {
+    filter.lowpass(filterCutoff, filterQuality, sampleRate);
+    env.set(attackTime, releaseTime, sampleRate);
+  }
+
+  inline void setSampleRate(sample_t sampleRate) {
+    sampleRate = sampleRate;
+    init();
+  }
+
+  inline void setFrequency(const sample_t frequency,
+                           const sample_t sampleRate) {
+    sample_t ratio = frequency / mtof<sample_t>(36);
+    phaseIncrement = ratio * (1.0 / sample_t(bufferSize)) *
+                     (sampleRate / originalSampleRate);
+    // SDL_LogInfo(0, "phi %f", phaseIncrement);
+  }
+
+  inline const sample_t next() {
+
+    auto nextFrequency = frequency.next();
+    setFrequency(nextFrequency, sampleRate);
+    env.set(attackTime, releaseTime, sampleRate);
+    auto envelopeSample = env.next();
+    if (env.stage == ASREnvelope<sample_t>::Stage::OFF) {
+      active = false;
+    }
+
+    filter.lowpass(filterCutoff, filterQuality, sampleRate);
+
+    sample_t readPosition = phase * (bufferSize - 1);
+    int r1 = floor(readPosition);
+    int r2 = (r1 + 1) % bufferSize;
+    sample_t mantissa = readPosition - sample_t(r1);
+
+    sample_t out = lerp(buffer[r1], buffer[r2], mantissa);
+
+    out = filter.next(out);
+    out *= env.next();
+
+    phase += phaseIncrement;
+    phase = phase > 1 ? phase - 1 : phase;
+    return out;
+  }
+};
+
+template <typename sample_t> struct Sampler {
+  static const size_t MAX_VOICES = 8;
+  SamplerVoice<sample_t> voices[MAX_VOICES];
+  int notes[MAX_VOICES] = {-1, -1, -1, -1, -1, -1, -1, -1};
+  sample_t gain = 1;
+  size_t voiceIndex = 0;
+  sample_t sampleRate = 48000;
+  sample_t *buffer;
+  size_t bufferSize;
+
+  inline void setSampleRate(sample_t sr) {
+    sampleRate = sr;
+    for (auto &voice : voices) {
+      voice.setSampleRate(sampleRate);
+    }
+  }
+
+  Sampler<sample_t>(sample_t *_buffer, const size_t &_bufferSize)
+      : buffer(_buffer), bufferSize(_bufferSize) {
+    for (auto &voice : voices) {
+      voice.buffer = buffer;
+      voice.bufferSize = bufferSize;
+    }
+    setSampleRate(sampleRate);
+  }
+
+  inline const sample_t next() {
+    sample_t out = 0;
+    for (auto &voice : voices) {
+      if (voice.active) {
+        out += voice.next();
+      }
+    }
+    return out * gain;
+  }
+
+  inline void process(sample_t *buffer, const size_t bufferSize) {
+    for (size_t i = 0; i < bufferSize; ++i) {
+      buffer[i] = next();
+    }
+  }
+
+  inline void note(sample_t note, sample_t velocity) {
+
+    if (velocity > 0) {
+      SDL_Log("sampler note on (%f, %f) for %d", note, velocity, voiceIndex);
+      voices[voiceIndex].frequency.set(mtof(note), 5, sampleRate);
+      voices[voiceIndex].gain = velocity / 127.0;
+      voices[voiceIndex].env.setGate(true);
+      voices[voiceIndex].active = true;
+      voices[voiceIndex].phase = 0;
+      notes[voiceIndex] = note;
+      voiceIndex = (voiceIndex + 1) % MAX_VOICES;
+    } else {
+      for (size_t i = 0; i < MAX_VOICES; i++) {
+        if (notes[i] == note) {
+          voices[i].env.setGate(false);
+          notes[i] = -1;
+          break;
+        }
+      }
+    }
+  }
+  inline void bendNote(const sample_t note, const sample_t destinationNote) {
+    for (size_t i = 0; i < MAX_VOICES; ++i) {
+      if (notes[i] == note) {
+
+        voices[i].frequency.set(mtof(destinationNote), 30.0, sampleRate);
+      }
+    }
+  }
+  inline void setGain(sample_t value) { gain = value; }
+  inline void setFilterCutoff(sample_t value) {
+    value = lerp<sample_t>(500, 19000, value);
+    for (auto &voice : voices) {
+      voice.filterCutoff = value;
+    }
+  }
+  inline void setFilterQuality(sample_t value) {
+    value = clamp<sample_t>(value, 0.001, 1);
+    value *= 3;
+    for (auto &voice : voices) {
+      voice.filterQuality = value;
+    }
+  }
+  inline void setSoundSource(sample_t value) {
+    for (auto &voice : voices) {
+      // voice.exciterMix = value;
+    }
+  }
+  inline void setAttackTime(sample_t value) {
+    value *= 1000;
+    for (auto &voice : voices) {
+      voice.attackTime = value;
+    }
+  }
+  inline void setReleaseTime(sample_t value) {
+    value *= 1000;
+    for (auto &voice : voices) {
+      voice.releaseTime = value;
+    }
+  }
 };
 
 template <typename sample_t> struct KarplusStringVoice {
@@ -188,7 +618,7 @@ template <typename sample_t> struct KarplusStrongSynthesizer {
   inline void note(sample_t note, sample_t velocity) {
 
     if (velocity > 0) {
-      SDL_Log("note on (%f, %f) for %d", note, velocity, voiceIndex);
+      SDL_Log("phys note on (%f, %f) for %d", note, velocity, voiceIndex);
       voices[voiceIndex].frequency.set(mtof(note), 5, sampleRate);
       voices[voiceIndex].gain = velocity / 127.0;
       voices[voiceIndex].exciterTone.phase = 0;
@@ -247,52 +677,6 @@ template <typename sample_t> struct KarplusStrongSynthesizer {
     for (auto &voice : voices) {
       voice.releaseTime = value;
     }
-  }
-};
-
-template <typename sample_t> struct MultiOscillator {
-  WhiteNoise<sample_t> noise;
-  sample_t oscMix = 0;
-  sample_t phase_increment = 0;
-  sample_t phase = 0;
-  sample_t y1 = 0;
-
-  inline void setFrequency(const sample_t frequency,
-                           const sample_t sampleRate) {
-    phase_increment =
-        algae::dsp::oscillator::computePhaseIncrement(frequency, sampleRate);
-  }
-
-  inline const sample_t next() {
-
-    // compute SAW
-    sample_t sawSample = (2.0 * phase) - 1.0;
-    sample_t endOfPhaseStep = blep<sample_t>(phase, phase_increment);
-    sawSample -= endOfPhaseStep;
-
-    // compute SQUARE
-    const sample_t pwidth = 0.5;
-    sample_t squareSample = phase < pwidth ? 1 : -1;
-    squareSample += endOfPhaseStep;
-    sample_t dutyCycleStep =
-        blep<sample_t>(fmod(phase + (1.0 - pwidth), 1.0), phase_increment);
-    squareSample -= dutyCycleStep;
-
-    // compute TRIANGLE
-    sample_t triangleSample =
-        phase_increment * squareSample + (1.0 - phase_increment) * y1;
-    y1 = triangleSample;
-
-    // compute noise
-    sample_t noiseSample = noise.next();
-
-    // update phase
-    phase += phase_increment; // + pm
-    phase = phase > 1 ? phase - 1 : phase;
-
-    // mix output
-    return linearXFade4(triangleSample, squareSample, sawSample, noiseSample,
-                        oscMix);
   }
 };
 
@@ -364,7 +748,8 @@ template <typename sample_t> struct SubtractiveSynthesizer {
 
   inline void note(const sample_t note, const sample_t velocity) {
     if (velocity > 0) {
-      SDL_Log("note on (%f, %f) for %d", note, velocity, voiceIndex);
+      SDL_Log("subtractive note on (%f, %f) for %d", note, velocity,
+              voiceIndex);
       voices[voiceIndex].env.setGate(true);
       voices[voiceIndex].active = true;
       voices[voiceIndex].gain = (velocity / 127.0);
@@ -428,7 +813,7 @@ template <typename sample_t> struct SubtractiveSynthesizer {
 
 template <typename sample_t> struct FMOperator {
   sample_t sampleRate = 48000;
-  SinOscillator<sample_t, sample_t> osc;
+  SinOscillator<sample_t, sample_t, 1024> osc;
   ASREnvelope<sample_t> env;
   sample_t freq = 440;
   sample_t last = 0;
@@ -570,7 +955,7 @@ template <typename sample_t> struct FMSynthesizer {
 
   inline void note(const sample_t note, const sample_t velocity) {
     if (velocity > 0) {
-      SDL_Log("note on (%f, %f) for %d", note, velocity, voiceIndex);
+      SDL_Log("fm note on (%f, %f) for %d", note, velocity, voiceIndex);
       voices[voiceIndex].setGate(true);
       voices[voiceIndex].active = true;
       voices[voiceIndex].gain = (velocity / 127.0);
@@ -671,15 +1056,23 @@ template <typename sample_t> struct ParameterChangeEvent {
   sample_t value;
 };
 
-enum SynthesizerType { SUBTRACTIVE, PHYSICAL_MODEL, FREQUENCY_MODULATION };
-static const size_t NUM_SYNTH_TYPES = 3;
-static_assert(FREQUENCY_MODULATION == NUM_SYNTH_TYPES - 1,
+enum SynthesizerType {
+  DRUM_SYNTH,
+  SUBTRACTIVE,
+  PHYSICAL_MODEL,
+  FREQUENCY_MODULATION,
+  SAMPLER
+};
+static const size_t NUM_SYNTH_TYPES = 5;
+static_assert(SAMPLER == NUM_SYNTH_TYPES - 1,
               "synth type table and enum must agree");
 static const SynthesizerType SynthTypes[NUM_SYNTH_TYPES] = {
-    SynthesizerType::SUBTRACTIVE, SynthesizerType::PHYSICAL_MODEL,
-    SynthesizerType::FREQUENCY_MODULATION};
+    SynthesizerType::DRUM_SYNTH, SynthesizerType::SUBTRACTIVE,
+    SynthesizerType::PHYSICAL_MODEL, SynthesizerType::FREQUENCY_MODULATION,
+    SynthesizerType::SAMPLER};
 static const char *SynthTypeDisplayNames[NUM_SYNTH_TYPES] = {
-    "subtractive", "physical model", "frequency modulation"};
+    "drum synth", "subtractive", "physical model", "frequency modulation",
+    "sampler"};
 
 template <typename sample_t> struct PitchBendEvent {
   sample_t note = 0;
@@ -715,27 +1108,6 @@ template <typename sample_t> struct SynthesizerEvent {
       : data(bend), type(PITCH_BEND) {}
 };
 
-// template <typename sample_t> struct SampleMemory {
-//   sample_t *buffer;
-//   size_t size;
-//   size_t head = 0;
-//   SampleMemory(const size_t _size) : size(size) { buffer = malloc(size); }
-//   ~SampleMemory() {
-//     for (size_t i = 0; i < size; ++i) {
-//       delete buffer[i];
-//     }
-//     delete buffer;
-//   }
-//   inline const bool allocate(size_t requestedSize, sample_t *location) {
-//     if ((requestedSize > size) || ((head + requestedSize) >= size - 1)) {
-//       return false;
-//     }
-//     location = &buffer[head];
-//     head += size;
-//     return true;
-//   };
-// };
-
 template <typename sample_t> struct Synthesizer {
 
   Parameter<sample_t> gain = Parameter<sample_t>(1);
@@ -744,27 +1116,38 @@ template <typename sample_t> struct Synthesizer {
   Parameter<sample_t> soundSource = Parameter<sample_t>(0);
   Parameter<sample_t> attackTime = Parameter<sample_t>(0);
   Parameter<sample_t> releaseTime = Parameter<sample_t>(1);
+
   sample_t sampleRate = 48000;
+  AudioSample *activeSample = NULL;
+
   SynthesizerType type;
   union uSynthesizer {
+    DrumSynth<sample_t> drumSynth;
     SubtractiveSynthesizer<sample_t> subtractive;
     KarplusStrongSynthesizer<sample_t> physicalModel;
     FMSynthesizer<sample_t> fm;
+    Sampler<sample_t> sampler;
+    uSynthesizer(const DrumSynth<sample_t> &s) : drumSynth(s) {}
     uSynthesizer(const SubtractiveSynthesizer<sample_t> &s) : subtractive(s) {}
     uSynthesizer(const KarplusStrongSynthesizer<sample_t> &s)
         : physicalModel(s) {}
     uSynthesizer(const FMSynthesizer<sample_t> &s) : fm(s) {}
+    uSynthesizer(const Sampler<sample_t> &s) : sampler(s) {}
   } object;
 
   rigtorp::SPSCQueue<SynthesizerEvent<sample_t>> eventQueue =
       rigtorp::SPSCQueue<SynthesizerEvent<sample_t>>(20);
 
+  Synthesizer<sample_t>(const DrumSynth<sample_t> &s)
+      : object(s), type(DRUM_SYNTH) {}
   Synthesizer<sample_t>(const SubtractiveSynthesizer<sample_t> &s)
       : object(s), type(SUBTRACTIVE) {}
   Synthesizer<sample_t>(const KarplusStrongSynthesizer<sample_t> &s)
       : object(s), type(PHYSICAL_MODEL) {}
   Synthesizer<sample_t>(const FMSynthesizer<sample_t> &s)
       : object(s), type(FREQUENCY_MODULATION) {}
+  Synthesizer<sample_t>(const Sampler<sample_t> &s)
+      : object(s), type(SAMPLER) {}
 
   inline const void process(sample_t *block, const size_t &blockSize) {
     consumeMessagesFromQueue();
@@ -787,6 +1170,17 @@ template <typename sample_t> struct Synthesizer {
     auto nextAttackTime = attackTime.next();
     auto nextReleaseTime = releaseTime.next();
     switch (type) {
+
+    case DRUM_SYNTH: {
+      object.drumSynth.setGain(nextGain);
+      object.drumSynth.setFilterCutoff(nextFilterCutoff);
+      object.drumSynth.setFilterQuality(nextFilterQuality);
+      object.drumSynth.setSoundSource(nextSoundSource);
+      object.drumSynth.setAttackTime(nextAttackTime);
+      object.drumSynth.setReleaseTime(nextReleaseTime);
+      return object.drumSynth.next();
+      break;
+    }
     case SUBTRACTIVE: {
       object.subtractive.setGain(nextGain);
       object.subtractive.setFilterCutoff(nextFilterCutoff);
@@ -817,6 +1211,16 @@ template <typename sample_t> struct Synthesizer {
       return object.fm.next();
       break;
     }
+    case SAMPLER: {
+      object.sampler.setGain(nextGain);
+      object.sampler.setFilterCutoff(nextFilterCutoff);
+      object.sampler.setFilterQuality(nextFilterQuality);
+      object.sampler.setSoundSource(nextSoundSource);
+      object.sampler.setAttackTime(nextAttackTime);
+      object.sampler.setReleaseTime(nextReleaseTime);
+      return object.sampler.next();
+      break;
+    }
     }
     return 0;
   }
@@ -829,6 +1233,11 @@ template <typename sample_t> struct Synthesizer {
       switch (event.type) {
       case SynthesizerEvent<sample_t>::SYNTHESIZER_CHANGE: {
         switch (event.data.newSynthType) {
+        case DRUM_SYNTH: {
+          type = DRUM_SYNTH;
+          object.drumSynth = DrumSynth<sample_t>();
+          break;
+        }
         case SUBTRACTIVE: {
           type = SUBTRACTIVE;
           object.subtractive = SubtractiveSynthesizer<sample_t>();
@@ -844,15 +1253,24 @@ template <typename sample_t> struct Synthesizer {
           object.fm = FMSynthesizer<sample_t>();
           break;
         }
+        case SAMPLER: {
+          type = SAMPLER;
+          object.sampler =
+              Sampler<sample_t>(activeSample->buffer, activeSample->size);
+          break;
+        }
         }
         break;
       }
       case SynthesizerEvent<sample_t>::NOTE: {
         switch (type) {
+        case DRUM_SYNTH:
+          object.drumSynth.note(event.data.note.note, event.data.note.velocity);
+          break;
+
         case SUBTRACTIVE:
           object.subtractive.note(event.data.note.note,
                                   event.data.note.velocity);
-
           break;
         case PHYSICAL_MODEL:
           object.physicalModel.note(event.data.note.note,
@@ -860,6 +1278,9 @@ template <typename sample_t> struct Synthesizer {
           break;
         case FREQUENCY_MODULATION:
           object.fm.note(event.data.note.note, event.data.note.velocity);
+          break;
+        case SAMPLER:
+          object.sampler.note(event.data.note.note, event.data.note.velocity);
           break;
         }
 
@@ -911,6 +1332,11 @@ template <typename sample_t> struct Synthesizer {
         case FREQUENCY_MODULATION: {
           object.fm.bendNote(event.data.pitchBend.note,
                              event.data.pitchBend.destinationNote);
+          break;
+        }
+        case SAMPLER: {
+          object.sampler.bendNote(event.data.pitchBend.note,
+                                  event.data.pitchBend.destinationNote);
           break;
         }
         }

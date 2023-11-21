@@ -70,21 +70,19 @@ static inline const bool LoadIconTexture(SDL_Renderer *renderer,
   }
 }
 
-struct SampleInfo {
-  SDL_AudioSpec wavSpec;
-  long size;
-  float *buffer;
-};
+inline void FreeSampleInfo(AudioSample *sampleInfo) {
+  // free(sampleInfo->buffer);
+  // free(sampleInfo);
+  delete sampleInfo;
+}
 
-inline void FreeSampleInfo(SampleInfo *sampleInfo) { delete sampleInfo; }
-
-static inline bool LoadWAVSample(std::string samplePath,
-                                 SampleInfo *sampleInfo) {
+static inline bool LoadWAVSampleAsMono(std::string samplePath,
+                                       AudioSample **sampleInfo) {
 
   SDL_AudioSpec wavSpec;
   Uint32 wavLength;
   Uint8 *wavBuffer;
-  float *buffer;
+  long bufferSize = 0;
 
   SDL_LoadWAV(samplePath.c_str(), &wavSpec, &wavBuffer, &wavLength);
 
@@ -111,19 +109,22 @@ static inline bool LoadWAVSample(std::string samplePath,
             wavLength / float(bytesPerSample), wavSpec.freq,
             float(wavLength / float(bytesPerSample * wavSpec.channels)) /
                 float(wavSpec.freq));
-    size_t numSamples = wavLength / bytesPerSample;
-    // buffer = new float[numSamples];
-    buffer = (float *)calloc(numSamples, sizeof(float));
-    if (buffer == NULL) {
+    bufferSize = wavLength / bytesPerSample;
+    *sampleInfo = new AudioSample(wavSpec.freq, wavSpec.channels, bufferSize);
+    if (*sampleInfo == NULL) {
+      SDL_LogError(0, "sample failed to init!");
+    }
+    if ((*sampleInfo)->buffer == NULL) {
       return false;
     }
-    for (size_t i = 0; i < numSamples; ++i) {
-      buffer[i] = 0;
+    for (size_t i = 0; i < bufferSize; ++i) {
+      (*sampleInfo)->buffer[i] = 0;
       for (size_t ch = 0; ch < wavSpec.channels; ++ch) {
-        buffer[i] +=
+        (*sampleInfo)->buffer[i] +=
             float(stream[i + ch]) / float(std::numeric_limits<int16_t>::max());
       }
     }
+
     break;
   }
   case AUDIO_U16: {
@@ -146,15 +147,13 @@ static inline bool LoadWAVSample(std::string samplePath,
     SDL_Log("could not detect datatype");
   }
 
-  if (!isSupportedFormat) {
-    delete[] wavBuffer;
-    return false;
-  } else {
+  free(wavBuffer);
+  if ((*sampleInfo) == NULL) {
 
-    sampleInfo =
-        new SampleInfo{.wavSpec = wavSpec, .size = wavLength, .buffer = buffer};
-    return true;
+    SDL_LogError(0, "freeing wav buffer killed sample info!");
   }
+  SDL_Log("loaded sample!");
+  return isSupportedFormat;
 }
 
 class Framework {
@@ -293,19 +292,17 @@ public:
     ss << "size: " << config.size << "\n";
     ss << "silence: " << config.silence << "\n";
 
-    if (!LoadWAVSample("sounds/autoharp 13 C3.wav", audioSample)) {
+    if (!LoadWAVSampleAsMono("sounds/autoharp 13 C3.wav", &audioSample)) {
       SDL_LogError(0, "could not read sample!");
+      return false;
     };
+    if (audioSample == NULL) {
+      SDL_LogError(0, "sampleLoad failed!");
+      return false;
+    }
 
     SDL_LogInfo(0, "%s", ss.str().c_str());
 
-    SDL_PauseAudioDevice(audioDeviceID, 0); // start playback
-
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0); // setting draw color
-    SDL_RenderClear(renderer);                    // Clear the newly
-                                                  // created window
-    SDL_RenderPresent(renderer);                  // Reflects the
-                                                  // changes done in the window.
     if (!loadMedia()) {
       SDL_LogError(0, "Media could not be "
                       "loaded...\n");
@@ -325,11 +322,20 @@ public:
     synth.setSoundSource(0.5);
     synth.setAttackTime(0.001);
     synth.setReleaseTime(1);
+    synth.activeSample = audioSample;
 
     userInterface.buildLayout(width, height);
 
     sensorMapping.addMapping(TILT, ParameterType::SOUND_SOURCE);
     sensorMapping.addMapping(SPIN, ParameterType::FILTER_CUTOFF);
+
+    SDL_PauseAudioDevice(audioDeviceID, 0); // start playback
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0); // setting draw color
+    SDL_RenderClear(renderer);                    // Clear the newly
+                                                  // created window
+    SDL_RenderPresent(renderer);                  // Reflects the
+                                                  // changes done in the window.
 
     lastFrameTime = SDL_GetTicks();
 
@@ -548,7 +554,6 @@ public:
           auto accVector =
               vec2f_t{.x = event.sensor.data[0] * -1, .y = event.sensor.data[1]}
                   .scale(1.0 / 9.8);
-          ;
 
           // synth.setSoundSource(accVector.length());
           sensorMapping.emitEvent(&synth, SensorType::TILT, accVector.length());
@@ -611,7 +616,7 @@ private:
   SDL_Joystick *gGameController = NULL;
   std::vector<GameObject *> gameObjects;
   GameObject *wall1, *wall2, *wall3, *wall4;
-  SampleInfo *audioSample;
+  AudioSample *audioSample = NULL;
 
   Style style;
   SDL_Texture *menuIcon = NULL;
