@@ -53,7 +53,6 @@
 static inline const bool LoadIconTexture(SDL_Renderer *renderer,
                                          std::string path,
                                          SDL_Texture *texture) {
-  bool success = true;
 
   SDL_Surface *surface = IMG_Load(path.c_str());
   texture = SDL_CreateTextureFromSurface(renderer, surface);
