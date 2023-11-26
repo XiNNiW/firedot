@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SDL_log.h"
+#include "synthesis_clap_envelope.h"
 #include "synthesis_mixing.h"
 #include "synthesis_parameter.h"
 #include "synthesis_sampling.h"
@@ -33,32 +34,14 @@ using algae::dsp::oscillator::PolyBLEPTri;
 using algae::dsp::oscillator::SinOscillator;
 using algae::dsp::oscillator::WhiteNoise;
 
-template <typename sample_t> struct FMOperator {
-  sample_t sampleRate = 48000;
-  SinOscillator<sample_t, sample_t, 1024> osc;
-  ASREnvelope<sample_t> env;
-  sample_t freq = 440;
-  sample_t last = 0;
-
-  FMOperator<sample_t>() { env.set(10, 1000, sampleRate); }
-
-  inline const sample_t next(sample_t pmod = 0) {
-    osc.setFrequency(freq, sampleRate);
-    last = env.next() * osc.next(pmod);
-    return last;
-  }
-
-  inline void setFrequency(sample_t f) { freq = f; }
-};
-
 template <typename sample_t> struct FMDrumOperator {
   sample_t sampleRate = 48000;
   SinOscillator<sample_t, sample_t, 1024> osc;
-  ADEnvelope<sample_t> env;
+  ClapEnvelope<sample_t> env;
   sample_t freq = 440;
   sample_t last = 0;
 
-  FMDrumOperator<sample_t>() { env.set(10, 1000, sampleRate); }
+  FMDrumOperator<sample_t>() { env.set(0, 1000, sampleRate); }
 
   inline const sample_t next(sample_t pmod = 0) {
     osc.setFrequency(freq, sampleRate);
@@ -73,32 +56,83 @@ template <typename sample_t> struct FMDrumOperator {
 };
 
 template <typename sample_t> struct FMDrumVoice {
+  Parameter<sample_t> frequency;
   WhiteNoise<sample_t> noise;
   FMDrumOperator<sample_t> op1;
   FMDrumOperator<sample_t> op2;
+  Biquad<sample_t, sample_t> hp;
+  ADEnvelope<sample_t> timbreEnv;
+  ADEnvelope<sample_t> pitchEnv;
   ADEnvelope<sample_t> env;
   sample_t active = false;
-  sample_t index = 1;
-  sample_t noiseModDepth = 1;
+  sample_t index = 0.0;
+  sample_t noiseModDepth = 0.1;
   sample_t gain = 1;
   sample_t soundSource = 0;
   sample_t filterCutoff = 0;
   sample_t filterQuality = 0;
   sample_t attackTime = 0.1;
-  sample_t releaseTime = 0;
+  sample_t releaseTime = 300;
+  sample_t pitchModDepth = 1500;
+  sample_t sampleRate = 48000;
+  sample_t y1 = 0;
 
-  FMDrumVoice<sample_t>() {}
+  FMDrumVoice<sample_t>() {
+    pitchEnv.set(0, 30, sampleRate);
+    timbreEnv.set(0, 5, sampleRate);
+    op1.env.clapDensity = 0.1;
+    op2.env.clapDensity = 4;
+  }
+
+  inline void setGate(sample_t gate) {
+    env.setGate(gate);
+    op1.env.setGate(gate);
+    op2.env.setGate(gate);
+    pitchEnv.setGate(gate);
+    timbreEnv.setGate(gate);
+  }
 
   inline const sample_t next() {
+    // soundSource = 1;
+    auto soundSourceSquared = soundSource * soundSource;
+    auto soundSourceMappedToHalfCircle =
+        SineTable<sample_t, 1024>::lookup(soundSource / 4.0);
+    env.set(attackTime, releaseTime, sampleRate);
+    timbreEnv.set(lerp<sample_t>(0, 15, soundSourceMappedToHalfCircle),
+                  lerp<sample_t>(15, 100, soundSourceMappedToHalfCircle),
+                  sampleRate);
+    pitchEnv.set(lerp<sample_t>(0, 30, soundSourceMappedToHalfCircle),
+                 lerp<sample_t>(15, 75, soundSource), sampleRate);
+    auto pitchEnvSample = pitchEnv.next();
+    pitchEnvSample *= pitchEnvSample;
+    pitchEnvSample *= pitchEnvSample;
+
+    auto f = frequency.next();
+    auto timbreEnvSample = timbreEnv.next();
+    auto nz = noise.next() * noiseModDepth * soundSource;
+    op1.setFrequency(f + (pitchModDepth * pitchEnvSample) + nz * 10000);
+    op2.setFrequency(f * (1 + soundSource * 5.333));
+    op1.env.set(attackTime + soundSource * 5, releaseTime, sampleRate);
+    op2.env.set(attackTime + soundSource * 100, releaseTime, sampleRate);
+
+    auto envSample = env.next();
+    envSample *= envSample;
+    envSample *= envSample;
+
     if (env.stage == ADEnvelope<sample_t>::OFF) {
       active = false;
     }
-    return op1.next((op1.next() + noise.next() * noiseModDepth) * index) *
-           env.next();
+    auto modIndex = clip(timbreEnvSample * index) * 2;
+    //
+    auto operators =
+        op1.next(op2.next(y1 * soundSourceSquared * pitchEnvSample) * modIndex);
+    y1 = operators;
+    hp.highpass(lerp<sample_t>(15, 250, soundSource), 0.1, sampleRate);
+    return clip(hp.next(operators) * (envSample + pitchEnvSample * 2)) * gain;
   }
 };
 
-template <typename sample_t> struct FMSynthesizer {
+template <typename sample_t> struct FMDrumSynth {
   static const size_t MAX_VOICES = 8;
   size_t voiceIndex = 0;
 
@@ -114,7 +148,7 @@ template <typename sample_t> struct FMSynthesizer {
         out += voice.next();
       }
     }
-    return (out * gain * 0.1);
+    return (out * gain);
   }
 
   inline void process(sample_t *buffer, const size_t bufferSize) {
@@ -165,37 +199,45 @@ template <typename sample_t> struct FMSynthesizer {
   }
   inline void setFilterQuality(sample_t value) {
     value = clamp<sample_t>(value, 0, 1);
-    int index = value * (FM4OpVoice<sample_t>::NUM_RATIOS - 1);
-
-    for (auto &voice : voices) {
-      voice.activeRatio = index;
-    }
+    // ratio
   }
   inline void setSoundSource(sample_t value) {
     value = clamp<sample_t>(value, 0, 1);
-    sample_t index = value * (FM4OpVoice<sample_t>::NUM_ALGS - 1);
     for (auto &voice : voices) {
-      voice.activeTopology = index;
+      voice.soundSource = value;
     }
+    // topology
   }
   inline void setAttackTime(sample_t value) {
     value *= 1000;
     for (auto &voice : voices) {
-      voice.op1.env.setAttackTime(value, sampleRate);
-      voice.op2.env.setAttackTime(value, sampleRate);
-      voice.op3.env.setAttackTime(value, sampleRate);
-      voice.op4.env.setAttackTime(value, sampleRate);
+      voice.attackTime = value;
     }
   }
   inline void setReleaseTime(sample_t value) {
     value *= 1000;
     for (auto &voice : voices) {
-      voice.op1.env.setReleaseTime(value, sampleRate);
-      voice.op2.env.setReleaseTime(value, sampleRate);
-      voice.op3.env.setReleaseTime(value, sampleRate);
-      voice.op4.env.setReleaseTime(value, sampleRate);
+      voice.releaseTime = value;
     }
   }
+};
+
+template <typename sample_t> struct FMOperator {
+  sample_t sampleRate = 48000;
+  SinOscillator<sample_t, sample_t, 1024> osc;
+  ASREnvelope<sample_t> env;
+  sample_t freq = 440;
+  sample_t last = 0;
+
+  FMOperator<sample_t>() { env.set(10, 1000, sampleRate); }
+
+  inline const sample_t next(sample_t pmod = 0) {
+    osc.setFrequency(freq, sampleRate);
+    last = env.next() * osc.next(pmod);
+    return last;
+  }
+
+  inline void setFrequency(sample_t f) { freq = f; }
 };
 template <typename sample_t> struct FM4OpVoice {
 

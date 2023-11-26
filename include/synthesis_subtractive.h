@@ -1,7 +1,10 @@
 #pragma once
 #include "SDL_log.h"
+#include "synthesis_clap_envelope.h"
 #include "synthesis_parameter.h"
 #include <algae.h>
+#include <cmath>
+#include <cstddef>
 
 using algae::dsp::control::ADEnvelope;
 using algae::dsp::control::ASREnvelope;
@@ -11,6 +14,7 @@ using algae::dsp::math::clip;
 using algae::dsp::math::lerp;
 using algae::dsp::oscillator::blep;
 using algae::dsp::oscillator::computePhaseIncrement;
+using algae::dsp::oscillator::SineTable;
 using algae::dsp::oscillator::WhiteNoise;
 
 template <typename sample_t> struct MultiOscillator {
@@ -59,9 +63,83 @@ template <typename sample_t> struct MultiOscillator {
   }
 };
 
+// template <typename sample_t> struct vMultiOscillator {
+//   const int MAX_NUMBER_OF_VOICES;
+//   WhiteNoise<sample_t> *noise;
+//   sample_t *oscMix = 0;
+//   sample_t *phase_increment = 0;
+//   sample_t *phase = 0;
+//   sample_t *y1 = 0;
+//
+//   vMultiOscillator<sample_t>(const int _maxNumberOfVoices)
+//       : MAX_NUMBER_OF_VOICES(_maxNumberOfVoices) {
+//     noise = new WhiteNoise<sample_t>[MAX_NUMBER_OF_VOICES]();
+//     oscMix = new sample_t[MAX_NUMBER_OF_VOICES]();
+//     phase_increment = new sample_t[MAX_NUMBER_OF_VOICES]();
+//     phase = new sample_t[MAX_NUMBER_OF_VOICES]();
+//     y1 = new sample_t[MAX_NUMBER_OF_VOICES]();
+//   }
+//   ~vMultiOscillator<sample_t>() {
+//     delete[] noise;
+//     delete[] oscMix;
+//     delete[] phase_increment;
+//     delete[] phase;
+//     delete[] y1;
+//   }
+//
+//   inline void setFrequency(const int index, const sample_t frequency,
+//                            const sample_t sampleRate) {
+//     phase_increment[index] =
+//         computePhaseIncrement<sample_t>(frequency, sampleRate);
+//   }
+//
+//   inline const sample_t next() {
+//     sample_t voiceOuts[MAX_NUMBER_OF_VOICES];
+//     for (int i = 0; i < MAX_NUMBER_OF_VOICES; ++i) {
+//       auto phi = phase_increment[i];
+//
+//       // compute SAW
+//       sample_t sawSample = (2.0 * phase[i]) - 1.0;
+//       sample_t endOfPhaseStep = blep<sample_t>(phase[i], phi);
+//       sawSample -= endOfPhaseStep;
+//
+//       // compute SQUARE
+//       const sample_t pwidth = 0.5;
+//       sample_t squareSample = phase[i] < pwidth ? 1 : -1;
+//       squareSample += endOfPhaseStep;
+//       sample_t dutyCycleStep =
+//           blep<sample_t>(fmod(phase[i] + (1.0 - pwidth), 1.0), phi);
+//       squareSample -= dutyCycleStep;
+//
+//       // compute TRIANGLE
+//       sample_t triangleSample = phi * squareSample + (1.0 - phi) * y1[i];
+//       y1[i] = triangleSample;
+//
+//       // compute noise
+//       sample_t noiseSample = noise[i].next();
+//
+//       // update phase
+//       phase[i] += phase_increment[i]; // + pm
+//       phase[i] = phase[i] > 1 ? phase[i] - 1 : phase[i];
+//
+//       // mix output
+//       voiceOuts[i] = linearXFade4(triangleSample * 2, squareSample,
+//       sawSample,
+//                                   noiseSample, oscMix[i]);
+//     }
+//
+//     sample_t out = 0;
+//     for (auto sample : voiceOuts) {
+//       out += sample;
+//     }
+//
+//     return out;
+//   }
+// };
+
 template <typename sample_t> struct SubtractiveDrumSynthVoice {
   Parameter<sample_t> frequency;
-  ASREnvelope<sample_t> env;
+  ClapEnvelope<sample_t> env;
   ADEnvelope<sample_t> timbreEnv;
   ADEnvelope<sample_t> pitchEnv;
   Biquad<sample_t, sample_t> lp1;
@@ -76,7 +154,7 @@ template <typename sample_t> struct SubtractiveDrumSynthVoice {
   sample_t soundSource = 0;
   sample_t filterCutoff = 0;
   sample_t filterQuality = 0;
-  sample_t detune = 200;
+  sample_t detune = 15;
   sample_t pitchModulationDepth = 1000;
   sample_t phi = 0;
   sample_t gain = 0;
@@ -87,6 +165,7 @@ template <typename sample_t> struct SubtractiveDrumSynthVoice {
 
   inline void init() {
     env.set(1, 500, sampleRate);
+    env.clapDensity = 3;
     timbreEnv.set(0, 10, sampleRate);
     pitchEnv.set(0, 25, sampleRate);
   }
@@ -94,14 +173,12 @@ template <typename sample_t> struct SubtractiveDrumSynthVoice {
   inline void setSampleRate(sample_t _sampleRate) { sampleRate = _sampleRate; }
 
   inline const sample_t next() {
-    soundSource = 0;
+
     auto soundSourceMappedToHalfCircle =
-        algae::dsp::oscillator::SineTable<sample_t, 1024>::lookup(soundSource);
+        SineTable<sample_t, 1024>::lookup(soundSource / 4.0);
     timbreEnv.set(lerp<sample_t>(10, 50, soundSource),
-                  lerp<sample_t>(10, 300, soundSourceMappedToHalfCircle),
-                  sampleRate);
-    pitchEnv.set(0, lerp<sample_t>(15, 75, soundSourceMappedToHalfCircle),
-                 sampleRate);
+                  lerp<sample_t>(10, 75, soundSource), sampleRate);
+    pitchEnv.set(0, lerp<sample_t>(15, 35, soundSource), sampleRate);
 
     auto f = frequency.next();
     auto pitchEnvSample = pitchEnv.next();
@@ -115,9 +192,7 @@ template <typename sample_t> struct SubtractiveDrumSynthVoice {
     osc1.oscMix = timbre;
     osc2.oscMix = timbre;
 
-    // auto oscillatorSample = osc1.next();
-    auto oscillatorSample = osc1.next();
-    oscillatorSample += osc2.next();
+    auto oscillatorSample = osc1.next() + osc2.next();
 
     lp1.lowpass(pitchEnvSample * pitchModulationDepth +
                     lerp<sample_t>(65, 10000, soundSource),
@@ -137,19 +212,19 @@ template <typename sample_t> struct SubtractiveDrumSynthVoice {
 
     // auto out = oscillatorSample;
 
-    env.set(attackTime, releaseTime, sampleRate);
+    env.set(attackTime + soundSource * 30, releaseTime, sampleRate);
     auto envelopeSample = env.next();
     envelopeSample *= envelopeSample;
     envelopeSample *= envelopeSample;
     envelopeSample *= envelopeSample;
     // envelopeSample *= envelopeSample;
 
-    if (env.stage == ASREnvelope<sample_t>::OFF) {
+    if (env.stage == ClapEnvelope<sample_t>::OFF) {
       active = false;
     }
     // SDL_Log("val: %f", f);
 
-    return clip(out * (envelopeSample + pitchEnvSample * 2)) * gain;
+    return clip(out * (envelopeSample + (pitchEnvSample * 2))) * gain;
   }
 };
 
@@ -182,7 +257,7 @@ template <typename sample_t> struct SubtractiveDrumSynth {
         out += voice.next();
       }
     }
-    return out * gain * 0.5;
+    return out * gain;
   }
 
   inline void process(sample_t *buffer, const size_t bufferSize) {
@@ -206,7 +281,7 @@ template <typename sample_t> struct SubtractiveDrumSynth {
     } else {
       for (size_t i = 0; i < MAX_VOICES; i++) {
         if (notes[i] == note) {
-          voices[i].env.setGate(false);
+          // voices[i].env.setGate(false);
           notes[i] = -1;
           break;
         }
