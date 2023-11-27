@@ -1,15 +1,16 @@
 #pragma once
 
+#include "collider.h"
 #include "widget.h"
 
 struct Navigation {
-  enum Page { KEYBOARD, MAPPING, SOUND_EDIT } page = KEYBOARD;
+  enum Page { INSTRUMENT, MAPPING, SOUND_EDIT } page = INSTRUMENT;
 };
 static const int NUM_NAVIGATION_PAGES = 3;
 static_assert((NUM_NAVIGATION_PAGES - 1) == Navigation::SOUND_EDIT,
               "Navigation enum size does not match NavigationPages");
 static const Navigation::Page NavigationPages[NUM_NAVIGATION_PAGES] = {
-    Navigation::KEYBOARD, Navigation::MAPPING, Navigation::SOUND_EDIT};
+    Navigation::INSTRUMENT, Navigation::MAPPING, Navigation::SOUND_EDIT};
 
 static const char *NavigationPageDisplayNames[NUM_NAVIGATION_PAGES] = {
     "keyboard",
@@ -39,18 +40,17 @@ struct NavigationUI {
         .navigation = navigation};
     ;
   }
-  inline void buildLayout(const float width, const float height) {
+  inline void buildLayout(const AxisAlignedBoundingBox &shape) {
+    this->shape = shape;
+    auto width = shape.halfSize.x * 2;
+    auto height = shape.halfSize.y * 2;
 
-    buttonHeight = height / 18.0;
+    buttonHeight = height;
     pages.buildLayout(
         {.position = {.x = static_cast<float>(width / 2.0),
                       .y = static_cast<float>((buttonHeight / 2) + topMargin)},
          .halfSize = {.x = static_cast<float>((width - pageMargin) / 2.0),
                       .y = static_cast<float>(buttonHeight / 2.0)}});
-    shape = {.position = {0, 0},
-             .halfSize = {width / 2, (topMargin + bottomMargin + buttonHeight +
-                                      seperatorHeight) /
-                                         2}};
   }
 
   inline void handleFingerMove(const SDL_FingerID &fingerId,

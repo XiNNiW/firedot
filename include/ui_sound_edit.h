@@ -1,12 +1,12 @@
 #pragma once
 
+#include "collider.h"
 #include "sensor.h"
 #include "synthesis.h"
 #include "ui_navigation.h"
 
 struct SoundEditUI {
 
-  NavigationUI *navigationUI;
   // Navigation *navigation = NULL;
   Synthesizer<float> *synth = NULL;
   SensorMapping<float> *sensorMapping = NULL;
@@ -24,15 +24,13 @@ struct SoundEditUI {
   float pageMargin = 50;
 
   static inline const SoundEditUI
-  MakeSoundEditUI(NavigationUI *navUI, Synthesizer<float> *synth,
-                  SensorMapping<float> *mapping) {
+  MakeSoundEditUI(Synthesizer<float> *synth, SensorMapping<float> *mapping) {
     const size_t initialSynthTypeSelection = synth->type;
     std::vector<std::string> synthOptionLabels = {};
     for (auto &synthType : SynthTypes) {
       synthOptionLabels.push_back(SynthTypeDisplayNames[synthType]);
     }
     return SoundEditUI{
-        .navigationUI = navUI,
         .synth = synth,
         .sensorMapping = mapping,
         .synthSelectRadioGroup = RadioGroup::MakeRadioGroup(
@@ -40,9 +38,11 @@ struct SoundEditUI {
     };
   }
 
-  void buildLayout(const float width, const float height) {
+  void buildLayout(const AxisAlignedBoundingBox &shape) {
+    auto width = shape.halfSize.x * 2;
+    auto height = shape.halfSize.y * 2;
 
-    titleBarHeight = navigationUI->shape.halfSize.y * 2;
+    titleBarHeight = shape.position.y;
 
     auto radiobuttonMargin = 10;
 
@@ -141,7 +141,7 @@ struct SoundEditUI {
   }
 
   inline void handleMouseDown(const vec2f_t &mousePosition) {
-    navigationUI->handleMouseDown(mousePosition);
+    // navigationUI->handleMouseDown(mousePosition);
 
     if (DoClickRadioGroup(&synthSelectRadioGroup, mousePosition)) {
       synth->setSynthType(SynthTypes[synthSelectRadioGroup.selectedIndex]);
@@ -171,7 +171,6 @@ struct SoundEditUI {
   }
 
   void draw(SDL_Renderer *renderer, const Style &style) {
-    navigationUI->draw(renderer, style);
     // DrawButton(backButton, renderer, style);
     //
     DrawRadioGroup(synthSelectRadioGroup, renderer, style);

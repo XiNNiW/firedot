@@ -1,122 +1,97 @@
 #pragma once
 
+#include "SDL_render.h"
+#include "collider.h"
 #include "sensor.h"
+#include "synthesis.h"
 #include "ui_navigation.h"
+#include "vector_math.h"
+#include "widget_button.h"
 #include <sstream>
 struct MappingUI {
 
-  NavigationUI *navigationUI = NULL;
   SensorMapping<float> *sensorMapping = NULL;
   // Button backButton;
-  MultiSelectMenu sensorMenus[NUM_SENSOR_TYPES];
+  // MultiSelectMenu sensorMenus[NUM_SENSOR_TYPES];
   std::string titleLabel = "map the phone sensors to sound parameters: ";
   std::string sensorLabels[NUM_SENSOR_TYPES];
-  // Navigation *navigation = NULL;
+  Button sensorButtons[NUM_SENSOR_TYPES];
+  Button parameterButtons[NUM_PARAMETER_TYPES];
 
   float titleBarHeight = 100;
   float sideMargin = 15;
   float topMargin = 50;
   float buttonMargin = 50;
   float sensorLabelWidth = 150;
+  int heldSensor = -1;
+  vec2f_t lastMousePosition;
 
-  static inline const MappingUI MakeMappingUI(NavigationUI *navUI,
-                                              SensorMapping<float> *mapping) {
-    return MappingUI{.navigationUI = navUI, .sensorMapping = mapping};
+  static inline const MappingUI MakeMappingUI(SensorMapping<float> *mapping) {
+    return MappingUI{.sensorMapping = mapping};
   }
 
-  void buildLayout(const float width, const float height) {
+  void buildLayout(const AxisAlignedBoundingBox &shape) {
+    auto width = (shape.halfSize.x * 2);
+    auto height = (shape.halfSize.y * 2);
 
-    titleBarHeight = navigationUI->shape.halfSize.y * 2;
+    titleBarHeight = shape.position.y + 100;
+    auto buttonHalfSize = vec2f_t{.x = 150, .y = 75};
+    auto uiHeight = (height - titleBarHeight);
+    auto sensorButtonSpaceY = uiHeight / float(NUM_SENSOR_TYPES);
+    auto parameterButtonSpaceY = uiHeight / float(NUM_PARAMETER_TYPES);
 
-    auto backButtonSize = vec2f_t{
-        .x = static_cast<float>(width / 8.0),
-        .y = static_cast<float>(width / 16.0),
-    };
-    //  backButton = Button{
-    //      .labelText = "<- back",
-    //      .shape = AxisAlignedBoundingBox{
-    //          .position = {.x = static_cast<float>(backButtonSize.x / 2.0),
-    //                       .y = static_cast<float>(backButtonSize.y / 2.0)},
-    //          .halfSize = backButtonSize.scale(0.5)}};
-
-    std::vector<Button> options;
-    for (size_t i = 0; i < NUM_PARAMETER_TYPES; ++i) {
-      options.push_back(Button{.labelText = ParameterTypeDisplayNames[i]});
+    for (auto &sensorType : SensorTypes) {
+      sensorButtons[sensorType] =
+          Button{.labelText = SensorTypesDisplayNames[sensorType],
+                 .shape = AxisAlignedBoundingBox{
+                     .position = {.x = buttonHalfSize.x,
+                                  .y = sensorType * sensorButtonSpaceY +
+                                       titleBarHeight + buttonHalfSize.y},
+                     .halfSize = buttonHalfSize}};
     }
 
-    auto menuButtonSize = vec2f_t{.x = (width - (2 * sideMargin)) / 3,
-                                  .y = static_cast<float>(100)};
-    auto menuButtonHalfSize = menuButtonSize.scale(0.5);
-    for (auto &sensorType : SensorTypes) {
-      std::stringstream formatter = std::stringstream();
-      formatter << SensorTypesDisplayNames[sensorType] << " --> ";
-      sensorLabels[sensorType] = formatter.str();
-
-      sensorMenus[sensorType] = MultiSelectMenu{
-          .selected = sensorMapping->mapping[sensorType],
-          .menuButton =
-              Button{.labelText =
-                         ParameterTypeDisplayNames[sensorMapping
-                                                       ->mapping[sensorType]],
-                     .shape =
-                         AxisAlignedBoundingBox{
-                             .position = {.x = static_cast<float>(
-                                              sensorLabelWidth +
-                                              menuButtonSize.x + sideMargin),
-                                          .y = (sensorType * (menuButtonSize.y +
-                                                              buttonMargin)) +
-                                               menuButtonHalfSize.y +
-                                               buttonMargin + topMargin +
-                                               titleBarHeight},
-                             .halfSize = menuButtonHalfSize}},
-          .options = options,
-      };
-      sensorMenus[sensorType].buildLayout(width, height);
+    for (auto &parameterType : ParameterTypes) {
+      parameterButtons[parameterType] =
+          Button{.labelText = ParameterTypeDisplayNames[parameterType],
+                 .shape = AxisAlignedBoundingBox{
+                     .position = {.x = width - buttonHalfSize.x,
+                                  .y = parameterType * parameterButtonSpaceY +
+                                       titleBarHeight + buttonHalfSize.y},
+                     .halfSize = buttonHalfSize}};
     }
   }
 
   inline void handleMouseMove(const vec2f_t &mousePosition) {
-
+    lastMousePosition = mousePosition;
     //   DoButtonHover(&backButton, mousePosition);
   }
 
   inline void handleMouseDown(const vec2f_t &mousePosition) {
+    // navigationUI->handleMouseDown(mousePosition);
     bool anyMenusActive = false;
+    lastMousePosition = mousePosition;
 
     for (auto &sensorType : SensorTypes) {
-      auto &menu = sensorMenus[sensorType];
-      if (menu.state == ACTIVE) {
-        anyMenusActive = true;
+      if (DoButtonClick(&sensorButtons[sensorType], mousePosition)) {
+        heldSensor = sensorType;
       }
-
-      auto previousSelection = menu.selected;
-      switch (DoMultiSelectClick(&menu, mousePosition)) {
-      case MultiSelectMenu::MENU_OPEN_CLICKED:
-        break;
-      case MultiSelectMenu::MENU_SELECTION_CHANGED:
-        sensorMapping->removeMapping(sensorType,
-                                     ParameterTypes[previousSelection]);
-        sensorMapping->addMapping(sensorType, ParameterTypes[menu.selected]);
-        menu.menuButton.labelText = ParameterTypeDisplayNames[menu.selected];
-        SDL_Log("mapping changed");
-        for (auto &pair : sensorMapping->mapping) {
-          SDL_Log("%s -> %s", SensorTypesDisplayNames[pair.first],
-                  ParameterTypeDisplayNames[pair.second]);
-        }
-        break;
-      case MultiSelectMenu::NOTHING:
-        break;
-      }
-    }
-
-    if (!anyMenusActive) {
-      //  if (!anyMenusActive && DoButtonClick(&backButton, mousePosition)) {
-      navigationUI->handleMouseDown(mousePosition);
-      //    navigation->page = Navigation::KEYBOARD;
     }
   }
   inline void handleMouseUp(const vec2f_t &mousePosition) {
+
+    lastMousePosition = mousePosition;
     //  backButton.state = INACTIVE;
+    for (auto &parameterType : ParameterTypes) {
+      if ((heldSensor > -1)) {
+        if (DoButtonClick(&parameterButtons[parameterType], mousePosition)) {
+
+          sensorMapping->addMapping((SensorType)heldSensor, parameterType);
+        } else {
+          SDL_Log("remove mapping!");
+        }
+      }
+    }
+    heldSensor = -1;
   }
 
   inline void handleFingerMove(const SDL_FingerID &fingerId,
@@ -127,42 +102,35 @@ struct MappingUI {
                              const vec2f_t &position, const float pressure) {}
 
   inline void draw(SDL_Renderer *renderer, const Style &style) {
-    navigationUI->draw(renderer, style);
 
-    bool anyMenusActive = false;
-    int activeSensorType = 0;
-
-    for (auto &sensorType : SensorTypes) {
-      if (sensorMenus[sensorType].state == ACTIVE) {
-        anyMenusActive = true;
-        activeSensorType = sensorType;
-      }
+    for (auto &keyValuePair : sensorMapping->mapping) {
+      auto sensorButton = sensorButtons[keyValuePair.first];
+      auto parameterButton = parameterButtons[keyValuePair.second];
+      SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+      SDL_RenderDrawLine(renderer, sensorButton.shape.position.x,
+                         sensorButton.shape.position.y,
+                         parameterButton.shape.position.x,
+                         parameterButton.shape.position.y);
+      SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
     }
 
-    if (anyMenusActive) {
-      DrawMultiSelectMenu(sensorMenus[activeSensorType], renderer, style);
-    } else {
-      //   DrawButton(backButton, renderer, style);
-      DrawLabel(titleLabel, style.inactiveColor, style.hoverColor,
-                {.x = static_cast<int>(sideMargin),
-                 .y = static_cast<int>(titleBarHeight),
-                 .w = 300,
-                 .h = static_cast<int>(titleBarHeight)},
-                renderer, style);
-      for (size_t i = 0; i < NUM_SENSOR_TYPES; ++i) {
-        DrawMultiSelectMenu(sensorMenus[i], renderer, style);
-        DrawLabel(sensorLabels[i], style.hoverColor, style.inactiveColor,
-                  SDL_Rect{.x = static_cast<int>(
-                               sensorMenus[i].menuButton.shape.position.x -
-                               sensorMenus[i].menuButton.shape.halfSize.x -
-                               sensorLabelWidth),
-                           .y = static_cast<int>(
-                               sensorMenus[i].menuButton.shape.position.y -
-                               sensorMenus[i].menuButton.shape.halfSize.y),
-                           .w = static_cast<int>(sensorLabelWidth),
-                           .h = 100},
-                  renderer, style);
-      }
+    if (heldSensor > -1) {
+      auto sensorButton = sensorButtons[heldSensor];
+
+      SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+      SDL_RenderDrawLine(renderer, sensorButton.shape.position.x,
+                         sensorButton.shape.position.y, lastMousePosition.x,
+                         lastMousePosition.y);
+
+      SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
+    }
+
+    for (auto &button : parameterButtons) {
+      DrawButton(button, renderer, style);
+    }
+
+    for (auto &button : sensorButtons) {
+      DrawButton(button, renderer, style);
     }
   }
 };

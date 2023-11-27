@@ -1,7 +1,13 @@
 #pragma once
 
+#include "collider.h"
+#include "metaphor.h"
+#include "sequencer.h"
 #include "synthesis.h"
+#include "ui_abstract.h"
 #include "ui_navigation.h"
+#include "widget_state.h"
+#include "widget_vslider.h"
 #include <map>
 #include <string>
 
@@ -61,15 +67,11 @@ struct KeyboardUI {
       40 + 4 * 5, 36 + 5 * 5, 37 + 5 * 5, 38 + 5 * 5, 39 + 5 * 5, 40 + 5 * 5,
       36 + 6 * 5, 37 + 6 * 5, 38 + 6 * 5, 39 + 6 * 5, 40 + 6 * 5,
   };
-  NavigationUI *navigationUI = NULL;
-  // Navigation *navigation = NULL;
   Synthesizer<float> *synth = NULL;
 
   std::map<SDL_FingerID, int> heldKeys;
   int fingerPositions[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 
-  // Button mappingMenuButton;
-  //  Button soundEditMenuButton;
   Button keyButtons[NUM_KEY_BUTTONS];
 
   float synthSelectWidth = 150;
@@ -78,18 +80,17 @@ struct KeyboardUI {
   float buttonMargin = 5;
   float topMargin = 15;
 
-  static inline const KeyboardUI MakeKeyboardUI(NavigationUI *navUI,
-                                                Synthesizer<float> *synth) {
-    return KeyboardUI{.navigationUI = navUI, .synth = synth};
-  }
+  KeyboardUI(Synthesizer<float> *_synth) : synth(_synth) {}
 
-  void buildLayout(const float width, const float height) {
+  void buildLayout(const AxisAlignedBoundingBox &shape) {
     auto pageMargin = 50;
     auto radiobuttonMargin = 10;
+    auto width = shape.halfSize.x * 2;
+    auto height = shape.halfSize.y * 2;
     synthSelectWidth = width / 6;
     synthSelectHeight = width / 8.0;
 
-    titleBarHeight = navigationUI->shape.halfSize.y * 2 + topMargin;
+    titleBarHeight = shape.position.y + topMargin;
     // titleBarHeight = height / 24.0;
     // navigationUI->pages.shape = {.position{.x = 0, .y = 0},
     //.halfSize = {.x = width, .y = titleBarHeight }
@@ -201,7 +202,7 @@ struct KeyboardUI {
   inline void handleMouseMove(const vec2f_t &mousePosition) {}
 
   inline void handleMouseDown(const vec2f_t &mousePosition) {
-    navigationUI->handleMouseDown(mousePosition);
+    // navigationUI->handleMouseDown(mousePosition);
     //  if (DoButtonClick(&soundEditMenuButton, mousePosition)) {
     //    navigation->page = Navigation::SOUND_EDIT;
     //  };
@@ -236,7 +237,6 @@ struct KeyboardUI {
   }
 
   inline void draw(SDL_Renderer *renderer, const Style &style) {
-    navigationUI->draw(renderer, style);
     //   DrawButton(soundEditMenuButton, renderer, style);
     //   DrawButton(mappingMenuButton, renderer, style);
 

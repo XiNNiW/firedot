@@ -323,7 +323,10 @@ public:
     synth.setReleaseTime(1);
     synth.activeSample = audioSample;
 
-    userInterface.buildLayout(width, height);
+    userInterface.buildLayout(
+        {.position = {.x = 0, .y = 0},
+         .halfSize = {.x = static_cast<float>(width / 2.0),
+                      .y = static_cast<float>(height / 2.0)}});
 
     sensorMapping.addMapping(TILT, ParameterType::SOUND_SOURCE);
     sensorMapping.addMapping(SPIN, ParameterType::FILTER_CUTOFF);
