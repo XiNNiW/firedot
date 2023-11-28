@@ -54,6 +54,11 @@ inline void DrawHSlider(const HSlider &slider, SDL_Renderer *renderer,
                          style.inactiveColor.b, style.inactiveColor.a);
 
   SDL_RenderFillRect(renderer, &sliderBounds);
+  if (slider.state == HOVER) {
+    SDL_SetRenderDrawColor(renderer, style.hoverColor.r, style.hoverColor.g,
+                           style.hoverColor.b, style.hoverColor.a);
+    SDL_RenderDrawRect(renderer, &sliderBounds);
+  }
   SDL_SetRenderDrawColor(renderer, valueColor.r, valueColor.g, valueColor.b,
                          valueColor.a);
   SDL_RenderFillRect(renderer, &dataBounds);

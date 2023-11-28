@@ -87,10 +87,13 @@ struct KeyboardUI {
     auto radiobuttonMargin = 10;
     auto width = shape.halfSize.x * 2;
     auto height = shape.halfSize.y * 2;
+    auto xOffset = shape.position.x - shape.halfSize.x;
+    auto yOffset = shape.position.y - shape.halfSize.y;
+
     synthSelectWidth = width / 6;
     synthSelectHeight = width / 8.0;
 
-    titleBarHeight = shape.position.y + topMargin;
+    titleBarHeight = yOffset + topMargin;
     // titleBarHeight = height / 24.0;
     // navigationUI->pages.shape = {.position{.x = 0, .y = 0},
     //.halfSize = {.x = width, .y = titleBarHeight }

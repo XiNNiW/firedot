@@ -4,18 +4,18 @@
 #include "widget.h"
 
 struct Navigation {
-  enum Page { INSTRUMENT, MAPPING, SOUND_EDIT } page = INSTRUMENT;
+  enum Page { INSTRUMENT, SETTINGS, NEW_GAME } page = NEW_GAME;
 };
 static const int NUM_NAVIGATION_PAGES = 3;
-static_assert((NUM_NAVIGATION_PAGES - 1) == Navigation::SOUND_EDIT,
+static_assert((NUM_NAVIGATION_PAGES - 1) == Navigation::NEW_GAME,
               "Navigation enum size does not match NavigationPages");
 static const Navigation::Page NavigationPages[NUM_NAVIGATION_PAGES] = {
-    Navigation::INSTRUMENT, Navigation::MAPPING, Navigation::SOUND_EDIT};
+    Navigation::INSTRUMENT, Navigation::SETTINGS, Navigation::NEW_GAME};
 
 static const char *NavigationPageDisplayNames[NUM_NAVIGATION_PAGES] = {
     "keyboard",
-    "sensor mapping",
-    "sound edit",
+    "settings",
+    "new game",
 };
 
 struct NavigationUI {

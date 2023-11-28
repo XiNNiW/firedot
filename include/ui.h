@@ -4,10 +4,13 @@
 
 #include "collider.h"
 #include "metaphor.h"
+#include "sequencer.h"
 #include "ui_abstract.h"
 #include "ui_keyboard.h"
 #include "ui_mapping.h"
 #include "ui_navigation.h"
+#include "ui_play_instrument.h"
+#include "ui_settings_menu.h"
 #include "ui_sound_edit.h"
 #include "widget_button.h"
 #include "widget_radio_button.h"
@@ -18,16 +21,20 @@ struct ChooseCharacterUI {
   InstrumentMetaphorType *instrumentMetaphor;
   RadioGroup characterChooser;
 
+  ChooseCharacterUI(InstrumentMetaphorType *_instrumentMetaphor)
+      : instrumentMetaphor(_instrumentMetaphor) {}
+
   virtual void buildLayout(const AxisAlignedBoundingBox &shape) {
 
     std::vector<std::string> instrumentOptionLabels = {};
     for (auto &instrumentType : InstrumentMetaphorTypes) {
-      instrumentOptionLabels.push_back(SynthTypeDisplayNames[instrumentType]);
+      instrumentOptionLabels.push_back(
+          InstrumentMetaphorTypeDisplayNames[instrumentType]);
     }
     characterChooser = RadioGroup::MakeRadioGroup(instrumentOptionLabels, 0);
-    characterChooser.shape = {
-        .position = {.x = 15, .y = shape.halfSize.y},
-        .halfSize = {.x = shape.halfSize.x - 30, .y = 75}};
+    characterChooser.buildLayout(
+        {.position = {.x = shape.halfSize.x, .y = shape.halfSize.y},
+         .halfSize = {.x = shape.halfSize.x - 30, .y = 75}});
   };
 
   virtual void handleFingerMove(const SDL_FingerID &fingerId,
@@ -66,6 +73,7 @@ struct InstrumentSetupUI : public AbstractUI {
                 "Navigation enum size does not match NavigationPages");
   constexpr static const Page NavigationPages[NUM_NAVIGATION_PAGES] = {
       Page::CHARACTER_CHOOSER, Page::MAPPING, Page::SOUND_EDIT};
+  Navigation *navigation = NULL;
   ChooseCharacterUI chooseCharacterUI;
   MappingUI mappingUI;
   SoundEditUI soundEditUI;
@@ -74,32 +82,40 @@ struct InstrumentSetupUI : public AbstractUI {
   float sideMargin = 15;
   float bottomMargin = 15;
   InstrumentSetupUI(Synthesizer<float> *synth,
-                    SensorMapping<float> *sensorMapping) {
-
-    mappingUI = MappingUI::MakeMappingUI(sensorMapping);
-    soundEditUI = SoundEditUI::MakeSoundEditUI(synth, sensorMapping);
-  }
+                    SensorMapping<float> *sensorMapping,
+                    InstrumentMetaphorType *instrumentMetaphor,
+                    Navigation *_navigation)
+      : chooseCharacterUI(ChooseCharacterUI(instrumentMetaphor)),
+        mappingUI(MappingUI::MakeMappingUI(sensorMapping)),
+        soundEditUI(SoundEditUI::MakeSoundEditUI(synth, sensorMapping)),
+        navigation(_navigation) {}
   virtual void buildLayout(const AxisAlignedBoundingBox &shape) {
     auto width = shape.halfSize.x * 2;
     auto height = shape.halfSize.y * 2;
     auto buttonHeight = 100;
     auto buttonWidth = 200;
     previousButton = Button{
-        .shape = {.position = {.x = 0 + sideMargin,
+        .labelText = "previous",
+        .shape = {.position = {.x = static_cast<float>(0 + sideMargin +
+                                                       buttonWidth / 2.0),
                                .y = static_cast<float>(
-                                   height - buttonHeight / 2.0 + bottomMargin)},
+                                   height - buttonHeight / 2.0 - bottomMargin)},
                   .halfSize = {.x = static_cast<float>(buttonWidth / 2.0),
                                .y = static_cast<float>(buttonHeight / 2.0)}}};
     nextButton = Button{
-        .shape = {.position = {.x = static_cast<float>(buttonWidth / 2.0 +
+        .labelText = "next",
+        .shape = {.position = {.x = static_cast<float>(shape.halfSize.x * 2 -
+                                                       buttonWidth / 2.0 -
                                                        sideMargin),
                                .y = static_cast<float>(
-                                   height - buttonHeight / 2.0 + bottomMargin)},
+                                   height - buttonHeight / 2.0 - bottomMargin)},
                   .halfSize = {.x = static_cast<float>(buttonWidth / 2.0),
                                .y = static_cast<float>(buttonHeight / 2.0)}}};
 
     AxisAlignedBoundingBox topShape = AxisAlignedBoundingBox{
-        .position = {.x = 0, .y = 0},
+        .position = {.x = shape.halfSize.x,
+                     .y = (shape.halfSize.y * 2 - buttonHeight - bottomMargin) /
+                          2},
         .halfSize = {.x = shape.halfSize.x,
                      .y = (shape.halfSize.y * 2 - buttonHeight - bottomMargin) /
                           2}};
@@ -179,6 +195,32 @@ struct InstrumentSetupUI : public AbstractUI {
       soundEditUI.handleMouseDown(mousePosition);
       break;
     }
+    if (DoButtonClick(&nextButton, mousePosition)) {
+      switch (page) {
+      case CHARACTER_CHOOSER:
+        page = MAPPING;
+        break;
+      case MAPPING:
+        page = SOUND_EDIT;
+        break;
+      case SOUND_EDIT:
+        page = CHARACTER_CHOOSER;
+        navigation->page = Navigation::INSTRUMENT;
+        break;
+      }
+    }
+    if (DoButtonClick(&previousButton, mousePosition)) {
+      switch (page) {
+      case CHARACTER_CHOOSER:
+        break;
+      case MAPPING:
+        page = CHARACTER_CHOOSER;
+        break;
+      case SOUND_EDIT:
+        page = MAPPING;
+        break;
+      }
+    }
   };
 
   virtual void handleMouseUp(const vec2f_t &mousePosition) {
@@ -207,68 +249,68 @@ struct InstrumentSetupUI : public AbstractUI {
       soundEditUI.draw(renderer, style);
       break;
     }
+    SDL_SetRenderDrawColor(renderer, style.hoverColor.r, style.hoverColor.g,
+                           style.hoverColor.b, style.hoverColor.a);
+    SDL_RenderDrawLine(
+        renderer, 15,
+        previousButton.shape.position.y - previousButton.shape.halfSize.y - 10,
+        nextButton.shape.position.x + nextButton.shape.halfSize.x,
+        previousButton.shape.position.y - previousButton.shape.halfSize.y - 10);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
+    DrawButton(previousButton, renderer, style);
+    DrawButton(nextButton, renderer, style);
   };
 };
 
 struct UserInterface : public AbstractUI {
   Navigation navigation;
 
-  NavigationUI navigationUI;
-  KeyboardUI keyboardUI;
-  MappingUI mappingUI;
-  SoundEditUI soundEditUI;
-  UserInterface(Synthesizer<float> *synth, SensorMapping<float> *sensorMapping)
-      : keyboardUI(KeyboardUI(synth)),
-        navigationUI(NavigationUI::MakeNavigationUI(&navigation)),
-        mappingUI(MappingUI::MakeMappingUI(sensorMapping)),
-        soundEditUI(SoundEditUI::MakeSoundEditUI(synth, sensorMapping)) {}
+  InstrumentSetupUI instrumentSetupUI;
+  PlayInstrumentUI playInstrumentUI;
+  SettingsMenu settingsUI;
+
+  UserInterface(Synthesizer<float> *synth, SensorMapping<float> *sensorMapping,
+                Sequencer *sequencer,
+                InstrumentMetaphorType *instrumentMetaphor)
+      : instrumentSetupUI(InstrumentSetupUI(synth, sensorMapping,
+                                            instrumentMetaphor, &navigation)),
+        playInstrumentUI(PlayInstrumentUI(synth, sequencer, sensorMapping,
+                                          instrumentMetaphor, &navigation)),
+        settingsUI(SettingsMenu(&navigation)) {}
 
   inline void buildLayout(const AxisAlignedBoundingBox &shape) {
-    auto width = shape.halfSize.x * 2;
-    auto height = shape.halfSize.y * 2;
-    auto navUIShape = AxisAlignedBoundingBox{
-        .position = {.x = 0, .y = 0},
-        .halfSize = {.x = width / 2, .y = 30},
-    };
 
-    navigationUI.buildLayout(navUIShape);
-    auto lowerScreen = AxisAlignedBoundingBox{
-        .position = {.x = 0, .y = navigationUI.shape.halfSize.y * 2},
-        .halfSize = {.x = width / 2,
-                     .y = (height - navigationUI.shape.halfSize.y * 2) / 2}};
-    mappingUI.buildLayout(lowerScreen);
-    keyboardUI.buildLayout(lowerScreen);
-    soundEditUI.buildLayout(lowerScreen);
+    instrumentSetupUI.buildLayout(shape);
+    playInstrumentUI.buildLayout(shape);
+    settingsUI.buildLayout(shape);
   }
 
   inline void handleFingerMove(const SDL_FingerID &fingerId,
                                const vec2f_t &position, const float pressure) {
-
     switch (navigation.page) {
+    case Navigation::NEW_GAME:
+      instrumentSetupUI.handleFingerMove(fingerId, position, pressure);
+      break;
     case Navigation::INSTRUMENT:
-      keyboardUI.handleFingerMove(fingerId, position, pressure);
+      playInstrumentUI.handleFingerMove(fingerId, position, pressure);
       break;
-    case Navigation::MAPPING:
-      mappingUI.handleFingerMove(fingerId, position, pressure);
-      break;
-    case Navigation::SOUND_EDIT:
-      soundEditUI.handleFingerMove(fingerId, position, pressure);
+    case Navigation::SETTINGS:
+      settingsUI.handleFingerMove(fingerId, position, pressure);
       break;
     }
   }
 
   inline void handleFingerDown(const SDL_FingerID &fingerId,
                                const vec2f_t &position, const float pressure) {
-
     switch (navigation.page) {
+    case Navigation::NEW_GAME:
+      instrumentSetupUI.handleFingerDown(fingerId, position, pressure);
+      break;
     case Navigation::INSTRUMENT:
-      keyboardUI.handleFingerDown(fingerId, position, pressure);
+      playInstrumentUI.handleFingerDown(fingerId, position, pressure);
       break;
-    case Navigation::MAPPING:
-      mappingUI.handleFingerDown(fingerId, position, pressure);
-      break;
-    case Navigation::SOUND_EDIT:
-      soundEditUI.handleFingerDown(fingerId, position, pressure);
+    case Navigation::SETTINGS:
+      settingsUI.handleFingerDown(fingerId, position, pressure);
       break;
     }
   }
@@ -276,74 +318,71 @@ struct UserInterface : public AbstractUI {
   inline void handleFingerUp(const SDL_FingerID &fingerId,
                              const vec2f_t &position, const float pressure) {
     switch (navigation.page) {
+    case Navigation::NEW_GAME:
+      instrumentSetupUI.handleFingerUp(fingerId, position, pressure);
+      break;
     case Navigation::INSTRUMENT:
-      keyboardUI.handleFingerUp(fingerId, position, pressure);
+      playInstrumentUI.handleFingerUp(fingerId, position, pressure);
       break;
-    case Navigation::MAPPING:
-      mappingUI.handleFingerUp(fingerId, position, pressure);
-      break;
-    case Navigation::SOUND_EDIT:
-      soundEditUI.handleFingerUp(fingerId, position, pressure);
+    case Navigation::SETTINGS:
+      settingsUI.handleFingerUp(fingerId, position, pressure);
       break;
     }
   }
 
   inline void handleMouseMove(const vec2f_t &mousePosition) {
     switch (navigation.page) {
+    case Navigation::NEW_GAME:
+      instrumentSetupUI.handleMouseMove(mousePosition);
+      break;
     case Navigation::INSTRUMENT:
-      keyboardUI.handleMouseMove(mousePosition);
+      playInstrumentUI.handleMouseMove(mousePosition);
       break;
-    case Navigation::MAPPING:
-      mappingUI.handleMouseMove(mousePosition);
-      break;
-    case Navigation::SOUND_EDIT:
-      soundEditUI.handleMouseMove(mousePosition);
+    case Navigation::SETTINGS:
+      settingsUI.handleMouseMove(mousePosition);
       break;
     }
   }
 
   inline void handleMouseDown(const vec2f_t &mousePosition) {
-    navigationUI.handleMouseDown(mousePosition);
     switch (navigation.page) {
+    case Navigation::NEW_GAME:
+      instrumentSetupUI.handleMouseDown(mousePosition);
+      break;
     case Navigation::INSTRUMENT:
-      keyboardUI.handleMouseDown(mousePosition);
+      playInstrumentUI.handleMouseDown(mousePosition);
       break;
-    case Navigation::MAPPING:
-      mappingUI.handleMouseDown(mousePosition);
-      break;
-    case Navigation::SOUND_EDIT:
-      soundEditUI.handleMouseDown(mousePosition);
+    case Navigation::SETTINGS:
+      settingsUI.handleMouseDown(mousePosition);
       break;
     }
   }
 
   inline void handleMouseUp(const vec2f_t &mousePosition) {
     switch (navigation.page) {
+    case Navigation::NEW_GAME:
+      instrumentSetupUI.handleMouseUp(mousePosition);
+      break;
     case Navigation::INSTRUMENT:
-      keyboardUI.handleMouseUp(mousePosition);
+      playInstrumentUI.handleMouseUp(mousePosition);
       break;
-    case Navigation::MAPPING:
-      mappingUI.handleMouseUp(mousePosition);
-      break;
-    case Navigation::SOUND_EDIT:
-      soundEditUI.handleMouseUp(mousePosition);
+    case Navigation::SETTINGS:
+      settingsUI.handleMouseUp(mousePosition);
       break;
     }
   }
 
   inline void draw(SDL_Renderer *renderer, const Style &style) {
-
     switch (navigation.page) {
+    case Navigation::NEW_GAME:
+      instrumentSetupUI.draw(renderer, style);
+      break;
     case Navigation::INSTRUMENT:
-      keyboardUI.draw(renderer, style);
+      playInstrumentUI.draw(renderer, style);
       break;
-    case Navigation::MAPPING:
-      mappingUI.draw(renderer, style);
-      break;
-    case Navigation::SOUND_EDIT:
-      soundEditUI.draw(renderer, style);
+    case Navigation::SETTINGS:
+      settingsUI.draw(renderer, style);
       break;
     }
-    navigationUI.draw(renderer, style);
   }
 };

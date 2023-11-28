@@ -18,7 +18,6 @@ struct MappingUI {
   Button sensorButtons[NUM_SENSOR_TYPES];
   Button parameterButtons[NUM_PARAMETER_TYPES];
 
-  float titleBarHeight = 100;
   float sideMargin = 15;
   float topMargin = 50;
   float buttonMargin = 50;
@@ -33,20 +32,22 @@ struct MappingUI {
   void buildLayout(const AxisAlignedBoundingBox &shape) {
     auto width = (shape.halfSize.x * 2);
     auto height = (shape.halfSize.y * 2);
+    auto xOffset = shape.position.x - shape.halfSize.x;
+    auto yOffset = shape.position.y - shape.halfSize.y;
 
-    titleBarHeight = shape.position.y + 100;
+    // titleBarHeight = shape.position.y + 100;
     auto buttonHalfSize = vec2f_t{.x = 150, .y = 75};
-    auto uiHeight = (height - titleBarHeight);
-    auto sensorButtonSpaceY = uiHeight / float(NUM_SENSOR_TYPES);
-    auto parameterButtonSpaceY = uiHeight / float(NUM_PARAMETER_TYPES);
+    //  auto uiHeight = (height - titleBarHeight);
+    auto sensorButtonSpaceY = height / float(NUM_SENSOR_TYPES);
+    auto parameterButtonSpaceY = height / float(NUM_PARAMETER_TYPES);
 
     for (auto &sensorType : SensorTypes) {
       sensorButtons[sensorType] =
           Button{.labelText = SensorTypesDisplayNames[sensorType],
                  .shape = AxisAlignedBoundingBox{
-                     .position = {.x = buttonHalfSize.x,
+                     .position = {.x = buttonHalfSize.x + xOffset,
                                   .y = sensorType * sensorButtonSpaceY +
-                                       titleBarHeight + buttonHalfSize.y},
+                                       buttonHalfSize.y + yOffset},
                      .halfSize = buttonHalfSize}};
     }
 
@@ -54,9 +55,9 @@ struct MappingUI {
       parameterButtons[parameterType] =
           Button{.labelText = ParameterTypeDisplayNames[parameterType],
                  .shape = AxisAlignedBoundingBox{
-                     .position = {.x = width - buttonHalfSize.x,
+                     .position = {.x = width - buttonHalfSize.x + xOffset,
                                   .y = parameterType * parameterButtonSpaceY +
-                                       titleBarHeight + buttonHalfSize.y},
+                                       buttonHalfSize.y + yOffset},
                      .halfSize = buttonHalfSize}};
     }
   }

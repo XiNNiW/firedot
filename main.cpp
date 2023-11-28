@@ -14,8 +14,10 @@
 #include "SDL_video.h"
 #include "include/collider.h"
 #include "include/game_object.h"
+#include "include/metaphor.h"
 #include "include/physics.h"
 #include "include/sensor.h"
+#include "include/sequencer.h"
 #include "include/synthesis.h"
 #include "include/ui.h"
 #include "include/vector_math.h"
@@ -324,7 +326,8 @@ public:
     synth.activeSample = audioSample;
 
     userInterface.buildLayout(
-        {.position = {.x = 0, .y = 0},
+        {.position = {.x = static_cast<float>(width / 2.0),
+                      .y = static_cast<float>(height / 2.0)},
          .halfSize = {.x = static_cast<float>(width / 2.0),
                       .y = static_cast<float>(height / 2.0)}});
 
@@ -450,6 +453,7 @@ public:
       return;
 
     updatePhysics(event);
+
     evaluateGameRules(event);
   }
 
@@ -461,6 +465,7 @@ public:
     if ((timeToWait > 0) && (timeToWait < FRAME_DELTA_MILLIS))
       SDL_Delay(timeToWait);
     lastFrameTime = SDL_GetTicks();
+
     // Event loop
     while (SDL_PollEvent(&event) != 0) {
       switch (event.type) {
@@ -584,6 +589,9 @@ public:
 
   void updatePhysics(SDL_Event &event) {
     physics.update(frameDeltaTimeSeconds, &gameObjects);
+    if (instrumentMetaphor == InstrumentMetaphorType::SEQUENCER) {
+      sequencer.update(frameDeltaTimeSeconds);
+    }
   }
 
   void evaluateGameRules(SDL_Event &event) {}
@@ -627,9 +635,12 @@ private:
   // Model objects
   Synthesizer<float> synth;
   SensorMapping<float> sensorMapping;
+  Sequencer sequencer = Sequencer(&synth);
+  InstrumentMetaphorType instrumentMetaphor = KEYBOARD;
 
   // UI objects
-  UserInterface userInterface = UserInterface(&synth, &sensorMapping);
+  UserInterface userInterface =
+      UserInterface(&synth, &sensorMapping, &sequencer, &instrumentMetaphor);
 
   SDL_Color textColor = {20, 20, 20};
   SDL_Color textBackgroundColor = {0, 0, 0};

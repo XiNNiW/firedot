@@ -16,7 +16,6 @@ struct SoundEditUI {
   HSlider parameterSliders[NUM_PARAMETER_TYPES];
   int fingerPositions[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 
-  float titleBarHeight = 100;
   float synthSelectWidth = 50;
   float synthSelectHeight = 50;
   float buttonMargin = 5;
@@ -41,8 +40,8 @@ struct SoundEditUI {
   void buildLayout(const AxisAlignedBoundingBox &shape) {
     auto width = shape.halfSize.x * 2;
     auto height = shape.halfSize.y * 2;
-
-    titleBarHeight = shape.position.y;
+    auto xOffset = shape.position.x - shape.halfSize.x;
+    auto yOffset = shape.position.y - shape.halfSize.y;
 
     auto radiobuttonMargin = 10;
 
@@ -58,9 +57,9 @@ struct SoundEditUI {
 
     synthSelectRadioGroup.buildLayout(AxisAlignedBoundingBox{
 
-        .position = {.x = width / 2,
-                     .y = static_cast<float>(topMargin + titleBarHeight +
-                                             height / 24.0)},
+        .position = {.x = shape.halfSize.x + xOffset,
+                     .y = static_cast<float>(topMargin + height / 24.0 +
+                                             yOffset)},
         .halfSize = {.x = (width - 2 * pageMargin) / 2,
                      .y = static_cast<float>(height / 24.0)}});
 
@@ -72,10 +71,10 @@ struct SoundEditUI {
               AxisAlignedBoundingBox{
                   .position =
                       {
-                          .x = width / 2,
+                          .x = width / 2 + xOffset,
                           .y = synthSelectRadioGroup.shape.position.y +
                                synthSelectRadioGroup.shape.halfSize.y +
-                               buttonMargin +
+                               buttonMargin + yOffset +
                                (parameter + 1) *
                                    (static_cast<float>(height / 12.0) +
                                     buttonMargin),
