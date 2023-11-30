@@ -2,6 +2,7 @@
 
 #include "SDL_render.h"
 #include "widget_button.h"
+#include "widget_state.h"
 #include "widget_style.h"
 #include <vector>
 
@@ -35,7 +36,7 @@ inline void DrawDropDownButton(const Button &button, SDL_Renderer *renderer,
   if (button.labelText.size() > 0) {
 
     DrawLabel(button.labelText, style.hoverColor, backgroundColor, rect,
-              renderer, style, Alignment::CENTER);
+              renderer, style, HorizontalAlignment::CENTER);
   }
 }
 
@@ -148,7 +149,7 @@ inline static void DrawMultiSelectMenu(const MultiSelectMenu &menu,
     auto titleRect = screenRect;
     titleRect.h = menu.titleBarHeight;
     DrawLabel(menu.menuButton.labelText, style.inactiveColor, style.hoverColor,
-              titleRect, renderer, style, CENTER);
+              titleRect, renderer, style, HorizontalAlignment::CENTER);
   } else {
     DrawButton(menu.menuButton, renderer, style);
   }

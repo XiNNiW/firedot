@@ -8,16 +8,18 @@
 #include "vector_math.h"
 #include "widget_button.h"
 #include <sstream>
-struct MappingUI {
 
+struct MappingUI {
   SensorMapping<float> *sensorMapping = NULL;
-  // Button backButton;
-  // MultiSelectMenu sensorMenus[NUM_SENSOR_TYPES];
   std::string titleLabel = "map the phone sensors to sound parameters: ";
   std::string sensorLabels[NUM_SENSOR_TYPES];
   Button sensorButtons[NUM_SENSOR_TYPES];
   Button parameterButtons[NUM_PARAMETER_TYPES];
 
+  std::string pageTitleLabel = "choose your abilities";
+  AxisAlignedBoundingBox pageTitleLabelShape;
+
+  AxisAlignedBoundingBox bodyShape;
   float sideMargin = 15;
   float topMargin = 50;
   float buttonMargin = 50;
@@ -30,12 +32,25 @@ struct MappingUI {
   }
 
   void buildLayout(const AxisAlignedBoundingBox &shape) {
-    auto width = (shape.halfSize.x * 2);
-    auto height = (shape.halfSize.y * 2);
-    auto xOffset = shape.position.x - shape.halfSize.x;
-    auto yOffset = shape.position.y - shape.halfSize.y;
 
-    // titleBarHeight = shape.position.y + 100;
+    auto pageLabelHeight = 50;
+    pageTitleLabelShape = AxisAlignedBoundingBox{
+        .position = {.x = shape.position.x,
+                     .y = static_cast<float>(pageLabelHeight / 2.0)},
+        .halfSize = {.x = shape.halfSize.x,
+                     .y = static_cast<float>(pageLabelHeight / 2.0)}};
+    bodyShape = AxisAlignedBoundingBox{
+        .position = {.x = shape.position.x,
+                     .y = shape.position.y + pageLabelHeight},
+        .halfSize = {
+            .x = shape.halfSize.x,
+            .y = static_cast<float>(shape.halfSize.y - pageLabelHeight / 2.0)}};
+    auto width = (bodyShape.halfSize.x * 2);
+    auto height = (bodyShape.halfSize.y * 2);
+    auto xOffset = bodyShape.position.x - bodyShape.halfSize.x;
+    auto yOffset = bodyShape.position.y - bodyShape.halfSize.y;
+
+    // titleBarHeight = bodyShape.position.y + 100;
     auto buttonHalfSize = vec2f_t{.x = 150, .y = 75};
     //  auto uiHeight = (height - titleBarHeight);
     auto sensorButtonSpaceY = height / float(NUM_SENSOR_TYPES);
@@ -77,6 +92,22 @@ struct MappingUI {
         heldSensor = sensorType;
       }
     }
+
+    for (auto &parameterType : ParameterTypes) {
+      if (DoButtonClick(&parameterButtons[parameterType], mousePosition)) {
+        bool shouldRemove = false;
+        SensorType sensorType;
+        for (auto &keyValuePair : sensorMapping->mapping) {
+          if (keyValuePair.second == parameterType) {
+            shouldRemove = true;
+            sensorType = keyValuePair.first;
+          }
+        }
+        if (shouldRemove) {
+          sensorMapping->removeMapping(sensorType, parameterType);
+        }
+      }
+    }
   }
   inline void handleMouseUp(const vec2f_t &mousePosition) {
 
@@ -104,6 +135,10 @@ struct MappingUI {
 
   inline void draw(SDL_Renderer *renderer, const Style &style) {
 
+    auto pageLabelRect = ConvertAxisAlignedBoxToSDL_Rect(pageTitleLabelShape);
+    DrawLabel(pageTitleLabel, style.hoverColor, style.unavailableColor,
+              pageLabelRect, renderer, style, HorizontalAlignment::CENTER,
+              VerticalAlignment::CENTER);
     for (auto &keyValuePair : sensorMapping->mapping) {
       auto sensorButton = sensorButtons[keyValuePair.first];
       auto parameterButton = parameterButtons[keyValuePair.second];

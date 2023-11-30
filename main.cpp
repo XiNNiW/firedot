@@ -316,7 +316,7 @@ public:
                       "using mutex fallback!");
     }
 
-    synth.setSynthType(SUBTRACTIVE);
+    synth.setSynthType(SUBTRACTIVE_DRUM_SYNTH);
     synth.setGain(1);
     synth.setFilterCutoff(1);
     synth.setFilterQuality(0.5);

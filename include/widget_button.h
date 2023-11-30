@@ -25,7 +25,8 @@ inline const bool DoButtonClick(Button *button, const vec2f_t mousePosition,
 }
 
 inline const bool DoButtonClick(Button *button, const vec2f_t mousePosition) {
-  if (button->shape.contains(mousePosition)) {
+
+  if ((button->state != HIDDEN) && button->shape.contains(mousePosition)) {
     return true;
   };
   return false;
@@ -59,34 +60,39 @@ inline const void DrawButton(const Button &button, SDL_Texture *buttonTexture,
   SDL_RenderCopy(renderer, buttonTexture, NULL, &destRect);
 }
 
-inline const void DrawButtonLabel(const Button &button, SDL_Renderer *renderer,
-                                  const Style &style,
-                                  const Alignment alignment = CENTER) {
+inline const void DrawButtonLabel(
+    const Button &button, SDL_Renderer *renderer, const Style &style,
+    const HorizontalAlignment horizontalAlignment = HorizontalAlignment::CENTER,
+    const VerticalAlignment verticalAlignment = VerticalAlignment::CENTER) {
 
   auto textColor = style.getWidgetLabelColor(button.state);
   auto color = style.getWidgetColor(button.state);
   DrawLabel(button.labelText, textColor, color,
             ConvertAxisAlignedBoxToSDL_Rect(button.shape), renderer, style,
-            alignment);
+            horizontalAlignment, verticalAlignment);
 }
 inline const void DrawButton(const Button &button, SDL_Renderer *renderer,
                              const Style &style) {
-  auto rect = SDL_Rect{
-      .x = static_cast<int>(button.shape.position.x - button.shape.halfSize.x),
-      .y = static_cast<int>(button.shape.position.y - button.shape.halfSize.y),
-      .w = static_cast<int>(2 * button.shape.halfSize.x),
-      .h = static_cast<int>(2 * button.shape.halfSize.y)};
-  auto color = style.getWidgetColor(button.state);
 
-  SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+  if (button.state != HIDDEN) {
+    auto rect = SDL_Rect{.x = static_cast<int>(button.shape.position.x -
+                                               button.shape.halfSize.x),
+                         .y = static_cast<int>(button.shape.position.y -
+                                               button.shape.halfSize.y),
+                         .w = static_cast<int>(2 * button.shape.halfSize.x),
+                         .h = static_cast<int>(2 * button.shape.halfSize.y)};
+    auto color = style.getWidgetColor(button.state);
 
-  SDL_RenderFillRect(renderer, &rect);
-  SDL_SetRenderDrawColor(renderer, style.color2.r, style.color2.g,
-                         style.color2.b, style.color2.a);
-  SDL_RenderDrawRect(renderer, &rect);
-  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-  if (button.labelText.size() > 0) {
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 
-    DrawButtonLabel(button, renderer, style);
+    SDL_RenderFillRect(renderer, &rect);
+    SDL_SetRenderDrawColor(renderer, style.color2.r, style.color2.g,
+                           style.color2.b, style.color2.a);
+    SDL_RenderDrawRect(renderer, &rect);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    if (button.labelText.size() > 0) {
+
+      DrawButtonLabel(button, renderer, style);
+    }
   }
 }

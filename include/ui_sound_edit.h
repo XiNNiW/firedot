@@ -6,15 +6,16 @@
 #include "ui_navigation.h"
 
 struct SoundEditUI {
-
-  // Navigation *navigation = NULL;
   Synthesizer<float> *synth = NULL;
   SensorMapping<float> *sensorMapping = NULL;
 
-  // Button backButton;
   RadioGroup synthSelectRadioGroup;
   HSlider parameterSliders[NUM_PARAMETER_TYPES];
   int fingerPositions[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+
+  std::string pageTitleLabel = "choose your sound!";
+  AxisAlignedBoundingBox pageTitleLabelShape;
+  AxisAlignedBoundingBox bodyShape;
 
   float synthSelectWidth = 50;
   float synthSelectHeight = 50;
@@ -38,10 +39,23 @@ struct SoundEditUI {
   }
 
   void buildLayout(const AxisAlignedBoundingBox &shape) {
-    auto width = shape.halfSize.x * 2;
-    auto height = shape.halfSize.y * 2;
-    auto xOffset = shape.position.x - shape.halfSize.x;
-    auto yOffset = shape.position.y - shape.halfSize.y;
+
+    auto pageLabelHeight = 50;
+    pageTitleLabelShape = AxisAlignedBoundingBox{
+        .position = {.x = shape.position.x,
+                     .y = static_cast<float>(pageLabelHeight / 2.0)},
+        .halfSize = {.x = shape.halfSize.x,
+                     .y = static_cast<float>(pageLabelHeight / 2.0)}};
+    bodyShape = AxisAlignedBoundingBox{
+        .position = {.x = shape.position.x,
+                     .y = shape.position.y + pageLabelHeight},
+        .halfSize = {
+            .x = shape.halfSize.x,
+            .y = static_cast<float>(shape.halfSize.y - pageLabelHeight / 2.0)}};
+    auto width = bodyShape.halfSize.x * 2;
+    auto height = bodyShape.halfSize.y * 2;
+    auto xOffset = bodyShape.position.x - bodyShape.halfSize.x;
+    auto yOffset = bodyShape.position.y - bodyShape.halfSize.y;
 
     auto radiobuttonMargin = 10;
 
@@ -66,7 +80,7 @@ struct SoundEditUI {
     for (auto &parameter : ParameterTypes) {
       parameterSliders[parameter] = HSlider{
           .labelText = ParameterTypeDisplayNames[parameter],
-          .value = synth->getParameter(parameter),
+
           .shape =
               AxisAlignedBoundingBox{
                   .position =
@@ -90,9 +104,10 @@ struct SoundEditUI {
     DoRadioGroupHover(&synthSelectRadioGroup, position);
     if (fingerPositions[fingerId] > -1) {
       auto parameterType = ParameterTypes[fingerPositions[fingerId]];
-      if (DoHSliderDrag(&parameterSliders[parameterType], position)) {
-        synth->pushParameterChangeEvent(parameterType,
-                                        parameterSliders[parameterType].value);
+      float paramValue = synth->getParameter(parameterType);
+      if (DoHSliderDrag(&parameterSliders[parameterType], &paramValue,
+                        position)) {
+        synth->pushParameterChangeEvent(parameterType, paramValue);
       }
     }
     //   for (auto &parameterType : ParameterTypes) {
@@ -112,10 +127,11 @@ struct SoundEditUI {
     };
     for (size_t i = 0; i < NUM_PARAMETER_TYPES; ++i) {
       auto &parameterType = ParameterTypes[i];
-      if (DoHSliderClick(&parameterSliders[parameterType], position)) {
+      float paramValue = synth->getParameter(parameterType);
+      if (DoHSliderClick(&parameterSliders[parameterType], &paramValue,
+                         position)) {
         fingerPositions[fingerId] = i;
-        synth->pushParameterChangeEvent(parameterType,
-                                        parameterSliders[parameterType].value);
+        synth->pushParameterChangeEvent(parameterType, paramValue);
       }
     }
   }
@@ -132,9 +148,10 @@ struct SoundEditUI {
     DoRadioGroupHover(&synthSelectRadioGroup, mousePosition);
 
     for (auto &parameterType : ParameterTypes) {
-      if (DoHSliderDrag(&parameterSliders[parameterType], mousePosition)) {
-        synth->pushParameterChangeEvent(parameterType,
-                                        parameterSliders[parameterType].value);
+      float paramValue = synth->getParameter(parameterType);
+      if (DoHSliderDrag(&parameterSliders[parameterType], &paramValue,
+                        mousePosition)) {
+        synth->pushParameterChangeEvent(parameterType, paramValue);
       }
     }
   }
@@ -170,8 +187,10 @@ struct SoundEditUI {
   }
 
   void draw(SDL_Renderer *renderer, const Style &style) {
-    // DrawButton(backButton, renderer, style);
-    //
+    auto pageLabelRect = ConvertAxisAlignedBoxToSDL_Rect(pageTitleLabelShape);
+    DrawLabel(pageTitleLabel, style.hoverColor, style.unavailableColor,
+              pageLabelRect, renderer, style, HorizontalAlignment::CENTER,
+              VerticalAlignment::CENTER);
     DrawRadioGroup(synthSelectRadioGroup, renderer, style);
     for (auto &parameterType : ParameterTypes) {
       if (sensorMapping->isMapped(parameterType)) {
@@ -191,7 +210,8 @@ struct SoundEditUI {
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
       } else {
 
-        DrawHSlider(parameterSliders[parameterType], renderer, style);
+        DrawHSlider(parameterSliders[parameterType],
+                    synth->getParameter(parameterType), renderer, style);
       }
     }
   }

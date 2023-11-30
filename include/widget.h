@@ -7,6 +7,7 @@
 #include "widget_label.h"
 #include "widget_multi_select.h"
 #include "widget_radio_button.h"
+#include "widget_seperator.h"
 #include "widget_state.h"
 #include "widget_style.h"
 #include "widget_utils.h"

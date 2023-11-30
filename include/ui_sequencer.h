@@ -6,6 +6,7 @@
 #include "widget_hslider.h"
 #include "widget_state.h"
 #include "widget_vslider.h"
+
 struct SequencerUI {
   Sequencer *sequencer = NULL;
   HSlider stepButtons[Sequencer::MAX_STEPS];
@@ -26,8 +27,6 @@ struct SequencerUI {
     auto buttonHeight = buttonWidth;
     for (int i = 0; i < Sequencer::MAX_STEPS; i++) {
       stepButtons[i] = HSlider{
-          //.labelText = "x",
-          .value = 0,
           .shape = {
               .position = {.x = static_cast<float>(
                                buttonWidth * (i % numButtonsPerRow) +
@@ -40,23 +39,21 @@ struct SequencerUI {
     }
     playButton = Button{
         .labelText = "play",
-        .shape = {
-            .position = {.x = shape.position.x,
-                         .y = shape.halfSize.y * 2 - buttonHeight - pageMargin},
-            .halfSize = {.x = static_cast<float>(buttonWidth / 2.0),
-                         .y = static_cast<float>(buttonHeight / 2.0)}}};
+        .shape = {.position = {.x = shape.position.x,
+                               .y = static_cast<float>(shape.halfSize.y * 2 -
+                                                       buttonHeight / 2.0 -
+                                                       pageMargin / 2.0)},
+                  .halfSize = {.x = static_cast<float>(buttonWidth / 2.0),
+                               .y = static_cast<float>(buttonHeight / 4.0)}}};
   };
 
   void handleFingerMove(const SDL_FingerID &fingerId, const vec2f_t &position,
                         const float pressure) {
 
     if (fingerPositions[fingerId] > -1) {
-      auto parameterType = ParameterTypes[fingerPositions[fingerId]];
-      if (DoHSliderDrag(&stepButtons[parameterType], position)) {
-
-        sequencer->stepValues[fingerPositions[fingerId]] =
-            stepButtons[fingerPositions[fingerId]].value;
-      }
+      DoHSliderDrag(&stepButtons[fingerPositions[fingerId]],
+                    &sequencer->stepValues[fingerPositions[fingerId]],
+                    position);
     }
   };
 
@@ -64,10 +61,10 @@ struct SequencerUI {
                         const float pressure) {
 
     for (int i = 0; i < Sequencer::MAX_STEPS; i++) {
-      if (DoHSliderClick(&stepButtons[i], position)) {
+      if (DoHSliderClick(&stepButtons[i], &sequencer->stepValues[i],
+                         position)) {
 
         fingerPositions[fingerId] = i;
-        sequencer->stepValues[i] = stepButtons[i].value;
       }
     }
   };
@@ -75,8 +72,9 @@ struct SequencerUI {
   void handleFingerUp(const SDL_FingerID &fingerId, const vec2f_t &position,
                       const float pressure) {
 
-    if (fingerPositions[fingerId] > -1) {
-      stepButtons[fingerPositions[fingerId]].state = INACTIVE;
+    auto i = fingerPositions[fingerId];
+    if (i > -1) {
+      stepButtons[i].state = INACTIVE;
     }
     fingerPositions[fingerId] = -1;
   };
@@ -104,7 +102,7 @@ struct SequencerUI {
       } else if (stepButtons[i].state != ACTIVE) {
         stepButtons[i].state = INACTIVE;
       }
-      DrawHSlider(stepButtons[i], renderer, style);
+      DrawHSlider(stepButtons[i], sequencer->stepValues[i], renderer, style);
     }
     DrawButton(playButton, renderer, style);
   };

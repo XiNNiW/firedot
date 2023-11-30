@@ -6,12 +6,14 @@ struct Sequencer {
   constexpr static const float SECONDS_PER_MINUTE = 60.0;
   Synthesizer<float> *synthesizer;
   static const size_t MAX_STEPS = 16;
-  float stepValues[MAX_STEPS];
-  float tempoBPM = 160;
+  float stepValues[MAX_STEPS] = {0, 0, 0, 0, 0, 0, 0, 0,
+                                 0, 0, 0, 0, 0, 0, 0, 0};
+  float tempoBPM = 98;
   float timeSinceLastStep = 0;
   float stepIntervalSeconds = 1.0 / (16.0 * tempoBPM / SECONDS_PER_MINUTE);
   int currentStep = 0;
   bool running = false;
+  bool hadNoteOn = false;
 
   Sequencer(Synthesizer<float> *_synthesizer) : synthesizer(_synthesizer) {}
 
@@ -21,12 +23,13 @@ struct Sequencer {
       timeSinceLastStep += deltaTimeSeconds;
       if (timeSinceLastStep > stepIntervalSeconds) {
         synthesizer->setSoundSource(stepValues[currentStep]);
-        if (stepValues[currentStep] > 0) {
+        if (stepValues[currentStep] > 0.0) {
           synthesizer->note(48, 120);
         }
         currentStep = (currentStep + 1) % MAX_STEPS;
         timeSinceLastStep = 0;
-      } else if (timeSinceLastStep > stepIntervalSeconds / 2) {
+        hadNoteOn = true;
+      } else if (hadNoteOn && (timeSinceLastStep > stepIntervalSeconds / 2)) {
         synthesizer->note(48, 0);
       }
     }

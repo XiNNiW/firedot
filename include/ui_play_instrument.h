@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SDL_render.h"
 #include "metaphor.h"
 #include "ui_abstract.h"
 #include "ui_keyboard.h"
@@ -7,6 +8,7 @@
 #include "ui_sequencer.h"
 #include "ui_settings_menu.h"
 #include "ui_sound_edit.h"
+#include "vector_math.h"
 #include "widget_button.h"
 #include "widget_radio_button.h"
 
@@ -222,5 +224,12 @@ struct PlayInstrumentUI {
     }
 
     DrawRadioGroup(pageSelector, renderer, style);
+    DrawLine({.x = pageSelector.shape.position.x -
+                   pageSelector.shape.halfSize.x + 15,
+              .y = pageSelector.shape.halfSize.y * 2 + 10},
+             {.x = pageSelector.shape.position.x +
+                   pageSelector.shape.halfSize.x - 15,
+              .y = pageSelector.shape.halfSize.y * 2 + 10},
+             renderer, style.hoverColor);
   };
 };

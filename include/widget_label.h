@@ -1,14 +1,16 @@
 #pragma once
 
 #include "SDL_render.h"
+#include "widget_state.h"
 #include "widget_style.h"
 #include <string>
 
-inline const void DrawLabel(const std::string &text, const SDL_Color &textColor,
-                            const SDL_Color &backgroundColor,
-                            const SDL_Rect &labelBox, SDL_Renderer *renderer,
-                            const Style &style,
-                            const Alignment alignment = LEFT) {
+inline const void DrawLabel(
+    const std::string &text, const SDL_Color &textColor,
+    const SDL_Color &backgroundColor, const SDL_Rect &labelBox,
+    SDL_Renderer *renderer, const Style &style,
+    const HorizontalAlignment horizontalAlignment = HorizontalAlignment::LEFT,
+    const VerticalAlignment verticalAlignment = VerticalAlignment::TOP) {
 
   auto labelText = text.c_str();
 
@@ -25,14 +27,21 @@ inline const void DrawLabel(const std::string &text, const SDL_Color &textColor,
       auto textDestRect = textSrcRect;
       textDestRect.x = labelBox.x;
       textDestRect.y = labelBox.y;
-      switch (alignment) {
-      case LEFT:
+      switch (horizontalAlignment) {
+      case HorizontalAlignment::LEFT:
         break;
-      case CENTER: {
+      case HorizontalAlignment::CENTER: {
         textDestRect.x += labelBox.w / 2 - textSrcRect.w / 2;
-        textDestRect.y += labelBox.h / 2 - textSrcRect.h / 2;
         break;
       }
+      }
+      switch (verticalAlignment) {
+
+      case VerticalAlignment::TOP:
+        break;
+      case VerticalAlignment::CENTER:
+        textDestRect.y += labelBox.h / 2 - textSrcRect.h / 2;
+        break;
       }
       SDL_RenderCopy(renderer, textTexture, &textSrcRect, &textDestRect);
       SDL_FreeSurface(textSurface);

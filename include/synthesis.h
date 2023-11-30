@@ -44,28 +44,20 @@ template <typename sample_t> struct ParameterChangeEvent {
 
 enum SynthesizerType {
   SUBTRACTIVE_DRUM_SYNTH,
-  FM_DRUM_SYNTH,
-  PHYSICAL_DRUM_SYNTH,
   SUBTRACTIVE,
   PHYSICAL_MODEL,
   FREQUENCY_MODULATION,
   SAMPLER
 };
-static const size_t NUM_SYNTH_TYPES = 7;
+static const size_t NUM_SYNTH_TYPES = 5;
 static_assert(SAMPLER == NUM_SYNTH_TYPES - 1,
               "synth type table and enum must agree");
 static const SynthesizerType SynthTypes[NUM_SYNTH_TYPES] = {
-    SynthesizerType::SUBTRACTIVE_DRUM_SYNTH,
-    SynthesizerType::FM_DRUM_SYNTH,
-    SynthesizerType::PHYSICAL_DRUM_SYNTH,
-    SynthesizerType::SUBTRACTIVE,
-    SynthesizerType::PHYSICAL_MODEL,
-    SynthesizerType::FREQUENCY_MODULATION,
+    SynthesizerType::SUBTRACTIVE_DRUM_SYNTH, SynthesizerType::SUBTRACTIVE,
+    SynthesizerType::PHYSICAL_MODEL, SynthesizerType::FREQUENCY_MODULATION,
     SynthesizerType::SAMPLER};
 static const char *SynthTypeDisplayNames[NUM_SYNTH_TYPES] = {
-    "subtractive drum", "fm drum",        "physical drum",
-    "subtractive",      "physical model", "frequency modulation",
-    "sampler"};
+    "drum", "subtractive", "physical model", "frequency modulation", "sampler"};
 
 template <typename sample_t> struct PitchBendEvent {
   sample_t note = 0;
@@ -116,15 +108,12 @@ template <typename sample_t> struct Synthesizer {
   SynthesizerType type;
   union uSynthesizer {
     SubtractiveDrumSynth<sample_t> subtractiveDrumSynth;
-    FMDrumSynth<sample_t> fmDrumSynth;
-    KarplusDrumSynthesizer<sample_t> physicalDrumSynth;
     SubtractiveSynthesizer<sample_t> subtractive;
     KarplusStrongSynthesizer<sample_t> physicalModel;
     FMSynthesizer<sample_t> fm;
     Sampler<sample_t> sampler;
     uSynthesizer(const SubtractiveDrumSynth<sample_t> &s)
         : subtractiveDrumSynth(s) {}
-    uSynthesizer(const FMDrumSynth<sample_t> &s) : fmDrumSynth(s) {}
     uSynthesizer(const SubtractiveSynthesizer<sample_t> &s) : subtractive(s) {}
     uSynthesizer(const KarplusStrongSynthesizer<sample_t> &s)
         : physicalModel(s) {}
@@ -138,10 +127,6 @@ template <typename sample_t> struct Synthesizer {
   Synthesizer<sample_t>(const SubtractiveDrumSynth<sample_t> &s)
       : object(s), type(SUBTRACTIVE_DRUM_SYNTH) {}
 
-  Synthesizer<sample_t>(const FMDrumSynth<sample_t> &s)
-      : object(s), type(FM_DRUM_SYNTH) {}
-  Synthesizer<sample_t>(const KarplusDrumSynthesizer<sample_t> &s)
-      : object(s), type(PHYSICAL_DRUM_SYNTH) {}
   Synthesizer<sample_t>(const SubtractiveSynthesizer<sample_t> &s)
       : object(s), type(SUBTRACTIVE) {}
   Synthesizer<sample_t>(const KarplusStrongSynthesizer<sample_t> &s)
@@ -181,26 +166,6 @@ template <typename sample_t> struct Synthesizer {
       object.subtractiveDrumSynth.setAttackTime(nextAttackTime);
       object.subtractiveDrumSynth.setReleaseTime(nextReleaseTime);
       return object.subtractiveDrumSynth.next();
-      break;
-    }
-    case FM_DRUM_SYNTH: {
-      object.fmDrumSynth.setGain(nextGain);
-      object.fmDrumSynth.setFilterCutoff(nextFilterCutoff);
-      object.fmDrumSynth.setFilterQuality(nextFilterQuality);
-      object.fmDrumSynth.setSoundSource(nextSoundSource);
-      object.fmDrumSynth.setAttackTime(nextAttackTime);
-      object.fmDrumSynth.setReleaseTime(nextReleaseTime);
-      return object.fmDrumSynth.next();
-      break;
-    }
-    case PHYSICAL_DRUM_SYNTH: {
-      object.physicalDrumSynth.setGain(nextGain);
-      object.physicalDrumSynth.setFilterCutoff(nextFilterCutoff);
-      object.physicalDrumSynth.setFilterQuality(nextFilterQuality);
-      object.physicalDrumSynth.setSoundSource(nextSoundSource);
-      object.physicalDrumSynth.setAttackTime(nextAttackTime);
-      object.physicalDrumSynth.setReleaseTime(nextReleaseTime);
-      return object.physicalDrumSynth.next();
       break;
     }
     case SUBTRACTIVE: {
@@ -260,16 +225,6 @@ template <typename sample_t> struct Synthesizer {
           object.subtractiveDrumSynth = SubtractiveDrumSynth<sample_t>();
           break;
         }
-        case FM_DRUM_SYNTH: {
-          type = FM_DRUM_SYNTH;
-          object.fmDrumSynth = FMDrumSynth<sample_t>();
-          break;
-        }
-        case PHYSICAL_DRUM_SYNTH: {
-          type = PHYSICAL_DRUM_SYNTH;
-          object.physicalDrumSynth = KarplusDrumSynthesizer<sample_t>();
-          break;
-        }
         case SUBTRACTIVE: {
           type = SUBTRACTIVE;
           object.subtractive = SubtractiveSynthesizer<sample_t>();
@@ -299,14 +254,6 @@ template <typename sample_t> struct Synthesizer {
         case SUBTRACTIVE_DRUM_SYNTH:
           object.subtractiveDrumSynth.note(event.data.note.note,
                                            event.data.note.velocity);
-          break;
-        case FM_DRUM_SYNTH:
-          object.fmDrumSynth.note(event.data.note.note,
-                                  event.data.note.velocity);
-          break;
-        case PHYSICAL_DRUM_SYNTH:
-          object.physicalDrumSynth.note(event.data.note.note,
-                                        event.data.note.velocity);
           break;
         case SUBTRACTIVE:
           object.subtractive.note(event.data.note.note,
@@ -360,16 +307,6 @@ template <typename sample_t> struct Synthesizer {
         switch (type) {
         case SUBTRACTIVE_DRUM_SYNTH: {
           object.subtractiveDrumSynth.bendNote(
-              event.data.pitchBend.note, event.data.pitchBend.destinationNote);
-          break;
-        }
-        case FM_DRUM_SYNTH: {
-          object.fmDrumSynth.bendNote(event.data.pitchBend.note,
-                                      event.data.pitchBend.destinationNote);
-          break;
-        }
-        case PHYSICAL_DRUM_SYNTH: {
-          object.physicalDrumSynth.bendNote(
               event.data.pitchBend.note, event.data.pitchBend.destinationNote);
           break;
         }
