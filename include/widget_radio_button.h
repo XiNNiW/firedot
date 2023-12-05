@@ -57,7 +57,7 @@ struct RadioGroup {
   MakeRadioGroup(const std::vector<std::string> &optionLabels,
                  const int initialSelection) {
     auto group = RadioGroup{
-        .selectedIndex = initialSelection,
+        //  .selectedIndex = initialSelection,
     };
     for (auto &label : optionLabels) {
       group.options.push_back(Button{
@@ -107,7 +107,7 @@ inline void DrawRadioGroup(const RadioGroup &group, SDL_Renderer *renderer,
     DrawRadioButtonSingle(button, renderer, style);
   }
 }
-inline const bool DoClickRadioGroup(RadioGroup *group,
+inline const bool DoClickRadioGroup(RadioGroup *group, /* int *selectedIndex,*/
                                     const vec2f_t &mousePosition) {
 
   bool selectionChanged = false;
@@ -116,12 +116,14 @@ inline const bool DoClickRadioGroup(RadioGroup *group,
   for (auto &button : group->options) {
     if (DoButtonClick(&button, mousePosition)) {
       group->selectedIndex = selection;
+      //*selectedIndex = selection;
       selectionChanged = true;
     } else {
       button.state = INACTIVE;
     }
     ++selection;
   }
+  // group->options[*selectedIndex].state = ACTIVE;
   group->options[group->selectedIndex].state = ACTIVE;
   return selectionChanged;
 }

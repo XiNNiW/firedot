@@ -171,7 +171,11 @@ template <typename sample_t> struct SubtractiveDrumSynthVoice {
   }
 
   inline void setSampleRate(sample_t _sampleRate) { sampleRate = _sampleRate; }
-
+  inline void setGate(sample_t gate) {
+    env.setGate(gate);
+    pitchEnv.setGate(gate);
+    timbreEnv.setGate(gate);
+  }
   inline const sample_t next() {
 
     auto soundSourceMappedToHalfCircle =
@@ -281,7 +285,7 @@ template <typename sample_t> struct SubtractiveDrumSynth {
     } else {
       for (size_t i = 0; i < MAX_VOICES; i++) {
         if (notes[i] == note) {
-          // voices[i].env.setGate(false);
+          voices[i].setGate(false);
           notes[i] = -1;
           break;
         }

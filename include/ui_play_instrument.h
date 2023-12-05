@@ -174,6 +174,7 @@ struct PlayInstrumentUI {
       settingsMenu.handleMouseDown(mousePosition);
       break;
     }
+    int selectedIndex = 0;
     if (DoClickRadioGroup(&pageSelector, mousePosition)) {
       page = Pages[pageSelector.selectedIndex];
     }

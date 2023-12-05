@@ -53,6 +53,7 @@ struct ChooseCharacterUI {
   void handleMouseMove(const vec2f_t &mousePosition){};
 
   void handleMouseDown(const vec2f_t &mousePosition) {
+    int selectedIndex = 0;
     if (DoClickRadioGroup(&characterChooser, mousePosition)) {
       *instrumentMetaphor =
           InstrumentMetaphorTypes[characterChooser.selectedIndex];

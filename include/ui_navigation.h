@@ -65,8 +65,8 @@ struct NavigationUI {
   inline void handleMouseMove(const vec2f_t &mousePosition) {}
 
   inline void handleMouseDown(const vec2f_t &mousePosition) {
-    if (DoClickRadioGroup(&pages, mousePosition)) {
 
+    if (DoClickRadioGroup(&pages, mousePosition)) {
       navigation->page = NavigationPages[pages.selectedIndex];
     };
   }

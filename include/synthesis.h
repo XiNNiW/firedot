@@ -341,6 +341,7 @@ template <typename sample_t> struct Synthesizer {
   inline void setSynthType(SynthesizerType type) {
     eventQueue.push(SynthesizerEvent<sample_t>(type));
   }
+  inline SynthesizerType getSynthType() { return type; }
   inline void setSoundSource(sample_t value) {
     eventQueue.push(SynthesizerEvent<sample_t>(
         ParameterChangeEvent<sample_t>{.type = SOUND_SOURCE, .value = value}));

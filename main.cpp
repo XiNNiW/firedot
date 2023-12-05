@@ -52,6 +52,8 @@
 #define SDL_AUDIODRIVER "jack"
 #endif // !SDL_AUDIODRIVER
 
+// enum class GameState { RUNNING, WAITING_FOR_FRAME_SYNC, PAUSED };
+
 static inline const bool LoadIconTexture(SDL_Renderer *renderer,
                                          std::string path,
                                          SDL_Texture *texture) {
@@ -332,7 +334,7 @@ public:
                       .y = static_cast<float>(height / 2.0)}});
 
     sensorMapping.addMapping(TILT, ParameterType::SOUND_SOURCE);
-    sensorMapping.addMapping(SPIN, ParameterType::FILTER_CUTOFF);
+    sensorMapping.addMapping(YAW, ParameterType::FILTER_CUTOFF);
 
     SDL_PauseAudioDevice(audioDeviceID, 0); // start playback
 
@@ -373,6 +375,7 @@ public:
     IMG_Quit();
     SDL_Quit();
   }
+
   void audioCallback(Uint8 *stream, int numBytesRequested) {
     memset(stream, config.silence, numBytesRequested);
     /* 2 channels, 4 bytes/sample = 8
@@ -448,6 +451,18 @@ public:
   }
 
   void update(SDL_Event &event) {
+    // frame rate sync
+    auto deltaTimeMilliseconds = SDL_GetTicks() - lastFrameTime;
+    auto timeToWait = FRAME_DELTA_MILLIS - deltaTimeMilliseconds;
+    frameDeltaTimeSeconds = deltaTimeMilliseconds / 1000.0;
+    if ((timeToWait > 0) && (timeToWait < FRAME_DELTA_MILLIS)) {
+      SDL_Delay(timeToWait);
+    }
+    lastFrameTime = SDL_GetTicks();
+
+    if (instrumentMetaphor == InstrumentMetaphorType::SEQUENCER) {
+      sequencer.update(frameDeltaTimeSeconds);
+    }
     handleEvents(event);
     if (event.type == SDL_QUIT || (!renderIsOn))
       return;
@@ -458,13 +473,6 @@ public:
   }
 
   void handleEvents(SDL_Event &event) {
-    // frame rate sync
-    auto deltaTimeMilliseconds = SDL_GetTicks() - lastFrameTime;
-    auto timeToWait = FRAME_DELTA_MILLIS - deltaTimeMilliseconds;
-    frameDeltaTimeSeconds = deltaTimeMilliseconds / 1000.0;
-    if ((timeToWait > 0) && (timeToWait < FRAME_DELTA_MILLIS))
-      SDL_Delay(timeToWait);
-    lastFrameTime = SDL_GetTicks();
 
     // Event loop
     while (SDL_PollEvent(&event) != 0) {
@@ -557,13 +565,20 @@ public:
 
           physics.gravity = vec2f_t{.x = event.sensor.data[0] * -3,
                                     .y = event.sensor.data[1] * 3};
+          auto acc3 = vec3f_t{.x = event.sensor.data[0] * -1,
+                              .y = event.sensor.data[1],
+                              .z = event.sensor.data[2]}
+                          .scale(1.0 / 9.8);
 
-          auto accVector =
-              vec2f_t{.x = event.sensor.data[0] * -1, .y = event.sensor.data[1]}
-                  .scale(1.0 / 9.8);
+          auto accVector = vec2f_t{.x = acc3.x, .y = acc3.y};
 
           // synth.setSoundSource(accVector.length());
           sensorMapping.emitEvent(&synth, SensorType::TILT, accVector.length());
+          sensorMapping.emitEvent(&synth, SensorType::ACCELERATION,
+                                  accVector.length());
+          sensorMapping.emitEvent(&synth, SensorType::ACC_X, acc3.x);
+          sensorMapping.emitEvent(&synth, SensorType::ACC_Y, acc3.y);
+          sensorMapping.emitEvent(&synth, SensorType::ACC_Z, acc3.z);
 
           break;
         }
@@ -571,8 +586,11 @@ public:
           ss << "sensor: " << sensorName << " " << event.sensor.data[0] << ", "
              << event.sensor.data[1] << ", " << event.sensor.data[2];
           // SDL_LogInfo(0, "%s", ss.str().c_str());
-
-          sensorMapping.emitEvent(&synth, SensorType::SPIN,
+          sensorMapping.emitEvent(&synth, SensorType::ROLL,
+                                  fmax(0, fmin(1, abs(event.sensor.data[0]))));
+          sensorMapping.emitEvent(&synth, SensorType::PITCH,
+                                  fmax(0, fmin(1, abs(event.sensor.data[1]))));
+          sensorMapping.emitEvent(&synth, SensorType::YAW,
                                   fmax(0, fmin(1, abs(event.sensor.data[2]))));
           break;
         }
@@ -589,9 +607,6 @@ public:
 
   void updatePhysics(SDL_Event &event) {
     physics.update(frameDeltaTimeSeconds, &gameObjects);
-    if (instrumentMetaphor == InstrumentMetaphorType::SEQUENCER) {
-      sequencer.update(frameDeltaTimeSeconds);
-    }
   }
 
   void evaluateGameRules(SDL_Event &event) {}
@@ -624,6 +639,7 @@ private:
   SDL_Window *window = NULL;     // Pointer for the window
   SDL_Texture *gCursor = NULL;
   SDL_Joystick *gGameController = NULL;
+  // GameState gameState = GameState::RUNNING;
   std::vector<GameObject *> gameObjects;
   GameObject *wall1, *wall2, *wall3, *wall4;
   AudioSample *audioSample = NULL;

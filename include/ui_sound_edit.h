@@ -43,7 +43,8 @@ struct SoundEditUI {
     auto pageLabelHeight = 50;
     pageTitleLabelShape = AxisAlignedBoundingBox{
         .position = {.x = shape.position.x,
-                     .y = static_cast<float>(pageLabelHeight / 2.0)},
+                     .y = shape.position.y - shape.halfSize.y +
+                          static_cast<float>(pageLabelHeight / 2.0)},
         .halfSize = {.x = shape.halfSize.x,
                      .y = static_cast<float>(pageLabelHeight / 2.0)}};
     bodyShape = AxisAlignedBoundingBox{
@@ -158,7 +159,6 @@ struct SoundEditUI {
 
   inline void handleMouseDown(const vec2f_t &mousePosition) {
     // navigationUI->handleMouseDown(mousePosition);
-
     if (DoClickRadioGroup(&synthSelectRadioGroup, mousePosition)) {
       synth->setSynthType(SynthTypes[synthSelectRadioGroup.selectedIndex]);
       synth->note(36, 100);
@@ -187,10 +187,12 @@ struct SoundEditUI {
   }
 
   void draw(SDL_Renderer *renderer, const Style &style) {
+
     auto pageLabelRect = ConvertAxisAlignedBoxToSDL_Rect(pageTitleLabelShape);
     DrawLabel(pageTitleLabel, style.hoverColor, style.unavailableColor,
               pageLabelRect, renderer, style, HorizontalAlignment::CENTER,
               VerticalAlignment::CENTER);
+    synthSelectRadioGroup.selectedIndex = synth->getSynthType();
     DrawRadioGroup(synthSelectRadioGroup, renderer, style);
     for (auto &parameterType : ParameterTypes) {
       if (sensorMapping->isMapped(parameterType)) {

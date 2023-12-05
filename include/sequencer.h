@@ -29,7 +29,7 @@ struct Sequencer {
         currentStep = (currentStep + 1) % MAX_STEPS;
         timeSinceLastStep = 0;
         hadNoteOn = true;
-      } else if (hadNoteOn && (timeSinceLastStep > stepIntervalSeconds / 2)) {
+      } else if (hadNoteOn && (timeSinceLastStep > (stepIntervalSeconds / 2))) {
         synthesizer->note(48, 0);
       }
     }
