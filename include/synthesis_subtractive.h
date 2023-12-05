@@ -58,7 +58,7 @@ template <typename sample_t> struct MultiOscillator {
     phase = phase > 1 ? phase - 1 : phase;
 
     // mix output
-    return linearXFade4(triangleSample * 2, squareSample, sawSample,
+    return linearXFade4(triangleSample * 20, squareSample, sawSample,
                         noiseSample, oscMix);
   }
 };

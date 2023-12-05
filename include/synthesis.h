@@ -144,7 +144,6 @@ template <typename sample_t> struct Synthesizer {
   }
 
   inline const sample_t next() {
-    // SDL_LogInfo(0, "sample tick");
     consumeMessagesFromQueue();
     return computeNextSample();
   }

@@ -24,6 +24,7 @@ struct TouchPadUI {
   inline void handleFingerMove(const SDL_FingerID &fingerId,
                                const vec2f_t &position, const float pressure) {
     fingerPositions[fingerId] = position;
+
     // send messages to update synth parameters
   };
 

@@ -8,6 +8,7 @@
 #include "ui_sequencer.h"
 #include "ui_settings_menu.h"
 #include "ui_sound_edit.h"
+#include "ui_touch_pad.h"
 #include "vector_math.h"
 #include "widget_button.h"
 #include "widget_radio_button.h"
@@ -24,6 +25,7 @@ struct PlayInstrumentUI {
   RadioGroup pageSelector;
   KeyboardUI keyboardUI;
   SequencerUI sequencerUI;
+  TouchPadUI touchPadUI;
   SoundEditUI soundEditUI;
   SettingsMenu settingsMenu;
   float topMargin = 15;
@@ -34,6 +36,7 @@ struct PlayInstrumentUI {
                    InstrumentMetaphorType *_instrumentMetaphor,
                    Navigation *_navigation)
       : keyboardUI(KeyboardUI(synth)), sequencerUI(SequencerUI(sequencer)),
+        touchPadUI(synth, mapping),
         soundEditUI(SoundEditUI::MakeSoundEditUI(synth, mapping)),
         settingsMenu(SettingsMenu(_navigation)),
         instrumentMetaphor(_instrumentMetaphor), navigation(_navigation) {}
@@ -75,6 +78,8 @@ struct PlayInstrumentUI {
       case InstrumentMetaphorType::SEQUENCER:
         sequencerUI.handleFingerMove(fingerId, position, pressure);
         break;
+      case InstrumentMetaphorType::TOUCH_PAD:
+        touchPadUI.handleFingerMove(fingerId, position, pressure);
       }
       break;
     case EDIT:
@@ -98,6 +103,8 @@ struct PlayInstrumentUI {
       case InstrumentMetaphorType::SEQUENCER:
         sequencerUI.handleFingerDown(fingerId, position, pressure);
         break;
+      case InstrumentMetaphorType::TOUCH_PAD:
+        touchPadUI.handleFingerDown(fingerId, position, pressure);
       }
       break;
     case EDIT:
@@ -121,6 +128,8 @@ struct PlayInstrumentUI {
       case InstrumentMetaphorType::SEQUENCER:
         sequencerUI.handleFingerUp(fingerId, position, pressure);
         break;
+      case InstrumentMetaphorType::TOUCH_PAD:
+        touchPadUI.handleFingerUp(fingerId, position, pressure);
       }
       break;
     case EDIT:
@@ -144,6 +153,8 @@ struct PlayInstrumentUI {
       case InstrumentMetaphorType::SEQUENCER:
         sequencerUI.handleMouseMove(mousePosition);
         break;
+      case InstrumentMetaphorType::TOUCH_PAD:
+        touchPadUI.handleMouseMove(mousePosition);
       }
       break;
     case EDIT:
@@ -165,6 +176,8 @@ struct PlayInstrumentUI {
       case InstrumentMetaphorType::SEQUENCER:
         sequencerUI.handleMouseDown(mousePosition);
         break;
+      case InstrumentMetaphorType::TOUCH_PAD:
+        touchPadUI.handleMouseDown(mousePosition);
       }
       break;
     case EDIT:
@@ -191,6 +204,8 @@ struct PlayInstrumentUI {
       case InstrumentMetaphorType::SEQUENCER:
         sequencerUI.handleMouseUp(mousePosition);
         break;
+      case InstrumentMetaphorType::TOUCH_PAD:
+        touchPadUI.handleMouseUp(mousePosition);
       }
       break;
     case EDIT:
@@ -214,6 +229,8 @@ struct PlayInstrumentUI {
       case InstrumentMetaphorType::SEQUENCER:
         sequencerUI.draw(renderer, style);
         break;
+      case InstrumentMetaphorType::TOUCH_PAD:
+        touchPadUI.draw(renderer, style);
       }
       break;
     case EDIT:
