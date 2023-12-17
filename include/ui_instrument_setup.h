@@ -25,7 +25,7 @@ struct InstrumentSetupUI {
   float sideMargin = 15;
   float bottomMargin = 15;
   InstrumentSetupUI(Synthesizer<float> *synth,
-                    SensorMapping<float> *sensorMapping,
+                    InputMapping<float> *sensorMapping,
                     InstrumentMetaphorType *instrumentMetaphor,
                     Navigation *_navigation)
       : chooseCharacterUI(ChooseCharacterUI(instrumentMetaphor)),

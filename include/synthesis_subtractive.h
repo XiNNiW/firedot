@@ -1,5 +1,6 @@
 #pragma once
 #include "SDL_log.h"
+#include "synthesis_abstract.h"
 #include "synthesis_clap_envelope.h"
 #include "synthesis_parameter.h"
 #include <algae.h>
@@ -232,103 +233,16 @@ template <typename sample_t> struct SubtractiveDrumSynthVoice {
   }
 };
 
-template <typename sample_t> struct SubtractiveDrumSynth {
-  static const size_t MAX_VOICES = 8;
-  SubtractiveDrumSynthVoice<sample_t> voices[MAX_VOICES];
-  int notes[MAX_VOICES] = {-1, -1, -1, -1, -1, -1, -1, -1};
-  sample_t gain = 1;
-  int voiceIndex = 0;
-  sample_t sampleRate = 48000;
+template <typename sample_t>
+struct SubtractiveDrumSynth
+    : AbstractPolyphonicSynthesizer<sample_t, SubtractiveDrumSynth<sample_t>> {
 
-  inline void setSampleRate(sample_t sr) {
-    sampleRate = sr;
-    for (auto &voice : voices) {
-      voice.setSampleRate(sampleRate);
-    }
-  }
+  SubtractiveDrumSynthVoice<sample_t> voices[SubtractiveDrumSynth::MAX_VOICES];
 
-  SubtractiveDrumSynth<sample_t>() {
-    for (auto &voice : voices) {
-      voice.setSampleRate(sampleRate);
-    }
-    setSampleRate(sampleRate);
-  }
-
-  inline const sample_t next() {
-    sample_t out = 0;
-    for (auto &voice : voices) {
-      if (voice.active) {
-        out += voice.next();
-      }
-    }
-    return out * gain;
-  }
-
-  inline void process(sample_t *buffer, const size_t bufferSize) {
-    for (size_t i = 0; i < bufferSize; ++i) {
-      buffer[i] = next();
-    }
-  }
-
-  inline void note(sample_t note, sample_t velocity) {
-
-    if (velocity > 0) {
-      SDL_Log("drum note on (%f, %f) for %d", note, velocity, voiceIndex);
-      voices[voiceIndex].frequency.set(mtof(note), 5, sampleRate);
-      voices[voiceIndex].gain = velocity / 127.0;
-      voices[voiceIndex].env.setGate(true);
-      voices[voiceIndex].pitchEnv.setGate(true);
-      voices[voiceIndex].timbreEnv.setGate(true);
-      voices[voiceIndex].active = true;
-      notes[voiceIndex] = note;
-      voiceIndex = (voiceIndex + 1) % MAX_VOICES;
-    } else {
-      for (size_t i = 0; i < MAX_VOICES; i++) {
-        if (notes[i] == note) {
-          voices[i].setGate(false);
-          notes[i] = -1;
-          break;
-        }
-      }
-    }
-  }
-  inline void bendNote(const sample_t note, const sample_t destinationNote) {
-    for (size_t i = 0; i < MAX_VOICES; ++i) {
-      if (notes[i] == note) {
-
-        voices[i].frequency.set(mtof(destinationNote), 30.0, sampleRate);
-      }
-    }
-  }
-  inline void setGain(sample_t value) { gain = value; }
-  inline void setFilterCutoff(sample_t value) {
-    value = lerp<sample_t>(500, 19000, value);
-    for (auto &voice : voices) {
-      voice.filterCutoff = value;
-    }
-  }
-  inline void setFilterQuality(sample_t value) {
-    value = clamp<sample_t>(value, 0.001, 1);
-    value *= 3;
-    for (auto &voice : voices) {
-      voice.filterQuality = value;
-    }
-  }
   inline void setSoundSource(sample_t value) {
+    value = clamp<sample_t>(value, 0, 1);
     for (auto &voice : voices) {
-      voice.soundSource = value;
-    }
-  }
-  inline void setAttackTime(sample_t value) {
-    value *= 1000;
-    for (auto &voice : voices) {
-      voice.attackTime = value;
-    }
-  }
-  inline void setReleaseTime(sample_t value) {
-    value *= 1000;
-    for (auto &voice : voices) {
-      voice.releaseTime = value;
+      voice.osc1.oscMix = value;
     }
   }
 };
@@ -359,6 +273,8 @@ template <typename sample_t> struct SubtractiveVoice {
     init();
   }
 
+  inline void setGate(sample_t gate) { env.setGate(gate); }
+
   inline const sample_t next() {
     auto nextFrequency = frequency.next();
     osc.setFrequency(nextFrequency, sampleRate);
@@ -375,91 +291,9 @@ template <typename sample_t> struct SubtractiveVoice {
   }
 };
 
-template <typename sample_t> struct SubtractiveSynthesizer {
-  static const size_t MAX_VOICES = 8;
-  size_t voiceIndex = 0;
-  SubtractiveVoice<sample_t> voices[MAX_VOICES];
-  sample_t gain = 1;
-  sample_t notes[MAX_VOICES] = {-1, -1, -1, -1, -1, -1, -1, -1};
-  sample_t sampleRate = 48000;
-
-  inline const sample_t next() {
-    sample_t out = 0;
-    for (auto &voice : voices) {
-      if (voice.active) {
-        out += voice.next();
-      }
-    }
-    return (out * gain * 0.1);
-  }
-
-  inline void process(sample_t *buffer, const size_t bufferSize) {
-    for (size_t i = 0; i < bufferSize; ++i) {
-      buffer[i] = next();
-    }
-  }
-
-  inline void note(const sample_t note, const sample_t velocity) {
-    if (velocity > 0) {
-      SDL_Log("subtractive note on (%f, %f) for %d", note, velocity,
-              voiceIndex);
-      voices[voiceIndex].env.setGate(true);
-      voices[voiceIndex].active = true;
-      voices[voiceIndex].gain = (velocity / 127.0);
-      voices[voiceIndex].frequency.set(mtof(note), 5, sampleRate);
-      notes[voiceIndex] = note;
-      ++voiceIndex;
-      if (voiceIndex >= MAX_VOICES)
-        voiceIndex = 0;
-    } else {
-      for (size_t i = 0; i < MAX_VOICES; ++i) {
-        if (notes[i] == note) {
-          voices[i].env.setGate(false);
-          notes[i] = -1;
-          break;
-        }
-      }
-    }
-  }
-  inline void bendNote(const sample_t note, const sample_t destinationNote) {
-    SDL_Log("pitch bend for %d to %d", note, destinationNote);
-    for (size_t i = 0; i < MAX_VOICES; ++i) {
-      if (notes[i] == note) {
-        SDL_Log("found note!");
-        voices[i].frequency.set(mtof(destinationNote), 30.0, sampleRate);
-      }
-    }
-  }
-  inline void setGain(sample_t value) { gain = value; }
-  inline void setFilterCutoff(sample_t value) {
-    value = lerp<sample_t>(500, 19000, value);
-    for (auto &voice : voices) {
-      voice.filterCutoff = value;
-    }
-  }
-  inline void setFilterQuality(sample_t value) {
-    value = clamp<sample_t>(value, 0.001, 1);
-    value *= 3;
-    for (auto &voice : voices) {
-      voice.filterQuality = value;
-    }
-  }
-  inline void setSoundSource(sample_t value) {
-    value = clamp<sample_t>(value, 0, 1);
-    for (auto &voice : voices) {
-      voice.osc.oscMix = value;
-    }
-  }
-  inline void setAttackTime(sample_t value) {
-    value *= 1000;
-    for (auto &voice : voices) {
-      voice.attackTime = value;
-    }
-  }
-  inline void setReleaseTime(sample_t value) {
-    value *= 1000;
-    for (auto &voice : voices) {
-      voice.releaseTime = value;
-    }
-  }
+template <typename sample_t>
+struct SubtractiveSynthesizer
+    : AbstractPolyphonicSynthesizer<sample_t,
+                                    SubtractiveSynthesizer<sample_t>> {
+  SubtractiveVoice<sample_t> voices[SubtractiveSynthesizer::MAX_VOICES];
 };

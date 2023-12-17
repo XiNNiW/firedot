@@ -1,10 +1,12 @@
 #pragma once
 
+#include "sensor.h"
 #include "synthesis.h"
 
 struct Sequencer {
   constexpr static const float SECONDS_PER_MINUTE = 60.0;
-  Synthesizer<float> *synthesizer;
+  Synthesizer<float> *synth;
+  InputMapping<float> *mapping;
   static const size_t MAX_STEPS = 16;
   float stepValues[MAX_STEPS] = {0, 0, 0, 0, 0, 0, 0, 0,
                                  0, 0, 0, 0, 0, 0, 0, 0};
@@ -15,22 +17,23 @@ struct Sequencer {
   bool running = false;
   bool hadNoteOn = false;
 
-  Sequencer(Synthesizer<float> *_synthesizer) : synthesizer(_synthesizer) {}
+  Sequencer(Synthesizer<float> *_synthesizer) : synth(_synthesizer) {}
 
   void update(const float deltaTimeSeconds) {
 
     if (running) {
       timeSinceLastStep += deltaTimeSeconds;
       if (timeSinceLastStep > stepIntervalSeconds) {
-        synthesizer->setSoundSource(stepValues[currentStep]);
         if (stepValues[currentStep] > 0.0) {
-          synthesizer->note(48, 120);
+          mapping->emitEvent(synth, ContinuousInputType::SEQUENCER_STEP_LEVEL,
+                             stepValues[currentStep]);
+          mapping->emitEvent(synth, MomentaryInputType::SEQUENCER_GATE, true);
         }
         currentStep = (currentStep + 1) % MAX_STEPS;
         timeSinceLastStep = 0;
         hadNoteOn = true;
       } else if (hadNoteOn && (timeSinceLastStep > (stepIntervalSeconds / 2))) {
-        synthesizer->note(48, 0);
+        mapping->emitEvent(synth, MomentaryInputType::SEQUENCER_GATE, false);
       }
     }
   }

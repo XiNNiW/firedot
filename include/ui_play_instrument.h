@@ -32,11 +32,11 @@ struct PlayInstrumentUI {
   float sideMargin = 15;
 
   PlayInstrumentUI(Synthesizer<float> *synth, Sequencer *sequencer,
-                   SensorMapping<float> *mapping,
+                   InputMapping<float> *mapping,
                    InstrumentMetaphorType *_instrumentMetaphor,
                    Navigation *_navigation)
-      : keyboardUI(KeyboardUI(synth)), sequencerUI(SequencerUI(sequencer)),
-        touchPadUI(synth, mapping),
+      : keyboardUI(KeyboardUI(synth, mapping)),
+        sequencerUI(SequencerUI(sequencer)), touchPadUI(synth, mapping),
         soundEditUI(SoundEditUI::MakeSoundEditUI(synth, mapping)),
         settingsMenu(SettingsMenu(_navigation)),
         instrumentMetaphor(_instrumentMetaphor), navigation(_navigation) {}

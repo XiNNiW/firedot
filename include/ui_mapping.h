@@ -10,10 +10,10 @@
 #include <sstream>
 
 struct MappingUI {
-  SensorMapping<float> *sensorMapping = NULL;
+  InputMapping<float> *sensorMapping = NULL;
   std::string titleLabel = "map the phone sensors to sound parameters: ";
-  std::string sensorLabels[NUM_SENSOR_TYPES];
-  Button sensorButtons[NUM_SENSOR_TYPES];
+  std::string sensorLabels[NUM_CONTINUOUS_INPUT_TYPES];
+  Button sensorButtons[NUM_CONTINUOUS_INPUT_TYPES];
   Button parameterButtons[NUM_PARAMETER_TYPES];
 
   std::string pageTitleLabel = "choose your abilities";
@@ -24,10 +24,11 @@ struct MappingUI {
   float topMargin = 50;
   float buttonMargin = 50;
   float sensorLabelWidth = 150;
+  int heldOutput = -1;
   int heldSensor = -1;
   vec2f_t lastMousePosition;
 
-  static inline const MappingUI MakeMappingUI(SensorMapping<float> *mapping) {
+  static inline const MappingUI MakeMappingUI(InputMapping<float> *mapping) {
     return MappingUI{.sensorMapping = mapping};
   }
 
@@ -53,12 +54,22 @@ struct MappingUI {
     // titleBarHeight = bodyShape.position.y + 100;
     auto buttonHalfSize = vec2f_t{.x = 150, .y = 75};
     //  auto uiHeight = (height - titleBarHeight);
-    auto sensorButtonSpaceY = height / float(NUM_SENSOR_TYPES);
+    auto sensorButtonSpaceY = height / float(NUM_CONTINUOUS_INPUT_TYPES);
     auto parameterButtonSpaceY = height / float(NUM_PARAMETER_TYPES);
 
-    for (auto &sensorType : SensorTypes) {
+    // for (auto &outputType : InstrumentOutputs) {
+    //   instrumentButtons[outputType] =
+    //       Button{.labelText = SensorTypesDisplayNames[outputType],
+    //              .shape = AxisAlignedBoundingBox{
+    //                  .position = {.x = buttonHalfSize.x + xOffset,
+    //                               .y = outputType * sensorButtonSpaceY +
+    //                                    buttonHalfSize.y + yOffset},
+    //                  .halfSize = buttonHalfSize}};
+    // }
+
+    for (auto &sensorType : ContinuousInputTypes) {
       sensorButtons[sensorType] =
-          Button{.labelText = SensorTypesDisplayNames[sensorType],
+          Button{.labelText = ContinuousInputTypeDisplayNames[sensorType],
                  .shape = AxisAlignedBoundingBox{
                      .position = {.x = buttonHalfSize.x + xOffset,
                                   .y = sensorType * sensorButtonSpaceY +
@@ -79,7 +90,7 @@ struct MappingUI {
 
   inline void handleMouseMove(const vec2f_t &mousePosition) {
     lastMousePosition = mousePosition;
-    //   DoButtonHover(&backButton, mousePosition);
+    // DoButtonHover(&backButton, mousePosition);
   }
 
   inline void handleMouseDown(const vec2f_t &mousePosition) {
@@ -87,7 +98,13 @@ struct MappingUI {
     bool anyMenusActive = false;
     lastMousePosition = mousePosition;
 
-    for (auto &sensorType : SensorTypes) {
+    //  for (auto &outputType : InstrumentOutputs) {
+    //    if (DoButtonClick(&instrumentButtons[outputType], mousePosition)) {
+    //      heldOutput = outputType;
+    //    }
+    //  }
+
+    for (auto &sensorType : ContinuousInputTypes) {
       if (DoButtonClick(&sensorButtons[sensorType], mousePosition)) {
         heldSensor = sensorType;
       }
@@ -95,17 +112,8 @@ struct MappingUI {
 
     for (auto &parameterType : ParameterTypes) {
       if (DoButtonClick(&parameterButtons[parameterType], mousePosition)) {
-        bool shouldRemove = false;
-        SensorType sensorType;
-        for (auto &keyValuePair : sensorMapping->mapping) {
-          if (keyValuePair.second == parameterType) {
-            shouldRemove = true;
-            sensorType = keyValuePair.first;
-          }
-        }
-        if (shouldRemove) {
-          sensorMapping->removeMapping(sensorType, parameterType);
-        }
+
+        sensorMapping->removeMappingForParameterType(parameterType);
       }
     }
   }
@@ -117,7 +125,8 @@ struct MappingUI {
       if ((heldSensor > -1)) {
         if (DoButtonClick(&parameterButtons[parameterType], mousePosition)) {
 
-          sensorMapping->addMapping((SensorType)heldSensor, parameterType);
+          sensorMapping->addMapping((ContinuousInputType)heldSensor,
+                                    parameterType);
         } else {
           SDL_Log("remove mapping!");
         }
@@ -139,7 +148,7 @@ struct MappingUI {
     DrawLabel(pageTitleLabel, style.hoverColor, style.unavailableColor,
               pageLabelRect, renderer, style, HorizontalAlignment::CENTER,
               VerticalAlignment::CENTER);
-    for (auto &keyValuePair : sensorMapping->mapping) {
+    for (auto &keyValuePair : sensorMapping->continuous_mappings) {
       auto sensorButton = sensorButtons[keyValuePair.first];
       auto parameterButton = parameterButtons[keyValuePair.second];
       SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);

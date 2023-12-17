@@ -15,16 +15,19 @@ struct TouchPadUI {
   bool fingerActivity[NUM_FINGERS] = {false, false, false, false, false,
                                       false, false, false, false, false};
   Synthesizer<float> *synth;
-  SensorMapping<float> *mapping;
+  InputMapping<float> *mapping;
   AxisAlignedBoundingBox shape;
-  TouchPadUI(Synthesizer<float> *_synth, SensorMapping<float> *_mapping)
+  TouchPadUI(Synthesizer<float> *_synth, InputMapping<float> *_mapping)
       : synth(_synth), mapping(_mapping) {}
   inline void buildLayout(const AxisAlignedBoundingBox &shape){};
 
   inline void handleFingerMove(const SDL_FingerID &fingerId,
                                const vec2f_t &position, const float pressure) {
     fingerPositions[fingerId] = position;
-
+    mapping->emitEvent(synth, ContinuousInputType::TOUCH_X_POSITION,
+                       position.x / (shape.halfSize.x * 2.0));
+    mapping->emitEvent(synth, ContinuousInputType::TOUCH_Y_POSITION,
+                       position.y / (shape.halfSize.y * 2.0));
     // send messages to update synth parameters
   };
 
@@ -33,12 +36,19 @@ struct TouchPadUI {
     fingerPositions[fingerId] = position;
     fingerActivity[fingerId] = true;
     // send triggers
+    mapping->emitEvent(synth, ContinuousInputType::TOUCH_X_POSITION,
+                       position.x / (shape.halfSize.x * 2.0));
+    mapping->emitEvent(synth, ContinuousInputType::TOUCH_Y_POSITION,
+                       position.y / (shape.halfSize.y * 2.0));
+    // mapping->noteOn(synth, InputType::TOUCH_Y_POSITION, float value)
   };
 
   inline void handleFingerUp(const SDL_FingerID &fingerId,
                              const vec2f_t &position, const float pressure) {
     fingerPositions[fingerId] = position;
     fingerActivity[fingerId] = false;
+
+    // mapping->noteOff(synth, InputType::KEYBOARD_KEY, float value)
   };
 
   inline void handleMouseMove(const vec2f_t &mousePosition){};

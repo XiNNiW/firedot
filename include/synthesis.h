@@ -13,35 +13,6 @@
 #include <new>
 #include <rigtorp/SPSCQueue.h>
 
-template <typename sample_t> struct NoteEvent {
-  sample_t note;
-  sample_t velocity;
-};
-
-enum ParameterType {
-  GAIN,
-  SOUND_SOURCE,
-  FILTER_CUTOFF,
-  FILTER_QUALITY,
-  ATTACK_TIME,
-  RELEASE_TIME
-};
-
-static const size_t NUM_PARAMETER_TYPES = 6;
-static_assert(RELEASE_TIME == NUM_PARAMETER_TYPES - 1,
-              "synth type table and enum must agree");
-static const ParameterType ParameterTypes[NUM_PARAMETER_TYPES] = {
-    GAIN,           SOUND_SOURCE, FILTER_CUTOFF,
-    FILTER_QUALITY, ATTACK_TIME,  RELEASE_TIME};
-static const char *ParameterTypeDisplayNames[NUM_PARAMETER_TYPES] = {
-    "gain",           "sound source", "filter cutoff",
-    "filter quality", "attack time",  "release time"};
-
-template <typename sample_t> struct ParameterChangeEvent {
-  ParameterType type;
-  sample_t value;
-};
-
 enum SynthesizerType {
   SUBTRACTIVE_DRUM_SYNTH,
   SUBTRACTIVE,
@@ -94,7 +65,23 @@ template <typename sample_t> struct SynthesizerEvent {
 };
 
 template <typename sample_t> struct Synthesizer {
+  // struct ActiveNote {
+  //   Synthesizer<sample_t> *synth;
+  //   sample_t noteID = 440;
 
+  //   static ActiveNote makeNoteOnEvent(Synthesizer<sample_t> *synth,
+  //                                     sample_t frequency, sample_t gain) {
+  //     synth->eventQueue.push(
+  //         NoteEvent<sample_t>{.frequency = frequency, .gain = gain});
+  //     return ActiveNote{.synth = synth, .noteID = frequency};
+  //   }
+
+  //   inline void noteOff() {
+  //     synth->eventQueue.push(
+  //         NoteEvent<sample_t>{.frequency = noteID, .gain = 0});
+  //   }
+  // };
+  float frequency = 440;
   Parameter<sample_t> gain = Parameter<sample_t>(1);
   Parameter<sample_t> filterCutoff = Parameter<sample_t>(1);
   Parameter<sample_t> filterQuality = Parameter<sample_t>(0.3);
@@ -251,52 +238,55 @@ template <typename sample_t> struct Synthesizer {
       case SynthesizerEvent<sample_t>::NOTE: {
         switch (type) {
         case SUBTRACTIVE_DRUM_SYNTH:
-          object.subtractiveDrumSynth.note(event.data.note.note,
-                                           event.data.note.velocity);
+          object.subtractiveDrumSynth.note(event.data.note.frequency,
+                                           event.data.note.gate);
           break;
         case SUBTRACTIVE:
-          object.subtractive.note(event.data.note.note,
-                                  event.data.note.velocity);
+          object.subtractive.note(event.data.note.frequency,
+                                  event.data.note.gate);
           break;
         case PHYSICAL_MODEL:
-          object.physicalModel.note(event.data.note.note,
-                                    event.data.note.velocity);
+          object.physicalModel.note(event.data.note.frequency,
+                                    event.data.note.gate);
           break;
         case FREQUENCY_MODULATION:
-          object.fm.note(event.data.note.note, event.data.note.velocity);
+          object.fm.note(event.data.note.frequency, event.data.note.gate);
           break;
         case SAMPLER:
-          object.sampler.note(event.data.note.note, event.data.note.velocity);
+          object.sampler.note(event.data.note.frequency, event.data.note.gate);
           break;
         }
-
         break;
       }
       case SynthesizerEvent<sample_t>::PARAMETER_CHANGE: {
         auto value = event.data.paramChange.value;
         switch (event.data.paramChange.type) {
+        case FREQUENCY: {
+          frequency = value;
+          break;
+        }
         case GAIN: {
-          gain.set(value, 32, sampleRate);
+          gain.set(value, 100, sampleRate);
           break;
         }
         case SOUND_SOURCE: {
-          soundSource.set(value, 32, sampleRate);
+          soundSource.set(value, 100, sampleRate);
           break;
         }
         case FILTER_CUTOFF: {
-          filterCutoff.set(value, 32, sampleRate);
+          filterCutoff.set(value, 100, sampleRate);
           break;
         }
         case FILTER_QUALITY: {
-          filterQuality.set(value, 32, sampleRate);
+          filterQuality.set(value, 100, sampleRate);
           break;
         }
         case ATTACK_TIME: {
-          attackTime.set(value, 32, sampleRate);
+          attackTime.set(value, 100, sampleRate);
           break;
         }
         case RELEASE_TIME: {
-          releaseTime.set(value, 32, sampleRate);
+          releaseTime.set(value, 100, sampleRate);
           break;
         }
         }
@@ -314,7 +304,6 @@ template <typename sample_t> struct Synthesizer {
                                       event.data.pitchBend.destinationNote);
           break;
         }
-
         case PHYSICAL_MODEL: {
           object.physicalModel.bendNote(event.data.pitchBend.note,
                                         event.data.pitchBend.destinationNote);
@@ -337,24 +326,38 @@ template <typename sample_t> struct Synthesizer {
     }
   }
 
+  inline void pushParameterChangeEvent(ContinuousParameterType type,
+                                       sample_t value) {
+    eventQueue.push(SynthesizerEvent<sample_t>(
+        ParameterChangeEvent<sample_t>{.type = type, .value = value}));
+  }
+
+  inline void pushGateEvent(MomentaryParameterType type, sample_t value) {
+    eventQueue.push(NoteEvent<sample_t>{.frequency = frequency, .gate = value});
+  }
+
   inline void setSynthType(SynthesizerType type) {
     eventQueue.push(SynthesizerEvent<sample_t>(type));
   }
+  inline void setFrequency(sample_t freq) { frequency = freq; }
+
   inline SynthesizerType getSynthType() { return type; }
+
   inline void setSoundSource(sample_t value) {
     eventQueue.push(SynthesizerEvent<sample_t>(
         ParameterChangeEvent<sample_t>{.type = SOUND_SOURCE, .value = value}));
   }
-  inline void note(sample_t note, sample_t velocity) {
-    auto event = SynthesizerEvent<sample_t>(
-        NoteEvent<sample_t>{.note = note, .velocity = velocity});
 
+  inline void noteOn(ContinuousParameterType type, sample_t value) {
+    auto event = SynthesizerEvent<sample_t>(NoteEvent<sample_t>{
+        .parameterType = type, .value = value, .isNoteOn = true});
     eventQueue.push(event);
   }
 
-  inline void pushParameterChangeEvent(ParameterType type, sample_t value) {
-    eventQueue.push(SynthesizerEvent<sample_t>(
-        ParameterChangeEvent<sample_t>{.type = type, .value = value}));
+  inline void noteOff(ContinuousParameterType type, sample_t value) {
+    auto event = SynthesizerEvent<sample_t>(NoteEvent<sample_t>{
+        .parameterType = type, .value = value, .isNoteOn = false});
+    eventQueue.push(event);
   }
 
   inline void setGain(sample_t value) {
@@ -387,11 +390,13 @@ template <typename sample_t> struct Synthesizer {
         .note = note, .destinationNote = destinationNote});
   }
 
-  inline const sample_t getParameter(const ParameterType parameterType) {
+  inline const sample_t
+  getParameter(const ContinuousParameterType parameterType) {
 
     // TODO this also needs threading consideration
     switch (parameterType) {
-
+    case FREQUENCY:
+      return frequency;
     case GAIN:
       return gain.smoothedValue;
     case SOUND_SOURCE:

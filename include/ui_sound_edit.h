@@ -3,11 +3,12 @@
 #include "collider.h"
 #include "sensor.h"
 #include "synthesis.h"
+#include "synthesis_parameter.h"
 #include "ui_navigation.h"
 
 struct SoundEditUI {
   Synthesizer<float> *synth = NULL;
-  SensorMapping<float> *sensorMapping = NULL;
+  InputMapping<float> *sensorMapping = NULL;
 
   RadioGroup synthSelectRadioGroup;
   HSlider parameterSliders[NUM_PARAMETER_TYPES];
@@ -24,7 +25,7 @@ struct SoundEditUI {
   float pageMargin = 50;
 
   static inline const SoundEditUI
-  MakeSoundEditUI(Synthesizer<float> *synth, SensorMapping<float> *mapping) {
+  MakeSoundEditUI(Synthesizer<float> *synth, InputMapping<float> *mapping) {
     const size_t initialSynthTypeSelection = synth->type;
     std::vector<std::string> synthOptionLabels = {};
     for (auto &synthType : SynthTypes) {
@@ -111,21 +112,11 @@ struct SoundEditUI {
         synth->pushParameterChangeEvent(parameterType, paramValue);
       }
     }
-    //   for (auto &parameterType : ParameterTypes) {
-
-    //     if (DoHSliderDrag(&parameterSliders[parameterType], position)) {
-    //       synth->pushParameterChangeEvent(parameterType,
-    //                                       parameterSliders[parameterType].value);
-    //     }
-    //   }
   }
 
   inline void handleFingerDown(const SDL_FingerID &fingerId,
                                const vec2f_t &position, const float pressure) {
-    if (DoClickRadioGroup(&synthSelectRadioGroup, position)) {
-      synth->setSynthType(SynthTypes[synthSelectRadioGroup.selectedIndex]);
-      synth->note(36, 100);
-    };
+
     for (size_t i = 0; i < NUM_PARAMETER_TYPES; ++i) {
       auto &parameterType = ParameterTypes[i];
       float paramValue = synth->getParameter(parameterType);
@@ -158,32 +149,19 @@ struct SoundEditUI {
   }
 
   inline void handleMouseDown(const vec2f_t &mousePosition) {
-    // navigationUI->handleMouseDown(mousePosition);
     if (DoClickRadioGroup(&synthSelectRadioGroup, mousePosition)) {
       synth->setSynthType(SynthTypes[synthSelectRadioGroup.selectedIndex]);
-      synth->note(36, 100);
+      synth->setFrequency(mtof(36));
+      synth->pushGateEvent(MomentaryParameterType::GATE, 1);
     };
-
-    //  if (DoButtonClick(&backButton, mousePosition, ACTIVE)) {
-    //    navigation->page = Navigation::KEYBOARD;
-    //  };
-
-    // for (auto &parameterType : ParameterTypes) {
-    //   if (DoHSliderClick(&parameterSliders[parameterType], mousePosition)) {
-    //     synth->pushParameterChangeEvent(parameterType,
-    //                                     parameterSliders[parameterType].value);
-    //   }
-    // }
   }
 
   inline void handleMouseUp(const vec2f_t &mousePosition) {
     for (auto &parameterType : ParameterTypes) {
       parameterSliders[parameterType].state = INACTIVE;
     }
-
-    synth->note(36, 0);
-    synth->note(36, 0);
-    // backButton.state = INACTIVE;
+    synth->setFrequency(mtof(36));
+    synth->pushGateEvent(MomentaryParameterType::GATE, 0);
   }
 
   void draw(SDL_Renderer *renderer, const Style &style) {

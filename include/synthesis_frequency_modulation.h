@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SDL_log.h"
+#include "synthesis_abstract.h"
 #include "synthesis_clap_envelope.h"
 #include "synthesis_mixing.h"
 #include "synthesis_parameter.h"
@@ -10,7 +11,6 @@
 #include <cstddef>
 #include <cstdlib>
 #include <new>
-#include <rigtorp/SPSCQueue.h>
 
 using algae::dsp::_Filter;
 using algae::dsp::_Generator;
@@ -132,95 +132,21 @@ template <typename sample_t> struct FMDrumVoice {
   }
 };
 
-template <typename sample_t> struct FMDrumSynth {
-  static const size_t MAX_VOICES = 8;
-  size_t voiceIndex = 0;
-
-  FMDrumVoice<sample_t> voices[MAX_VOICES];
-  sample_t gain = 1;
-  sample_t notes[MAX_VOICES] = {-1, -1, -1, -1, -1, -1, -1, -1};
-  sample_t sampleRate = 48000;
-
-  inline const sample_t next() {
-    sample_t out = 0;
-    for (auto &voice : voices) {
-      if (voice.active) {
-        out += voice.next();
-      }
-    }
-    return (out * gain);
-  }
-
-  inline void process(sample_t *buffer, const size_t bufferSize) {
-    for (size_t i = 0; i < bufferSize; ++i) {
-      buffer[i] = next();
-    }
-  }
-
-  inline void note(const sample_t note, const sample_t velocity) {
-    if (velocity > 0) {
-      SDL_Log("fm note on (%f, %f) for %d", note, velocity, voiceIndex);
-      voices[voiceIndex].setGate(true);
-      voices[voiceIndex].active = true;
-      voices[voiceIndex].gain = (velocity / 127.0);
-      voices[voiceIndex].frequency.set(mtof(note), 5, sampleRate);
-      notes[voiceIndex] = note;
-      ++voiceIndex;
-      if (voiceIndex >= MAX_VOICES)
-        voiceIndex = 0;
-    } else {
-      for (size_t i = 0; i < MAX_VOICES; ++i) {
-        if (notes[i] == note) {
-          voices[i].setGate(false);
-          notes[i] = -1;
-          break;
-        }
-      }
-    }
-  }
-
-  inline void bendNote(const sample_t note, const sample_t destinationNote) {
-    for (size_t i = 0; i < MAX_VOICES; ++i) {
-      if (notes[i] == note) {
-        voices[i].frequency.set(mtof(destinationNote), 30.0, sampleRate);
-      }
-    }
-  }
-
-  inline void setGain(sample_t value) { gain = value; }
-  inline void setFilterCutoff(sample_t value) {
-    value = clamp<sample_t>(value, 0, 1);
-    value *= value;
-    value *= value;
-    //  auto fb = lerp<sample_t>(0.0, 1.0, pow(1, value));
-    for (auto &voice : voices) {
-      voice.index = value;
-    }
-  }
-  inline void setFilterQuality(sample_t value) {
-    value = clamp<sample_t>(value, 0, 1);
-    // ratio
-  }
-  inline void setSoundSource(sample_t value) {
-    value = clamp<sample_t>(value, 0, 1);
-    for (auto &voice : voices) {
-      voice.soundSource = value;
-    }
-    // topology
-  }
-  inline void setAttackTime(sample_t value) {
-    value *= 1000;
-    for (auto &voice : voices) {
-      voice.attackTime = value;
-    }
-  }
-  inline void setReleaseTime(sample_t value) {
-    value *= 1000;
-    for (auto &voice : voices) {
-      voice.releaseTime = value;
-    }
-  }
-};
+// template <typename sample_t>
+// struct FMDrumSynth
+//     : AbstractPolyphonicSynthesizer<sample_t, FMDrumSynth<sample_t>> {
+//
+//
+//   inline void setFilterCutoff(sample_t value) {
+//     value = clamp<sample_t>(value, 0, 1);
+//     value *= value;
+//     value *= value;
+//     //  auto fb = lerp<sample_t>(0.0, 1.0, pow(1, value));
+//     for (auto &voice : this->voices) {
+//       voice.index = value;
+//     }
+//   }
+//  };
 
 template <typename sample_t> struct FMOperator {
   sample_t sampleRate = 48000;
@@ -338,102 +264,52 @@ template <typename sample_t> struct FM4OpVoice {
     op4.env.setGate(gate);
   }
 };
-template <typename sample_t> struct FMSynthesizer {
-  static const size_t MAX_VOICES = 8;
-  size_t voiceIndex = 0;
 
-  FM4OpVoice<sample_t> voices[MAX_VOICES];
-  sample_t gain = 1;
-  sample_t notes[MAX_VOICES] = {-1, -1, -1, -1, -1, -1, -1, -1};
-  sample_t sampleRate = 48000;
-
-  inline const sample_t next() {
-    sample_t out = 0;
-    for (auto &voice : voices) {
-      if (voice.active) {
-        out += voice.next();
-      }
-    }
-    return (out * gain * 0.1);
-  }
-
-  inline void process(sample_t *buffer, const size_t bufferSize) {
-    for (size_t i = 0; i < bufferSize; ++i) {
-      buffer[i] = next();
-    }
-  }
-
-  inline void note(const sample_t note, const sample_t velocity) {
-    if (velocity > 0) {
-      SDL_Log("fm note on (%f, %f) for %d", note, velocity, voiceIndex);
-      voices[voiceIndex].setGate(true);
-      voices[voiceIndex].active = true;
-      voices[voiceIndex].gain = (velocity / 127.0);
-      voices[voiceIndex].frequency.set(mtof(note), 5, sampleRate);
-      notes[voiceIndex] = note;
-      ++voiceIndex;
-      if (voiceIndex >= MAX_VOICES)
-        voiceIndex = 0;
-    } else {
-      for (size_t i = 0; i < MAX_VOICES; ++i) {
-        if (notes[i] == note) {
-          voices[i].setGate(false);
-          notes[i] = -1;
-          break;
-        }
-      }
-    }
-  }
-
-  inline void bendNote(const sample_t note, const sample_t destinationNote) {
-    for (size_t i = 0; i < MAX_VOICES; ++i) {
-      if (notes[i] == note) {
-        voices[i].frequency.set(mtof(destinationNote), 30.0, sampleRate);
-      }
-    }
-  }
-
-  inline void setGain(sample_t value) { gain = value; }
+template <typename sample_t>
+struct FMSynthesizer
+    : AbstractPolyphonicSynthesizer<sample_t, FMSynthesizer<sample_t>> {
+  FM4OpVoice<sample_t> voices[FMSynthesizer<sample_t>::MAX_VOICES];
   inline void setFilterCutoff(sample_t value) {
     value = clamp<sample_t>(value, 0, 1);
     value *= value;
     value *= value;
     //  auto fb = lerp<sample_t>(0.0, 1.0, pow(1, value));
-    for (auto &voice : voices) {
+    for (auto &voice : this->voices) {
       voice.index = value;
     }
   }
+
   inline void setFilterQuality(sample_t value) {
     value = clamp<sample_t>(value, 0, 1);
     int index = value * (FM4OpVoice<sample_t>::NUM_RATIOS - 1);
 
-    for (auto &voice : voices) {
+    for (auto &voice : this->voices) {
       voice.activeRatio = index;
     }
   }
   inline void setSoundSource(sample_t value) {
     value = clamp<sample_t>(value, 0, 1);
     sample_t index = value * (FM4OpVoice<sample_t>::NUM_ALGS - 1);
-    for (auto &voice : voices) {
+    for (auto &voice : this->voices) {
       voice.activeTopology = index;
     }
   }
   inline void setAttackTime(sample_t value) {
     value *= 1000;
-    for (auto &voice : voices) {
-      voice.op1.env.setAttackTime(value, sampleRate);
-      voice.op2.env.setAttackTime(value, sampleRate);
-      voice.op3.env.setAttackTime(value, sampleRate);
-      voice.op4.env.setAttackTime(value, sampleRate);
+    for (auto &voice : this->voices) {
+      voice.op1.env.setAttackTime(value, this->sampleRate);
+      voice.op2.env.setAttackTime(value, this->sampleRate);
+      voice.op3.env.setAttackTime(value, this->sampleRate);
+      voice.op4.env.setAttackTime(value, this->sampleRate);
     }
   }
   inline void setReleaseTime(sample_t value) {
     value *= 1000;
-    for (auto &voice : voices) {
-      voice.op1.env.setReleaseTime(value, sampleRate);
-      voice.op2.env.setReleaseTime(value, sampleRate);
-      voice.op3.env.setReleaseTime(value, sampleRate);
-      voice.op4.env.setReleaseTime(value, sampleRate);
+    for (auto &voice : this->voices) {
+      voice.op1.env.setReleaseTime(value, this->sampleRate);
+      voice.op2.env.setReleaseTime(value, this->sampleRate);
+      voice.op3.env.setReleaseTime(value, this->sampleRate);
+      voice.op4.env.setReleaseTime(value, this->sampleRate);
     }
   }
 };

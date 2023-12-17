@@ -2,6 +2,7 @@
 
 #include "collider.h"
 #include "metaphor.h"
+#include "sensor.h"
 #include "sequencer.h"
 #include "synthesis.h"
 #include "ui_abstract.h"
@@ -68,6 +69,7 @@ struct KeyboardUI {
       36 + 6 * 5, 37 + 6 * 5, 38 + 6 * 5, 39 + 6 * 5, 40 + 6 * 5,
   };
   Synthesizer<float> *synth = NULL;
+  InputMapping<float> *mapping = NULL;
 
   std::map<SDL_FingerID, int> heldKeys;
   int fingerPositions[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
@@ -80,7 +82,8 @@ struct KeyboardUI {
   float buttonMargin = 5;
   float topMargin = 15;
 
-  KeyboardUI(Synthesizer<float> *_synth) : synth(_synth) {}
+  KeyboardUI(Synthesizer<float> *_synth, InputMapping<float> *_mapping)
+      : synth(_synth), mapping(_mapping) {}
 
   void buildLayout(const AxisAlignedBoundingBox &shape) {
     auto pageMargin = 50;
@@ -94,38 +97,7 @@ struct KeyboardUI {
     synthSelectHeight = width / 8.0;
 
     titleBarHeight = yOffset + topMargin;
-    // titleBarHeight = height / 24.0;
-    // navigationUI->pages.shape = {.position{.x = 0, .y = 0},
-    //.halfSize = {.x = width, .y = titleBarHeight }
-    //};
 
-    //  soundEditMenuButton = Button{
-    //      .labelText = "sound edit",
-    //      .shape = AxisAlignedBoundingBox{
-    //          .position = vec2f_t{.x = static_cast<float>(pageMargin +
-    //                                                      synthSelectWidth /
-    //                                                      2),
-    //                              .y = static_cast<float>(pageMargin +
-    //                                                      synthSelectHeight /
-    //                                                      2)},
-    //          .halfSize =
-    //              vec2f_t{.x = static_cast<float>(synthSelectWidth / 2),
-    //                      .y = static_cast<float>(synthSelectHeight / 2)}}};
-    //  mappingMenuButton = Button{
-    //      .labelText = "sensor mapping",
-    //      .shape = AxisAlignedBoundingBox{
-    //          .position = vec2f_t{.x = width - synthSelectWidth / 2 -
-    //          pageMargin,
-    //                              .y = static_cast<float>(pageMargin +
-    //                                                      synthSelectHeight /
-    //                                                      2)},
-    //          .halfSize =
-    //              vec2f_t{.x = static_cast<float>(synthSelectWidth / 2),
-    //                      .y = static_cast<float>(synthSelectHeight / 2)}}};
-
-    // auto topBarHeight = synthSelectHeight + (1.5 * buttonMargin) +
-    // pageMargin;
-    //  auto keySize = width / 4.5;
     auto keySize = width / 5.5;
     auto keyboardStartPositionX = 100;
     float keysPerRow = 5;
@@ -164,8 +136,6 @@ struct KeyboardUI {
         }
       }
     }
-    //  DoButtonHover(&soundEditMenuButton, position);
-    //  DoButtonHover(&mappingMenuButton, position);
   }
 
   inline void handleFingerDown(const SDL_FingerID &fingerId,
@@ -176,7 +146,10 @@ struct KeyboardUI {
         // play sound
         auto note = notes[i];
         heldKeys[fingerId] = i;
-        synth->note(note, pressure * 127);
+        // mapping->noteOn(synth, InputType::KEYBOARD_KEY, mtof(note));
+        mapping->emitEvent(synth, ContinuousInputType::KEYBOARD_KEY,
+                           float(i) / float(NUM_KEY_BUTTONS));
+        mapping->emitEvent(synth, MomentaryInputType::TOUCH, 1);
       }
     }
   }
@@ -186,7 +159,9 @@ struct KeyboardUI {
 
     if (auto buttonIdx = heldKeys[fingerId]) {
       keyButtons[buttonIdx].state = WidgetState::INACTIVE;
-      synth->note(notes[buttonIdx], 0);
+      mapping->emitEvent(synth, ContinuousInputType::KEYBOARD_KEY,
+                         float(buttonIdx) / float(NUM_KEY_BUTTONS));
+      mapping->emitEvent(synth, MomentaryInputType::TOUCH, 0);
       heldKeys.erase(fingerId);
     }
 
@@ -199,39 +174,22 @@ struct KeyboardUI {
         button.state = WidgetState::INACTIVE;
       }
     }
+
     fingerPositions[fingerId] = -1;
   }
 
   inline void handleMouseMove(const vec2f_t &mousePosition) {}
 
-  inline void handleMouseDown(const vec2f_t &mousePosition) {
-    // navigationUI->handleMouseDown(mousePosition);
-    //  if (DoButtonClick(&soundEditMenuButton, mousePosition)) {
-    //    navigation->page = Navigation::SOUND_EDIT;
-    //  };
-
-    //  if (DoButtonClick(&mappingMenuButton, mousePosition)) {
-    //    navigation->page = Navigation::MAPPING;
-    //  };
-
-    //  for (size_t i = 0; i < keyboardWidget->keyButtons.size(); ++i) {
-    //    // evaluate clicks
-    //    if (UpdateButton(&keyboardWidget->keyButtons[i], mousePosition,
-    //                     UIState::ACTIVE)) {
-    //      // play sound
-    //      synth->note(notes[i], 127);
-    //    }
-    //  }
-  }
+  inline void handleMouseDown(const vec2f_t &mousePosition) {}
 
   inline void handleMouseUp(const vec2f_t &mousePosition) {
-
-    // mappingMenuButton.state = INACTIVE;
 
     for (size_t i = 0; i < NUM_KEY_BUTTONS; ++i) {
       if (keyButtons[i].state == WidgetState::ACTIVE) {
         keyButtons[i].state = WidgetState::INACTIVE;
-        synth->note(notes[i], 0);
+        mapping->emitEvent(synth, ContinuousInputType::KEYBOARD_KEY,
+                           float(i) / float(NUM_KEY_BUTTONS));
+        mapping->emitEvent(synth, MomentaryInputType::TOUCH, 0);
         heldKeys.clear();
       } else if (keyButtons[i].state == WidgetState::HOVER) {
         keyButtons[i].state = WidgetState::INACTIVE;
@@ -240,9 +198,6 @@ struct KeyboardUI {
   }
 
   inline void draw(SDL_Renderer *renderer, const Style &style) {
-    //   DrawButton(soundEditMenuButton, renderer, style);
-    //   DrawButton(mappingMenuButton, renderer, style);
-
     for (size_t i = 0; i < NUM_KEY_BUTTONS; i++) {
       DrawButton(keyButtons[i], renderer, style);
     }

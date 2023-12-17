@@ -2,6 +2,46 @@
 
 #include <algae.h>
 #include <atomic>
+#include <cstddef>
+enum ContinuousParameterType {
+  FREQUENCY,
+  GAIN,
+  SOUND_SOURCE,
+  FILTER_CUTOFF,
+  FILTER_QUALITY,
+  ATTACK_TIME,
+  RELEASE_TIME
+};
+
+static const size_t NUM_PARAMETER_TYPES = 7;
+static_assert(RELEASE_TIME == NUM_PARAMETER_TYPES - 1,
+              "synth type table and enum must agree");
+static const ContinuousParameterType ParameterTypes[NUM_PARAMETER_TYPES] = {
+    FREQUENCY,      GAIN,        SOUND_SOURCE, FILTER_CUTOFF,
+    FILTER_QUALITY, ATTACK_TIME, RELEASE_TIME};
+static const char *ParameterTypeDisplayNames[NUM_PARAMETER_TYPES] = {
+    "frequency",      "gain",        "sound source", "filter cutoff",
+    "filter quality", "attack time", "release time"};
+
+enum MomentaryParameterType { GATE };
+static const size_t NUM_MOMENTARY_PARAMETER_TYPES = 1;
+static_assert(GATE == NUM_MOMENTARY_PARAMETER_TYPES - 1,
+              "synth type table and enum must agree");
+static const MomentaryParameterType
+    MomentaryParameterTypes[NUM_MOMENTARY_PARAMETER_TYPES] = {GATE};
+static const char
+    *MomentaryParameterTypeDisplayNames[NUM_MOMENTARY_PARAMETER_TYPES] = {
+        "gate"};
+
+template <typename sample_t> struct NoteEvent {
+  sample_t frequency = 440;
+  sample_t gate = 0;
+};
+
+template <typename sample_t> struct ParameterChangeEvent {
+  ContinuousParameterType type;
+  sample_t value;
+};
 
 using algae::dsp::filter::SmoothParameter;
 

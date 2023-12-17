@@ -25,7 +25,7 @@ struct UserInterface : public AbstractUI {
   PlayInstrumentUI playInstrumentUI;
   SettingsMenu settingsUI;
 
-  UserInterface(Synthesizer<float> *synth, SensorMapping<float> *sensorMapping,
+  UserInterface(Synthesizer<float> *synth, InputMapping<float> *sensorMapping,
                 Sequencer *sequencer,
                 InstrumentMetaphorType *instrumentMetaphor)
       : instrumentSetupUI(InstrumentSetupUI(synth, sensorMapping,

@@ -333,8 +333,9 @@ public:
          .halfSize = {.x = static_cast<float>(width / 2.0),
                       .y = static_cast<float>(height / 2.0)}});
 
-    sensorMapping.addMapping(TILT, ParameterType::SOUND_SOURCE);
-    sensorMapping.addMapping(YAW, ParameterType::FILTER_CUTOFF);
+    sensorMapping.addMapping(TILT, ContinuousParameterType::SOUND_SOURCE);
+    sensorMapping.addMapping(ACCELERATION,
+                             ContinuousParameterType::FILTER_CUTOFF);
 
     SDL_PauseAudioDevice(audioDeviceID, 0); // start playback
 
@@ -573,25 +574,29 @@ public:
           auto accVector = vec2f_t{.x = acc3.x, .y = acc3.y};
 
           // synth.setSoundSource(accVector.length());
-          sensorMapping.emitEvent(&synth, SensorType::TILT, accVector.length());
-          sensorMapping.emitEvent(&synth, SensorType::ACCELERATION,
+          sensorMapping.emitEvent(&synth, ContinuousInputType::TILT,
                                   accVector.length());
-          sensorMapping.emitEvent(&synth, SensorType::ACC_X, acc3.x);
-          sensorMapping.emitEvent(&synth, SensorType::ACC_Y, acc3.y);
-          sensorMapping.emitEvent(&synth, SensorType::ACC_Z, acc3.z);
 
           break;
         }
         case SDL_SENSOR_GYRO: {
           ss << "sensor: " << sensorName << " " << event.sensor.data[0] << ", "
              << event.sensor.data[1] << ", " << event.sensor.data[2];
+          auto velocity = vec3f_t{.x = event.sensor.data[0],
+                                  .y = event.sensor.data[1],
+                                  .z = event.sensor.data[2]};
+          sensorMapping.emitEvent(&synth, ContinuousInputType::ACCELERATION,
+                                  clip<float>(velocity.length()));
           // SDL_LogInfo(0, "%s", ss.str().c_str());
-          sensorMapping.emitEvent(&synth, SensorType::ROLL,
-                                  fmax(0, fmin(1, abs(event.sensor.data[0]))));
-          sensorMapping.emitEvent(&synth, SensorType::PITCH,
-                                  fmax(0, fmin(1, abs(event.sensor.data[1]))));
-          sensorMapping.emitEvent(&synth, SensorType::YAW,
-                                  fmax(0, fmin(1, abs(event.sensor.data[2]))));
+          // sensorMapping.emitEvent(&synth, ContinuousInputType::ROLL,
+          //                        fmax(0, fmin(1,
+          //                        abs(event.sensor.data[0]))));
+          // sensorMapping.emitEvent(&synth, ContinuousInputType::PITCH,
+          //                        fmax(0, fmin(1,
+          //                        abs(event.sensor.data[1]))));
+          // sensorMapping.emitEvent(&synth, ContinuousInputType::YAW,
+          //                        fmax(0, fmin(1,
+          //                        abs(event.sensor.data[2]))));
           break;
         }
         default:
@@ -650,7 +655,7 @@ private:
 
   // Model objects
   Synthesizer<float> synth;
-  SensorMapping<float> sensorMapping;
+  InputMapping<float> sensorMapping;
   Sequencer sequencer = Sequencer(&synth);
   InstrumentMetaphorType instrumentMetaphor = KEYBOARD;
 
