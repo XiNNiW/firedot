@@ -1,5 +1,6 @@
 #pragma once
 
+#include "sensor.h"
 #include <algae.h>
 #include <atomic>
 #include <cstddef>
@@ -19,19 +20,26 @@ static_assert(RELEASE_TIME == NUM_PARAMETER_TYPES - 1,
 static const ContinuousParameterType ParameterTypes[NUM_PARAMETER_TYPES] = {
     FREQUENCY,      GAIN,        SOUND_SOURCE, FILTER_CUTOFF,
     FILTER_QUALITY, ATTACK_TIME, RELEASE_TIME};
-static const char *ParameterTypeDisplayNames[NUM_PARAMETER_TYPES] = {
-    "frequency",      "gain",        "sound source", "filter cutoff",
-    "filter quality", "attack time", "release time"};
 
+static const char *getDisplayName(ContinuousParameterType type) {
+  static const char *ParameterTypeDisplayNames[NUM_PARAMETER_TYPES] = {
+      "frequency",      "gain",        "sound source", "filter cutoff",
+      "filter quality", "attack time", "release time"};
+  return ParameterTypeDisplayNames[static_cast<int>(type)];
+}
 enum MomentaryParameterType { GATE };
 static const size_t NUM_MOMENTARY_PARAMETER_TYPES = 1;
 static_assert(GATE == NUM_MOMENTARY_PARAMETER_TYPES - 1,
               "synth type table and enum must agree");
 static const MomentaryParameterType
     MomentaryParameterTypes[NUM_MOMENTARY_PARAMETER_TYPES] = {GATE};
-static const char
-    *MomentaryParameterTypeDisplayNames[NUM_MOMENTARY_PARAMETER_TYPES] = {
-        "gate"};
+
+static const char *getDisplayName(MomentaryParameterType type) {
+  static const char
+      *MomentaryParameterTypeDisplayNames[NUM_MOMENTARY_PARAMETER_TYPES] = {
+          "gate"};
+  return MomentaryParameterTypeDisplayNames[static_cast<int>(type)];
+}
 
 template <typename sample_t> struct NoteEvent {
   sample_t frequency = 440;

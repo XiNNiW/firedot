@@ -23,7 +23,7 @@ struct TouchPadUI {
 
   inline void handleFingerMove(const SDL_FingerID &fingerId,
                                const vec2f_t &position, const float pressure) {
-    fingerPositions[fingerId] = position;
+    // fingerPositions[fingerId] = position;
     mapping->emitEvent(synth, ContinuousInputType::TOUCH_X_POSITION,
                        position.x / (shape.halfSize.x * 2.0));
     mapping->emitEvent(synth, ContinuousInputType::TOUCH_Y_POSITION,
@@ -40,14 +40,19 @@ struct TouchPadUI {
                        position.x / (shape.halfSize.x * 2.0));
     mapping->emitEvent(synth, ContinuousInputType::TOUCH_Y_POSITION,
                        position.y / (shape.halfSize.y * 2.0));
+    mapping->emitEvent(synth, MomentaryInputType::INSTRUMENT_GATE, 1);
+
     // mapping->noteOn(synth, InputType::TOUCH_Y_POSITION, float value)
   };
 
   inline void handleFingerUp(const SDL_FingerID &fingerId,
                              const vec2f_t &position, const float pressure) {
-    fingerPositions[fingerId] = position;
     fingerActivity[fingerId] = false;
-
+    mapping->emitEvent(synth, ContinuousInputType::TOUCH_X_POSITION,
+                       fingerPositions[fingerId].x / (shape.halfSize.x * 2.0));
+    mapping->emitEvent(synth, ContinuousInputType::TOUCH_Y_POSITION,
+                       fingerPositions[fingerId].y / (shape.halfSize.y * 2.0));
+    mapping->emitEvent(synth, MomentaryInputType::INSTRUMENT_GATE, 0);
     // mapping->noteOff(synth, InputType::KEYBOARD_KEY, float value)
   };
 

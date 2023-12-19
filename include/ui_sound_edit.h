@@ -11,7 +11,7 @@ struct SoundEditUI {
   InputMapping<float> *sensorMapping = NULL;
 
   RadioGroup synthSelectRadioGroup;
-  HSlider parameterSliders[NUM_PARAMETER_TYPES];
+  std::map<ContinuousParameterType, HSlider> parameterSliders;
   int fingerPositions[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 
   std::string pageTitleLabel = "choose your sound!";
@@ -79,9 +79,13 @@ struct SoundEditUI {
         .halfSize = {.x = (width - 2 * pageMargin) / 2,
                      .y = static_cast<float>(height / 24.0)}});
 
+    int sliderCounter = 0;
     for (auto &parameter : ParameterTypes) {
+      if (parameter == FREQUENCY) {
+        continue;
+      }
       parameterSliders[parameter] = HSlider{
-          .labelText = ParameterTypeDisplayNames[parameter],
+          .labelText = getDisplayName(parameter),
 
           .shape =
               AxisAlignedBoundingBox{
@@ -90,8 +94,8 @@ struct SoundEditUI {
                           .x = width / 2 + xOffset,
                           .y = synthSelectRadioGroup.shape.position.y +
                                synthSelectRadioGroup.shape.halfSize.y +
-                               buttonMargin + yOffset +
-                               (parameter + 1) *
+                               buttonMargin + yOffset + 25 +
+                               sliderCounter++ *
                                    (static_cast<float>(height / 12.0) +
                                     buttonMargin),
                       },
@@ -117,12 +121,14 @@ struct SoundEditUI {
   inline void handleFingerDown(const SDL_FingerID &fingerId,
                                const vec2f_t &position, const float pressure) {
 
-    for (size_t i = 0; i < NUM_PARAMETER_TYPES; ++i) {
-      auto &parameterType = ParameterTypes[i];
+    for (auto &parameterType : ParameterTypes) {
+      if (parameterSliders.find(parameterType) == parameterSliders.end()) {
+        continue;
+      }
       float paramValue = synth->getParameter(parameterType);
       if (DoHSliderClick(&parameterSliders[parameterType], &paramValue,
                          position)) {
-        fingerPositions[fingerId] = i;
+        fingerPositions[fingerId] = parameterType;
         synth->pushParameterChangeEvent(parameterType, paramValue);
       }
     }
@@ -131,7 +137,8 @@ struct SoundEditUI {
   inline void handleFingerUp(const SDL_FingerID &fingerId,
                              const vec2f_t &position, const float pressure) {
     if (fingerPositions[fingerId] > -1) {
-      parameterSliders[fingerPositions[fingerId]].state = INACTIVE;
+      parameterSliders[(ContinuousParameterType)fingerPositions[fingerId]]
+          .state = INACTIVE;
     }
     fingerPositions[fingerId] = -1;
   }
@@ -140,6 +147,9 @@ struct SoundEditUI {
     DoRadioGroupHover(&synthSelectRadioGroup, mousePosition);
 
     for (auto &parameterType : ParameterTypes) {
+      if (parameterSliders.find(parameterType) == parameterSliders.end()) {
+        continue;
+      }
       float paramValue = synth->getParameter(parameterType);
       if (DoHSliderDrag(&parameterSliders[parameterType], &paramValue,
                         mousePosition)) {
@@ -158,6 +168,9 @@ struct SoundEditUI {
 
   inline void handleMouseUp(const vec2f_t &mousePosition) {
     for (auto &parameterType : ParameterTypes) {
+      if (parameterSliders.find(parameterType) == parameterSliders.end()) {
+        continue;
+      }
       parameterSliders[parameterType].state = INACTIVE;
     }
     synth->setFrequency(mtof(36));
@@ -173,6 +186,9 @@ struct SoundEditUI {
     synthSelectRadioGroup.selectedIndex = synth->getSynthType();
     DrawRadioGroup(synthSelectRadioGroup, renderer, style);
     for (auto &parameterType : ParameterTypes) {
+      if (parameterSliders.find(parameterType) == parameterSliders.end()) {
+        continue;
+      }
       if (sensorMapping->isMapped(parameterType)) {
         auto rect = ConvertAxisAlignedBoxToSDL_Rect(
             parameterSliders[parameterType].shape);

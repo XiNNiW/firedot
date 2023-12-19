@@ -149,7 +149,7 @@ struct KeyboardUI {
         // mapping->noteOn(synth, InputType::KEYBOARD_KEY, mtof(note));
         mapping->emitEvent(synth, ContinuousInputType::KEYBOARD_KEY,
                            float(i) / float(NUM_KEY_BUTTONS));
-        mapping->emitEvent(synth, MomentaryInputType::TOUCH, 1);
+        mapping->emitEvent(synth, MomentaryInputType::INSTRUMENT_GATE, 1);
       }
     }
   }
@@ -161,7 +161,7 @@ struct KeyboardUI {
       keyButtons[buttonIdx].state = WidgetState::INACTIVE;
       mapping->emitEvent(synth, ContinuousInputType::KEYBOARD_KEY,
                          float(buttonIdx) / float(NUM_KEY_BUTTONS));
-      mapping->emitEvent(synth, MomentaryInputType::TOUCH, 0);
+      mapping->emitEvent(synth, MomentaryInputType::INSTRUMENT_GATE, 0);
       heldKeys.erase(fingerId);
     }
 
@@ -189,7 +189,7 @@ struct KeyboardUI {
         keyButtons[i].state = WidgetState::INACTIVE;
         mapping->emitEvent(synth, ContinuousInputType::KEYBOARD_KEY,
                            float(i) / float(NUM_KEY_BUTTONS));
-        mapping->emitEvent(synth, MomentaryInputType::TOUCH, 0);
+        mapping->emitEvent(synth, MomentaryInputType::INSTRUMENT_GATE, 0);
         heldKeys.clear();
       } else if (keyButtons[i].state == WidgetState::HOVER) {
         keyButtons[i].state = WidgetState::INACTIVE;

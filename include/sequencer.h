@@ -27,13 +27,13 @@ struct Sequencer {
         if (stepValues[currentStep] > 0.0) {
           mapping->emitEvent(synth, ContinuousInputType::SEQUENCER_STEP_LEVEL,
                              stepValues[currentStep]);
-          mapping->emitEvent(synth, MomentaryInputType::SEQUENCER_GATE, true);
+          mapping->emitEvent(synth, MomentaryInputType::INSTRUMENT_GATE, true);
         }
         currentStep = (currentStep + 1) % MAX_STEPS;
         timeSinceLastStep = 0;
         hadNoteOn = true;
       } else if (hadNoteOn && (timeSinceLastStep > (stepIntervalSeconds / 2))) {
-        mapping->emitEvent(synth, MomentaryInputType::SEQUENCER_GATE, false);
+        mapping->emitEvent(synth, MomentaryInputType::INSTRUMENT_GATE, false);
       }
     }
   }

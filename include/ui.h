@@ -4,6 +4,7 @@
 
 #include "collider.h"
 #include "metaphor.h"
+#include "save_state.h"
 #include "sequencer.h"
 #include "ui_abstract.h"
 #include "ui_instrument_setup.h"
@@ -26,12 +27,11 @@ struct UserInterface : public AbstractUI {
   SettingsMenu settingsUI;
 
   UserInterface(Synthesizer<float> *synth, InputMapping<float> *sensorMapping,
-                Sequencer *sequencer,
-                InstrumentMetaphorType *instrumentMetaphor)
-      : instrumentSetupUI(InstrumentSetupUI(synth, sensorMapping,
-                                            instrumentMetaphor, &navigation)),
+                Sequencer *sequencer, SaveState *saveState)
+      : instrumentSetupUI(
+            InstrumentSetupUI(synth, sensorMapping, saveState, &navigation)),
         playInstrumentUI(PlayInstrumentUI(synth, sequencer, sensorMapping,
-                                          instrumentMetaphor, &navigation)),
+                                          saveState, &navigation)),
         settingsUI(SettingsMenu(&navigation)) {}
 
   inline void buildLayout(const AxisAlignedBoundingBox &shape) {

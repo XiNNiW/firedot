@@ -2,20 +2,21 @@
 
 #include "collider.h"
 #include "metaphor.h"
+#include "save_state.h"
+#include "synthesis_parameter.h"
 #include "widget_label.h"
 #include "widget_radio_button.h"
 #include "widget_state.h"
 #include "widget_utils.h"
 
 struct ChooseCharacterUI {
-  InstrumentMetaphorType *instrumentMetaphor;
+  SaveState *saveState;
   RadioGroup characterChooser;
   std::string pageTitleLabel = "choose your character!";
   AxisAlignedBoundingBox pageTitleLabelShape;
   AxisAlignedBoundingBox bodyShape;
 
-  ChooseCharacterUI(InstrumentMetaphorType *_instrumentMetaphor)
-      : instrumentMetaphor(_instrumentMetaphor) {}
+  ChooseCharacterUI(SaveState *_saveState) : saveState(_saveState) {}
 
   void buildLayout(const AxisAlignedBoundingBox &shape) {
     auto pageLabelHeight = 50;
@@ -32,8 +33,7 @@ struct ChooseCharacterUI {
             .y = static_cast<float>(shape.halfSize.y - pageLabelHeight / 2.0)}};
     std::vector<std::string> instrumentOptionLabels = {};
     for (auto &instrumentType : InstrumentMetaphorTypes) {
-      instrumentOptionLabels.push_back(
-          InstrumentMetaphorTypeDisplayNames[instrumentType]);
+      instrumentOptionLabels.push_back(getDisplayName(instrumentType));
     }
     characterChooser = RadioGroup::MakeRadioGroup(instrumentOptionLabels, 0);
     characterChooser.buildLayout(
@@ -55,7 +55,7 @@ struct ChooseCharacterUI {
   void handleMouseDown(const vec2f_t &mousePosition) {
     int selectedIndex = 0;
     if (DoClickRadioGroup(&characterChooser, mousePosition)) {
-      *instrumentMetaphor =
+      saveState->instrumentMetaphor =
           InstrumentMetaphorTypes[characterChooser.selectedIndex];
     }
   };

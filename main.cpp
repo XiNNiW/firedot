@@ -16,9 +16,11 @@
 #include "include/game_object.h"
 #include "include/metaphor.h"
 #include "include/physics.h"
+#include "include/save_state.h"
 #include "include/sensor.h"
 #include "include/sequencer.h"
 #include "include/synthesis.h"
+#include "include/synthesis_parameter.h"
 #include "include/ui.h"
 #include "include/vector_math.h"
 #include <SDL.h>
@@ -334,6 +336,8 @@ public:
                       .y = static_cast<float>(height / 2.0)}});
 
     sensorMapping.addMapping(TILT, ContinuousParameterType::SOUND_SOURCE);
+    sensorMapping.addMapping(INSTRUMENT_GATE, MomentaryParameterType::GATE);
+    sensorMapping.addMapping(KEYBOARD_KEY, ContinuousParameterType::FREQUENCY);
     sensorMapping.addMapping(ACCELERATION,
                              ContinuousParameterType::FILTER_CUTOFF);
 
@@ -461,7 +465,7 @@ public:
     }
     lastFrameTime = SDL_GetTicks();
 
-    if (instrumentMetaphor == InstrumentMetaphorType::SEQUENCER) {
+    if (saveState.instrumentMetaphor == InstrumentMetaphorType::SEQUENCER) {
       sequencer.update(frameDeltaTimeSeconds);
     }
     handleEvents(event);
@@ -657,11 +661,12 @@ private:
   Synthesizer<float> synth;
   InputMapping<float> sensorMapping;
   Sequencer sequencer = Sequencer(&synth);
-  InstrumentMetaphorType instrumentMetaphor = KEYBOARD;
+
+  SaveState saveState;
 
   // UI objects
   UserInterface userInterface =
-      UserInterface(&synth, &sensorMapping, &sequencer, &instrumentMetaphor);
+      UserInterface(&synth, &sensorMapping, &sequencer, &saveState);
 
   SDL_Color textColor = {20, 20, 20};
   SDL_Color textBackgroundColor = {0, 0, 0};

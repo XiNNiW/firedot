@@ -1,6 +1,7 @@
 #pragma once
 
 #include "metaphor.h"
+#include "save_state.h"
 #include "ui_choose_character.h"
 #include "ui_mapping.h"
 #include "ui_navigation.h"
@@ -10,7 +11,7 @@
 struct InstrumentSetupUI {
 
   enum Page { CHARACTER_CHOOSER, MAPPING, SOUND_EDIT } page = CHARACTER_CHOOSER;
-  ;
+
   static const int NUM_NAVIGATION_PAGES = 3;
   static_assert((NUM_NAVIGATION_PAGES - 1) == Page::SOUND_EDIT,
                 "Navigation enum size does not match NavigationPages");
@@ -25,11 +26,10 @@ struct InstrumentSetupUI {
   float sideMargin = 15;
   float bottomMargin = 15;
   InstrumentSetupUI(Synthesizer<float> *synth,
-                    InputMapping<float> *sensorMapping,
-                    InstrumentMetaphorType *instrumentMetaphor,
+                    InputMapping<float> *sensorMapping, SaveState *saveState,
                     Navigation *_navigation)
-      : chooseCharacterUI(ChooseCharacterUI(instrumentMetaphor)),
-        mappingUI(MappingUI::MakeMappingUI(sensorMapping)),
+      : chooseCharacterUI(ChooseCharacterUI(saveState)),
+        mappingUI(MappingUI::MakeMappingUI(sensorMapping, saveState)),
         soundEditUI(SoundEditUI::MakeSoundEditUI(synth, sensorMapping)),
         navigation(_navigation) {}
   void buildLayout(const AxisAlignedBoundingBox &shape) {

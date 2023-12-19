@@ -27,6 +27,8 @@ struct Style {
     case ACTIVE:
       return color0;
       break;
+    case HIDDEN:
+      break;
     }
     return SDL_Color();
   }
@@ -42,6 +44,8 @@ struct Style {
       break;
     case ACTIVE:
       return inactiveColor;
+      break;
+    case HIDDEN:
       break;
     }
     return SDL_Color();
