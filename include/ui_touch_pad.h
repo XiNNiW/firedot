@@ -9,6 +9,8 @@
 #include "widget_button.h"
 #include "widget_seperator.h"
 #include "widget_style.h"
+#include "widget_utils.h"
+
 struct TouchPadUI {
   static constexpr int NUM_FINGERS = 10;
   vec2f_t fingerPositions[NUM_FINGERS] = {};
@@ -63,6 +65,7 @@ struct TouchPadUI {
   inline void handleMouseUp(const vec2f_t &mousePosition){};
 
   inline void draw(SDL_Renderer *renderer, const Style &style) {
+
     for (int i = 0; i < NUM_FINGERS; ++i) {
       if (fingerActivity[i]) {
         auto position = fingerPositions[i];
@@ -81,5 +84,10 @@ struct TouchPadUI {
                  renderer, style.color0);
       }
     }
+
+    DrawBoxOutline(
+        ConvertAxisAlignedBoxToSDL_Rect(AxisAlignedBoundingBox{
+            .position = shape.position, .halfSize = shape.halfSize.scale(0.9)}),
+        renderer, style.color0);
   };
 };
