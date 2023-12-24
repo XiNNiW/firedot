@@ -87,7 +87,7 @@ struct TouchPadUI {
 
     DrawBoxOutline(
         ConvertAxisAlignedBoxToSDL_Rect(AxisAlignedBoundingBox{
-            .position = shape.position, .halfSize = shape.halfSize.scale(0.9)}),
+            .position = shape.position, .halfSize = shape.halfSize.scale(0.8)}),
         renderer, style.color0);
   };
 };

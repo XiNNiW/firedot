@@ -458,11 +458,11 @@ public:
   void update(SDL_Event &event) {
     // frame rate sync
     auto deltaTimeMilliseconds = SDL_GetTicks() - lastFrameTime;
-    auto timeToWait = FRAME_DELTA_MILLIS - deltaTimeMilliseconds;
+    //  auto timeToWait = FRAME_DELTA_MILLIS - deltaTimeMilliseconds;
     frameDeltaTimeSeconds = deltaTimeMilliseconds / 1000.0;
-    if ((timeToWait > 0) && (timeToWait < FRAME_DELTA_MILLIS)) {
-      SDL_Delay(timeToWait);
-    }
+    //  if ((timeToWait > 0) && (timeToWait < FRAME_DELTA_MILLIS)) {
+    //    SDL_Delay(timeToWait);
+    //  }
     lastFrameTime = SDL_GetTicks();
 
     if (saveState.instrumentMetaphor == InstrumentMetaphorType::SEQUENCER) {
@@ -634,7 +634,7 @@ public:
   }
 
 private:
-  const int FRAME_RATE_TARGET = 120;
+  const int FRAME_RATE_TARGET = 60;
   const int FRAME_DELTA_MILLIS = (1.0 / float(FRAME_RATE_TARGET)) * 1000.0;
   const size_t BUFFER_SIZE = 256;
   const float SAMPLE_RATE = 48000;
@@ -660,7 +660,7 @@ private:
   // Model objects
   Synthesizer<float> synth;
   InputMapping<float> sensorMapping;
-  Sequencer sequencer = Sequencer(&synth);
+  Sequencer sequencer = Sequencer(&synth, &sensorMapping);
 
   SaveState saveState;
 

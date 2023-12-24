@@ -11,7 +11,7 @@
 
 struct HSlider {
   WidgetState state = INACTIVE;
-  std::string labelText;
+  Label *label = new Label();
   AxisAlignedBoundingBox shape;
 };
 
@@ -66,6 +66,7 @@ inline void DrawHSlider(const HSlider &slider, const float &sliderValue,
   SDL_RenderFillRect(renderer, &dataBounds);
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 
-  DrawLabel(slider.labelText, style.getWidgetLabelColor(slider.state),
-            style.getWidgetColor(slider.state), sliderBounds, renderer, style);
+  slider.label->draw(style.getWidgetLabelColor(slider.state),
+                     style.getWidgetColor(slider.state), sliderBounds, renderer,
+                     style);
 }

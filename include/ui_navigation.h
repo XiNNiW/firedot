@@ -35,9 +35,8 @@ struct NavigationUI {
       labels.push_back(NavigationPageDisplayNames[page]);
     }
 
-    return NavigationUI{
-        .pages = RadioGroup::MakeRadioGroup(labels, initialSynthTypeSelection),
-        .navigation = navigation};
+    return NavigationUI{.pages = RadioGroup(labels, initialSynthTypeSelection),
+                        .navigation = navigation};
     ;
   }
   inline void buildLayout(const AxisAlignedBoundingBox &shape) {
@@ -74,7 +73,7 @@ struct NavigationUI {
   inline void handleMouseUp(const vec2f_t &mousePosition) {}
 
   inline void draw(SDL_Renderer *renderer, const Style &style) {
-    DrawRadioGroup(pages, renderer, style);
+    DrawRadioGroup(&pages, renderer, style);
     auto seperatorRect = SDL_Rect{
         .x = static_cast<int>(pageMargin),
         .y = static_cast<int>(buttonHeight + topMargin + bottomMargin / 2),

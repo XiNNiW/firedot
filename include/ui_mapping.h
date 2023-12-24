@@ -15,32 +15,31 @@
 struct MappingUI {
   InputMapping<float> *sensorMapping = NULL;
   SaveState *saveState = NULL;
-  std::string titleLabel = "map the phone sensors to sound parameters: ";
-  std::string sensorLabels[NUM_CONTINUOUS_INPUT_TYPES];
+  Label *pageTitleLabel = new Label("choose your abilities!");
   std::map<MomentaryInputType, Button> momentaryInputButtons;
   std::map<ContinuousInputType, Button> sensorButtons;
   Button parameterButtons[NUM_PARAMETER_TYPES];
   Button momentaryParameterButtons[NUM_MOMENTARY_PARAMETER_TYPES];
 
-  std::string pageTitleLabel = "choose your abilities!";
   AxisAlignedBoundingBox pageTitleLabelShape;
 
+  AxisAlignedBoundingBox shape;
   AxisAlignedBoundingBox bodyShape;
   float sideMargin = 15;
   float topMargin = 50;
   float buttonMargin = 50;
-  float sensorLabelWidth = 150;
   int heldSensor = -1;
   int heldMomentarySensor = -1;
   vec2f_t lastMousePosition;
 
-  static inline const MappingUI MakeMappingUI(InputMapping<float> *mapping,
-                                              SaveState *saveState) {
-    return MappingUI{.sensorMapping = mapping, .saveState = saveState};
-  }
+  MappingUI(InputMapping<float> *_mapping, SaveState *_saveState)
+      : sensorMapping(_mapping), saveState(_saveState) {}
 
+  ~MappingUI() { delete pageTitleLabel; }
+
+  void refreshLayout() { buildLayout(shape); }
   void buildLayout(const AxisAlignedBoundingBox &shape) {
-
+    this->shape = shape;
     auto pageLabelHeight = 50;
     auto topPosition = shape.position.y - shape.halfSize.y;
     pageTitleLabelShape = AxisAlignedBoundingBox{
@@ -70,7 +69,7 @@ struct MappingUI {
 
     for (auto inputType : MomentaryInputTypes) {
       momentaryInputButtons[inputType] = Button{
-          .labelText = getDisplayName(inputType),
+          .label = Label(getDisplayName(inputType)),
           .shape = AxisAlignedBoundingBox{
               .position = {.x = buttonHalfSize.x + xOffset,
                            .y = inputButtonCounter++ * sensorButtonSpaceY +
@@ -81,7 +80,7 @@ struct MappingUI {
     for (auto &sensorType : InstrumentInputTypes) {
       if (isInstrumentInputType(saveState->instrumentMetaphor, sensorType)) {
         sensorButtons[sensorType] = Button{
-            .labelText = getDisplayName(sensorType),
+            .label = Label(getDisplayName(sensorType)),
             .shape = AxisAlignedBoundingBox{
                 .position = {.x = buttonHalfSize.x + xOffset,
                              .y = inputButtonCounter++ * sensorButtonSpaceY +
@@ -92,7 +91,7 @@ struct MappingUI {
 
     for (auto &sensorType : SensorInputTypes) {
       sensorButtons[sensorType] = Button{
-          .labelText = getDisplayName(sensorType),
+          .label = Label(getDisplayName(sensorType)),
           .shape = AxisAlignedBoundingBox{
               .position = {.x = buttonHalfSize.x + xOffset,
                            .y = inputButtonCounter++ * sensorButtonSpaceY +
@@ -103,7 +102,7 @@ struct MappingUI {
     int outputButtonCounter = 0;
     for (auto &parameterType : MomentaryParameterTypes) {
       momentaryParameterButtons[parameterType] = Button{
-          .labelText = getDisplayName(parameterType),
+          .label = Label(getDisplayName(parameterType)),
           .shape = AxisAlignedBoundingBox{
               .position = {.x = width - buttonHalfSize.x + xOffset,
                            .y = outputButtonCounter++ * parameterButtonSpaceY +
@@ -113,7 +112,7 @@ struct MappingUI {
 
     for (auto &parameterType : ParameterTypes) {
       parameterButtons[parameterType] = Button{
-          .labelText = getDisplayName(parameterType),
+          .label = Label(getDisplayName(parameterType)),
           .shape = AxisAlignedBoundingBox{
               .position = {.x = width - buttonHalfSize.x + xOffset,
                            .y = outputButtonCounter++ * parameterButtonSpaceY +
@@ -208,9 +207,9 @@ struct MappingUI {
   inline void draw(SDL_Renderer *renderer, const Style &style) {
 
     auto pageLabelRect = ConvertAxisAlignedBoxToSDL_Rect(pageTitleLabelShape);
-    DrawLabel(pageTitleLabel, style.hoverColor, style.unavailableColor,
-              pageLabelRect, renderer, style, HorizontalAlignment::CENTER,
-              VerticalAlignment::CENTER);
+    pageTitleLabel->draw(
+        style.hoverColor, style.unavailableColor, pageLabelRect, renderer,
+        style, HorizontalAlignment::CENTER, VerticalAlignment::CENTER);
     for (auto &keyValuePair : sensorMapping->continuous_mappings) {
       auto sensorButton = sensorButtons[keyValuePair.first];
       auto parameterButton = parameterButtons[keyValuePair.second];
@@ -239,19 +238,19 @@ struct MappingUI {
     momentaryStyle.color2 = style.color0;
 
     for (auto &typeButtonPair : momentaryInputButtons) {
-      DrawButton(typeButtonPair.second, renderer, momentaryStyle);
+      DrawButton(&typeButtonPair.second, renderer, momentaryStyle);
     }
 
     for (auto &button : momentaryParameterButtons) {
-      DrawButton(button, renderer, momentaryStyle);
+      DrawButton(&button, renderer, momentaryStyle);
     }
 
     for (auto &button : parameterButtons) {
-      DrawButton(button, renderer, style);
+      DrawButton(&button, renderer, style);
     }
 
     for (auto &typeButtonPair : sensorButtons) {
-      DrawButton(typeButtonPair.second, renderer, style);
+      DrawButton(&typeButtonPair.second, renderer, style);
     }
   }
 };

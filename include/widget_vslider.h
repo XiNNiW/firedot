@@ -11,9 +11,11 @@
 
 struct VSlider {
   WidgetState state = INACTIVE;
-  std::string labelText;
+  Label *label = new Label();
   float value;
   AxisAlignedBoundingBox shape;
+
+  ~VSlider() { delete label; }
 };
 
 inline void SetVSliderValue(VSlider *slider, const vec2f_t &mousePosition) {
@@ -64,6 +66,7 @@ inline void DrawVSlider(const VSlider &slider, SDL_Renderer *renderer,
   SDL_RenderFillRect(renderer, &dataBounds);
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 
-  DrawLabel(slider.labelText, style.getWidgetLabelColor(slider.state),
-            style.getWidgetColor(slider.state), sliderBounds, renderer, style);
+  slider.label->draw(style.getWidgetLabelColor(slider.state),
+                     style.getWidgetColor(slider.state), sliderBounds, renderer,
+                     style);
 }

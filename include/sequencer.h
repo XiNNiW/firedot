@@ -17,7 +17,8 @@ struct Sequencer {
   bool running = false;
   bool hadNoteOn = false;
 
-  Sequencer(Synthesizer<float> *_synthesizer) : synth(_synthesizer) {}
+  Sequencer(Synthesizer<float> *_synthesizer, InputMapping<float> *_mapping)
+      : synth(_synthesizer), mapping(_mapping) {}
 
   void update(const float deltaTimeSeconds) {
 

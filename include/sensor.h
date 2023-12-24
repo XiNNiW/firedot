@@ -59,10 +59,25 @@ static const char *getDisplayName(MomentaryInputType type) {
   return MomentaryInputTypeDisplayNames[static_cast<int>(type)];
 }
 
+struct NoteMap {
+  static constexpr size_t NUM_NOTES = 35;
+  float notes[NUM_NOTES] = {
+      36,         37,         38,         39,         40,         36 + 5,
+      37 + 5,     38 + 5,     39 + 5,     40 + 5,     36 + 2 * 5, 37 + 2 * 5,
+      38 + 2 * 5, 39 + 2 * 5, 40 + 2 * 5, 36 + 3 * 5, 37 + 3 * 5, 38 + 3 * 5,
+      39 + 3 * 5, 40 + 3 * 5, 36 + 4 * 5, 37 + 4 * 5, 38 + 4 * 5, 39 + 4 * 5,
+      40 + 4 * 5, 36 + 5 * 5, 37 + 5 * 5, 38 + 5 * 5, 39 + 5 * 5, 40 + 5 * 5,
+      36 + 6 * 5, 37 + 6 * 5, 38 + 6 * 5, 39 + 6 * 5, 40 + 6 * 5,
+  };
+  inline float getFrequency(const float value) {
+    return notes[static_cast<int>(floor(clip(value) * (NUM_NOTES - 1)))];
+  }
+};
+
 template <typename sample_t> struct InputMapping {
   std::map<ContinuousInputType, ContinuousParameterType> continuous_mappings;
   std::map<MomentaryInputType, MomentaryParameterType> momentary_mappings;
-
+  NoteMap noteMap;
   inline void emitEvent(Synthesizer<sample_t> *synth, ContinuousInputType type,
                         sample_t value) {
 
@@ -71,6 +86,13 @@ template <typename sample_t> struct InputMapping {
       auto parameterEventType = pair.second;
 
       if (type == sensorType) {
+        switch (parameterEventType) {
+        case FREQUENCY:
+          value = mtof(noteMap.getFrequency(value));
+          break;
+        default:
+          break;
+        }
         synth->pushParameterChangeEvent(parameterEventType, value);
       }
     }

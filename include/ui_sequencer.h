@@ -38,7 +38,7 @@ struct SequencerUI {
                            .y = static_cast<float>(buttonHeight / 2.0 - 10)}}};
     }
     playButton = Button{
-        .labelText = "play",
+        .label = Label("play"),
         .shape = {.position = {.x = shape.position.x,
                                .y = static_cast<float>(shape.halfSize.y * 2 -
                                                        buttonHeight / 2.0 -
@@ -86,9 +86,9 @@ struct SequencerUI {
       sequencer->running = !sequencer->running;
 
       if (sequencer->running) {
-        playButton.labelText = "stop";
+        playButton.label.setText("stop");
       } else {
-        playButton.labelText = "play";
+        playButton.label.setText("play");
       }
     }
   };
@@ -104,6 +104,6 @@ struct SequencerUI {
       }
       DrawHSlider(stepButtons[i], sequencer->stepValues[i], renderer, style);
     }
-    DrawButton(playButton, renderer, style);
+    DrawButton(&playButton, renderer, style);
   };
 };

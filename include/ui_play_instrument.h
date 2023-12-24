@@ -40,17 +40,17 @@ struct PlayInstrumentUI {
                    Navigation *_navigation)
       : keyboardUI(KeyboardUI(synth, mapping)),
         sequencerUI(SequencerUI(sequencer)), touchPadUI(synth, mapping),
-        soundEditUI(SoundEditUI::MakeSoundEditUI(synth, mapping)),
-        mappingUI(MappingUI::MakeMappingUI(mapping, saveState)),
-        settingsMenu(SettingsMenu(_navigation)), saveState(_saveState),
-        navigation(_navigation) {}
+        soundEditUI(SoundEditUI(synth, mapping)),
+        mappingUI(MappingUI(mapping, saveState)),
+        settingsMenu(SettingsMenu(_navigation, _saveState, synth)),
+        saveState(_saveState), navigation(_navigation) {}
 
   void buildLayout(const AxisAlignedBoundingBox &shape) {
     auto navGroupHeight = 100;
     auto buttonWidth = 200;
 
-    pageSelector = RadioGroup::MakeRadioGroup(
-        {"play", "edit sound", "edit sensors", "settings"}, PLAY);
+    pageSelector =
+        RadioGroup({"play", "edit sound", "edit sensors", "settings"}, PLAY);
     auto upperShape = AxisAlignedBoundingBox{
         .position = {.x = shape.position.x,
                      .y = static_cast<float>(navGroupHeight / 2.0)},
@@ -66,6 +66,7 @@ struct PlayInstrumentUI {
                          (shape.halfSize.y * 2 - navGroupHeight) / 2.0)}};
     keyboardUI.buildLayout(lowerShape);
     sequencerUI.buildLayout(lowerShape);
+    touchPadUI.buildLayout(lowerShape);
     soundEditUI.buildLayout(lowerShape);
     mappingUI.buildLayout(lowerShape);
     settingsMenu.buildLayout(lowerShape);
@@ -267,7 +268,7 @@ struct PlayInstrumentUI {
       break;
     }
 
-    DrawRadioGroup(pageSelector, renderer, style);
+    DrawRadioGroup(&pageSelector, renderer, style);
     DrawLine({.x = pageSelector.shape.position.x -
                    pageSelector.shape.halfSize.x + 15,
               .y = pageSelector.shape.halfSize.y * 2 + 10},

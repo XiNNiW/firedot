@@ -29,8 +29,8 @@ struct InstrumentSetupUI {
                     InputMapping<float> *sensorMapping, SaveState *saveState,
                     Navigation *_navigation)
       : chooseCharacterUI(ChooseCharacterUI(saveState)),
-        mappingUI(MappingUI::MakeMappingUI(sensorMapping, saveState)),
-        soundEditUI(SoundEditUI::MakeSoundEditUI(synth, sensorMapping)),
+        mappingUI(MappingUI(sensorMapping, saveState)),
+        soundEditUI(SoundEditUI(synth, sensorMapping)),
         navigation(_navigation) {}
   void buildLayout(const AxisAlignedBoundingBox &shape) {
     auto width = shape.halfSize.x * 2;
@@ -38,7 +38,7 @@ struct InstrumentSetupUI {
     auto buttonHeight = 100;
     auto buttonWidth = 200;
     previousButton = Button{
-        .labelText = "previous",
+        .label = Label("previous"),
         .shape = {.position = {.x = static_cast<float>(0 + sideMargin +
                                                        buttonWidth / 2.0),
                                .y = static_cast<float>(
@@ -46,7 +46,7 @@ struct InstrumentSetupUI {
                   .halfSize = {.x = static_cast<float>(buttonWidth / 2.0),
                                .y = static_cast<float>(buttonHeight / 2.0)}}};
     nextButton = Button{
-        .labelText = "next",
+        .label = Label("next"),
         .shape = {.position = {.x = static_cast<float>(shape.halfSize.x * 2 -
                                                        buttonWidth / 2.0 -
                                                        sideMargin),
@@ -144,6 +144,7 @@ struct InstrumentSetupUI {
       case CHARACTER_CHOOSER:
         previousButton.state = INACTIVE;
         page = MAPPING;
+        mappingUI.refreshLayout();
         break;
       case MAPPING:
         page = SOUND_EDIT;
@@ -203,7 +204,7 @@ struct InstrumentSetupUI {
          .y = previousButton.shape.position.y -
               previousButton.shape.halfSize.y - 10},
         renderer, style.hoverColor);
-    DrawButton(previousButton, renderer, style);
-    DrawButton(nextButton, renderer, style);
+    DrawButton(&previousButton, renderer, style);
+    DrawButton(&nextButton, renderer, style);
   };
 };

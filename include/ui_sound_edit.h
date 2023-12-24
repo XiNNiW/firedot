@@ -14,7 +14,7 @@ struct SoundEditUI {
   std::map<ContinuousParameterType, HSlider> parameterSliders;
   int fingerPositions[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 
-  std::string pageTitleLabel = "choose your sound!";
+  Label *pageTitleLabel = new Label("choose your sound!");
   AxisAlignedBoundingBox pageTitleLabelShape;
   AxisAlignedBoundingBox bodyShape;
 
@@ -24,20 +24,18 @@ struct SoundEditUI {
   float topMargin = 50;
   float pageMargin = 50;
 
-  static inline const SoundEditUI
-  MakeSoundEditUI(Synthesizer<float> *synth, InputMapping<float> *mapping) {
+  SoundEditUI(Synthesizer<float> *_synth, InputMapping<float> *_mapping)
+      : synth(_synth), sensorMapping(_mapping) {
     const size_t initialSynthTypeSelection = synth->type;
     std::vector<std::string> synthOptionLabels = {};
     for (auto &synthType : SynthTypes) {
       synthOptionLabels.push_back(SynthTypeDisplayNames[synthType]);
     }
-    return SoundEditUI{
-        .synth = synth,
-        .sensorMapping = mapping,
-        .synthSelectRadioGroup = RadioGroup::MakeRadioGroup(
-            synthOptionLabels, initialSynthTypeSelection),
-    };
+    synthSelectRadioGroup =
+        RadioGroup(synthOptionLabels, SUBTRACTIVE_DRUM_SYNTH);
   }
+
+  ~SoundEditUI() { delete pageTitleLabel; }
 
   void buildLayout(const AxisAlignedBoundingBox &shape) {
 
@@ -85,7 +83,7 @@ struct SoundEditUI {
         continue;
       }
       parameterSliders[parameter] = HSlider{
-          .labelText = getDisplayName(parameter),
+          .label = new Label(getDisplayName(parameter)),
 
           .shape =
               AxisAlignedBoundingBox{
@@ -180,11 +178,11 @@ struct SoundEditUI {
   void draw(SDL_Renderer *renderer, const Style &style) {
 
     auto pageLabelRect = ConvertAxisAlignedBoxToSDL_Rect(pageTitleLabelShape);
-    DrawLabel(pageTitleLabel, style.hoverColor, style.unavailableColor,
-              pageLabelRect, renderer, style, HorizontalAlignment::CENTER,
-              VerticalAlignment::CENTER);
+    pageTitleLabel->draw(
+        style.hoverColor, style.unavailableColor, pageLabelRect, renderer,
+        style, HorizontalAlignment::CENTER, VerticalAlignment::CENTER);
     synthSelectRadioGroup.selectedIndex = synth->getSynthType();
-    DrawRadioGroup(synthSelectRadioGroup, renderer, style);
+    DrawRadioGroup(&synthSelectRadioGroup, renderer, style);
     for (auto &parameterType : ParameterTypes) {
       if (parameterSliders.find(parameterType) == parameterSliders.end()) {
         continue;
@@ -201,8 +199,8 @@ struct SoundEditUI {
         SDL_SetRenderDrawColor(renderer, style.hoverColor.r, style.hoverColor.g,
                                style.hoverColor.b, style.hoverColor.a);
         SDL_RenderFillRect(renderer, &percentRect);
-        DrawLabel(parameterSliders[parameterType].labelText, style.hoverColor,
-                  style.unavailableColor, rect, renderer, style);
+        parameterSliders[parameterType].label->draw(
+            style.hoverColor, style.unavailableColor, rect, renderer, style);
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
       } else {
 

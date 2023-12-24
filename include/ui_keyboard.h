@@ -58,16 +58,8 @@ inline const std::string GetNoteName(int note) {
 struct KeyboardUI {
 
   static constexpr size_t SYNTH_SELECTED_RADIO_GROUP_SIZE = 3;
-  static constexpr size_t NUM_KEY_BUTTONS = 24 + 11;
+  static constexpr size_t NUM_KEY_BUTTONS = NoteMap::NUM_NOTES;
 
-  float notes[NUM_KEY_BUTTONS] = {
-      36,         37,         38,         39,         40,         36 + 5,
-      37 + 5,     38 + 5,     39 + 5,     40 + 5,     36 + 2 * 5, 37 + 2 * 5,
-      38 + 2 * 5, 39 + 2 * 5, 40 + 2 * 5, 36 + 3 * 5, 37 + 3 * 5, 38 + 3 * 5,
-      39 + 3 * 5, 40 + 3 * 5, 36 + 4 * 5, 37 + 4 * 5, 38 + 4 * 5, 39 + 4 * 5,
-      40 + 4 * 5, 36 + 5 * 5, 37 + 5 * 5, 38 + 5 * 5, 39 + 5 * 5, 40 + 5 * 5,
-      36 + 6 * 5, 37 + 6 * 5, 38 + 6 * 5, 39 + 6 * 5, 40 + 6 * 5,
-  };
   Synthesizer<float> *synth = NULL;
   InputMapping<float> *mapping = NULL;
 
@@ -105,7 +97,7 @@ struct KeyboardUI {
     for (size_t i = 0; i < NUM_KEY_BUTTONS; ++i) {
 
       keyButtons[i] = Button{
-          .labelText = GetNoteName(notes[i]),
+          .label = Label(GetNoteName(mapping->noteMap.notes[i])),
           .shape = AxisAlignedBoundingBox{
               .position = vec2f_t{.x = static_cast<float>(
                                       pageMargin + keySize / 2.0 +
@@ -122,9 +114,11 @@ struct KeyboardUI {
                                const vec2f_t &position, const float pressure) {
     for (size_t i = 0; i < NUM_KEY_BUTTONS; ++i) {
       if (DoButtonHover(&keyButtons[i], position)) {
-        auto bentNote = notes[heldKeys[fingerId]];
-        auto bendDestination = notes[i];
-        synth->bendNote(bentNote, bendDestination);
+        auto bentNote = mapping->noteMap.notes[heldKeys[fingerId]];
+        auto bendDestination = mapping->noteMap.notes[i];
+        // synth->bendNote(bentNote, bendDestination);
+        mapping->emitEvent(synth, KEYBOARD_KEY,
+                           float(i) / float(NUM_KEY_BUTTONS - 1));
         fingerPositions[fingerId] = i;
       }
     }
@@ -144,11 +138,13 @@ struct KeyboardUI {
       // evaluate clicks
       if (DoButtonClick(&keyButtons[i], position, WidgetState::ACTIVE)) {
         // play sound
-        auto note = notes[i];
+        // auto note = mapping->notes[i];
         heldKeys[fingerId] = i;
         // mapping->noteOn(synth, InputType::KEYBOARD_KEY, mtof(note));
         mapping->emitEvent(synth, ContinuousInputType::KEYBOARD_KEY,
-                           float(i) / float(NUM_KEY_BUTTONS));
+                           float(i) / float(NUM_KEY_BUTTONS - 1));
+        // mapping->emitEvent(synth, ContinuousInputType::KEYBOARD_KEY,
+        //                    mtof(note));
         mapping->emitEvent(synth, MomentaryInputType::INSTRUMENT_GATE, 1);
       }
     }
@@ -160,7 +156,7 @@ struct KeyboardUI {
     if (auto buttonIdx = heldKeys[fingerId]) {
       keyButtons[buttonIdx].state = WidgetState::INACTIVE;
       mapping->emitEvent(synth, ContinuousInputType::KEYBOARD_KEY,
-                         float(buttonIdx) / float(NUM_KEY_BUTTONS));
+                         float(buttonIdx) / float(NUM_KEY_BUTTONS - 1));
       mapping->emitEvent(synth, MomentaryInputType::INSTRUMENT_GATE, 0);
       heldKeys.erase(fingerId);
     }
@@ -188,7 +184,7 @@ struct KeyboardUI {
       if (keyButtons[i].state == WidgetState::ACTIVE) {
         keyButtons[i].state = WidgetState::INACTIVE;
         mapping->emitEvent(synth, ContinuousInputType::KEYBOARD_KEY,
-                           float(i) / float(NUM_KEY_BUTTONS));
+                           float(i) / float(NUM_KEY_BUTTONS - 1));
         mapping->emitEvent(synth, MomentaryInputType::INSTRUMENT_GATE, 0);
         heldKeys.clear();
       } else if (keyButtons[i].state == WidgetState::HOVER) {
@@ -199,7 +195,7 @@ struct KeyboardUI {
 
   inline void draw(SDL_Renderer *renderer, const Style &style) {
     for (size_t i = 0; i < NUM_KEY_BUTTONS; i++) {
-      DrawButton(keyButtons[i], renderer, style);
+      DrawButton(&keyButtons[i], renderer, style);
     }
   }
 };

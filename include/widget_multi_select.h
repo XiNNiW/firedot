@@ -6,19 +6,20 @@
 #include "widget_style.h"
 #include <vector>
 
-inline void DrawDropDownButton(const Button &button, SDL_Renderer *renderer,
+inline void DrawDropDownButton(Button *button, SDL_Renderer *renderer,
                                const Style &style) {
 
-  auto rect = SDL_Rect{
-      .x = static_cast<int>(button.shape.position.x - button.shape.halfSize.x),
-      .y = static_cast<int>(button.shape.position.y - button.shape.halfSize.y),
-      .w = static_cast<int>(2 * button.shape.halfSize.x),
-      .h = static_cast<int>(2 * button.shape.halfSize.y)};
+  auto rect = SDL_Rect{.x = static_cast<int>(button->shape.position.x -
+                                             button->shape.halfSize.x),
+                       .y = static_cast<int>(button->shape.position.y -
+                                             button->shape.halfSize.y),
+                       .w = static_cast<int>(2 * button->shape.halfSize.x),
+                       .h = static_cast<int>(2 * button->shape.halfSize.y)};
 
   auto backgroundColor =
-      style.inactiveColor;              // style.getWidgetColor(button.state);
-  auto outlineColor = style.hoverColor; // style.getWidgetColor(button.state);
-  if (button.state == ACTIVE) {
+      style.inactiveColor;              // style.getWidgetColor(button->state);
+  auto outlineColor = style.hoverColor; // style.getWidgetColor(button->state);
+  if (button->state == ACTIVE) {
     outlineColor = style.inactiveColor;
     backgroundColor = style.color1;
   }
@@ -33,10 +34,10 @@ inline void DrawDropDownButton(const Button &button, SDL_Renderer *renderer,
   SDL_RenderDrawRect(renderer, &rect);
 
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-  if (button.labelText.size() > 0) {
+  if (button->label.getText().size() > 0) {
 
-    DrawLabel(button.labelText, style.hoverColor, backgroundColor, rect,
-              renderer, style, HorizontalAlignment::CENTER);
+    button->label.draw(style.hoverColor, backgroundColor, rect, renderer, style,
+                       HorizontalAlignment::CENTER);
   }
 }
 
@@ -66,7 +67,7 @@ struct MultiSelectMenu {
     auto closeButtonSize = vec2f_t{.x = static_cast<float>(width / 8.0),
                                    .y = static_cast<float>(titleBarHeight)};
     closeButton =
-        Button{.labelText = "<- close",
+        Button{.label = Label("<- close"),
                .shape = AxisAlignedBoundingBox{
                    .position = {.x = static_cast<float>(
                                     sideMargin + closeButtonSize.x / 2.0),
@@ -128,29 +129,30 @@ DoMultiSelectClick(MultiSelectMenu *menu, const vec2f_t &position) {
   return MultiSelectMenu::NOTHING;
 }
 
-inline static void DrawMultiSelectMenu(const MultiSelectMenu &menu,
+inline static void DrawMultiSelectMenu(MultiSelectMenu *menu,
                                        SDL_Renderer *renderer,
                                        const Style &style) {
-  if (menu.state == ACTIVE) {
+  if (menu->state == ACTIVE) {
 
     auto screenRect = SDL_Rect{.x = 0,
                                .y = 0,
-                               .w = static_cast<int>(menu.width),
-                               .h = static_cast<int>(menu.height)};
+                               .w = static_cast<int>(menu->width),
+                               .h = static_cast<int>(menu->height)};
 
     SDL_SetRenderDrawColor(renderer, style.inactiveColor.r,
                            style.inactiveColor.g, style.inactiveColor.b, 0xb0);
     SDL_RenderFillRect(renderer, &screenRect);
 
-    DrawButton(menu.closeButton, renderer, style);
-    for (auto &button : menu.options) {
-      DrawDropDownButton(button, renderer, style);
+    DrawButton(&menu->closeButton, renderer, style);
+    for (auto &button : menu->options) {
+      DrawDropDownButton(&button, renderer, style);
     }
     auto titleRect = screenRect;
-    titleRect.h = menu.titleBarHeight;
-    DrawLabel(menu.menuButton.labelText, style.inactiveColor, style.hoverColor,
-              titleRect, renderer, style, HorizontalAlignment::CENTER);
+    titleRect.h = menu->titleBarHeight;
+    menu->menuButton.label.draw(style.inactiveColor, style.hoverColor,
+                                titleRect, renderer, style,
+                                HorizontalAlignment::CENTER);
   } else {
-    DrawButton(menu.menuButton, renderer, style);
+    DrawButton(&menu->menuButton, renderer, style);
   }
 }

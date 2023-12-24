@@ -14,7 +14,20 @@ struct SynthesizerSettings {
 };
 
 struct SaveState {
-  InstrumentMetaphorType instrumentMetaphor;
+  InstrumentMetaphorType instrumentMetaphor = KEYBOARD;
   InputMapping<float> sensorMapping;
   SynthesizerSettings synthesizerSettings;
 };
+
+inline static bool SaveGame(const std::string &filename,
+                            const Synthesizer<float> &synth,
+                            const SaveState &state) {
+  SDL_Log("save state!");
+  return true;
+}
+
+inline bool LoadGame(const std::string &filename, Synthesizer<float> *synth,
+                     SaveState *state) {
+  SDL_Log("load state!");
+  return true;
+}

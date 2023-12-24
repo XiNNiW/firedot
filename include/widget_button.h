@@ -38,7 +38,8 @@ inline void DrawBoxOutline(const AxisAlignedBoundingBox &shape,
 }
 
 struct Button {
-  std::string labelText = "";
+  // std::string labelText = "";
+  Label label = Label();
   AxisAlignedBoundingBox shape =
       AxisAlignedBoundingBox{.position = {0, 0}, .halfSize = {100, 100}};
   WidgetState state = INACTIVE;
@@ -88,26 +89,25 @@ inline const void DrawButton(const Button &button, SDL_Texture *buttonTexture,
 }
 
 inline const void DrawButtonLabel(
-    const Button &button, SDL_Renderer *renderer, const Style &style,
+    Button *button, SDL_Renderer *renderer, const Style &style,
     const HorizontalAlignment horizontalAlignment = HorizontalAlignment::CENTER,
     const VerticalAlignment verticalAlignment = VerticalAlignment::CENTER) {
 
-  auto textColor = style.getWidgetLabelColor(button.state);
-  auto color = style.getWidgetColor(button.state);
-  DrawLabel(button.labelText, textColor, color,
-            ConvertAxisAlignedBoxToSDL_Rect(button.shape), renderer, style,
-            horizontalAlignment, verticalAlignment);
+  auto textColor = style.getWidgetLabelColor(button->state);
+  auto color = style.getWidgetColor(button->state);
+  button->label.draw(textColor, color,
+                     ConvertAxisAlignedBoxToSDL_Rect(button->shape), renderer,
+                     style, horizontalAlignment, verticalAlignment);
 }
-inline const void DrawButton(const Button &button, SDL_Renderer *renderer,
+inline const void DrawButton(Button *button, SDL_Renderer *renderer,
                              const Style &style) {
 
-  if (button.state != HIDDEN) {
-    auto color = style.getWidgetColor(button.state);
-    auto rect = ConvertAxisAlignedBoxToSDL_Rect(button.shape);
+  if (button->state != HIDDEN) {
+    auto color = style.getWidgetColor(button->state);
+    auto rect = ConvertAxisAlignedBoxToSDL_Rect(button->shape);
     DrawFilledRect(rect, renderer, color);
     DrawBoxOutline(rect, renderer, style.color2);
-    if (button.labelText.size() > 0) {
-
+    if (button->label.getText().size() > 0) {
       DrawButtonLabel(button, renderer, style);
     }
   }

@@ -33,7 +33,7 @@ struct AudioSample {
 };
 
 template <typename sample_t> struct SamplerVoice {
-  Parameter<sample_t> frequency;
+  sample_t frequency;
   ASREnvelope<sample_t> env;
   Biquad<sample_t, sample_t> filter;
   sample_t *buffer = NULL;
@@ -73,7 +73,7 @@ template <typename sample_t> struct SamplerVoice {
 
   inline const sample_t next() {
 
-    auto nextFrequency = frequency.next();
+    auto nextFrequency = frequency;
     setFrequency(nextFrequency, sampleRate);
     env.set(attackTime, releaseTime, sampleRate);
 
@@ -101,31 +101,27 @@ template <typename sample_t> struct SamplerVoice {
 };
 
 template <typename sample_t>
-struct Sampler : AbstractPolyphonicSynthesizer<sample_t, Sampler<sample_t>> {
+struct Sampler : AbstractMonophonicSynthesizer<sample_t, Sampler<sample_t>> {
   sample_t *buffer;
   size_t bufferSize;
-  SamplerVoice<sample_t> voices[Sampler::MAX_VOICES];
+  SamplerVoice<sample_t> voice;
 
   inline void setSampleRate(sample_t sr) {
     this->sampleRate = sr;
-    for (auto &voice : this->voices) {
-      voice.setSampleRate(this->sampleRate);
-    }
+    voice.setSampleRate(this->sampleRate);
   }
 
   Sampler<sample_t>(sample_t *_buffer, const size_t &_bufferSize)
       : buffer(_buffer), bufferSize(_bufferSize) {
-    for (auto &voice : this->voices) {
-      voice.buffer = buffer;
-      voice.bufferSize = bufferSize;
-    }
+
+    voice.buffer = buffer;
+    voice.bufferSize = bufferSize;
+
     setSampleRate(this->sampleRate);
   }
 
   inline void setSoundSource(sample_t value) {
     value = clamp<sample_t>(value, 0, 1);
-    for (auto &voice : voices) {
-      // voice.oscMix = value;
-    }
+    // voice.oscMix = value;
   }
 };

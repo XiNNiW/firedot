@@ -198,7 +198,7 @@ template <typename sample_t> struct FM4OpVoice {
 
   sample_t index = 0.1;
 
-  Parameter<sample_t> frequency = Parameter<sample_t>(440.0);
+  sample_t frequency = 440.0;
   sample_t gain = 1.0;
   FMOperator<sample_t> op1;
   FMOperator<sample_t> op2;
@@ -208,7 +208,7 @@ template <typename sample_t> struct FM4OpVoice {
 
   inline const sample_t next() {
 
-    auto nextFrequency = frequency.next();
+    auto nextFrequency = frequency;
 
     int ratioIndex = floor(activeRatio);
 
@@ -267,49 +267,40 @@ template <typename sample_t> struct FM4OpVoice {
 
 template <typename sample_t>
 struct FMSynthesizer
-    : AbstractPolyphonicSynthesizer<sample_t, FMSynthesizer<sample_t>> {
-  FM4OpVoice<sample_t> voices[FMSynthesizer<sample_t>::MAX_VOICES];
+    : AbstractMonophonicSynthesizer<sample_t, FMSynthesizer<sample_t>> {
+  FM4OpVoice<sample_t> voice;
   inline void setFilterCutoff(sample_t value) {
     value = clamp<sample_t>(value, 0, 1);
     value *= value;
     value *= value;
     //  auto fb = lerp<sample_t>(0.0, 1.0, pow(1, value));
-    for (auto &voice : this->voices) {
-      voice.index = value;
-    }
+
+    voice.index = value;
   }
 
   inline void setFilterQuality(sample_t value) {
     value = clamp<sample_t>(value, 0, 1);
     int index = value * (FM4OpVoice<sample_t>::NUM_RATIOS - 1);
 
-    for (auto &voice : this->voices) {
-      voice.activeRatio = index;
-    }
+    voice.activeRatio = index;
   }
   inline void setSoundSource(sample_t value) {
     value = clamp<sample_t>(value, 0, 1);
     sample_t index = value * (FM4OpVoice<sample_t>::NUM_ALGS - 1);
-    for (auto &voice : this->voices) {
-      voice.activeTopology = index;
-    }
+    voice.activeTopology = index;
   }
   inline void setAttackTime(sample_t value) {
     value *= 1000;
-    for (auto &voice : this->voices) {
-      voice.op1.env.setAttackTime(value, this->sampleRate);
-      voice.op2.env.setAttackTime(value, this->sampleRate);
-      voice.op3.env.setAttackTime(value, this->sampleRate);
-      voice.op4.env.setAttackTime(value, this->sampleRate);
-    }
+    voice.op1.env.setAttackTime(value, this->sampleRate);
+    voice.op2.env.setAttackTime(value, this->sampleRate);
+    voice.op3.env.setAttackTime(value, this->sampleRate);
+    voice.op4.env.setAttackTime(value, this->sampleRate);
   }
   inline void setReleaseTime(sample_t value) {
     value *= 1000;
-    for (auto &voice : this->voices) {
-      voice.op1.env.setReleaseTime(value, this->sampleRate);
-      voice.op2.env.setReleaseTime(value, this->sampleRate);
-      voice.op3.env.setReleaseTime(value, this->sampleRate);
-      voice.op4.env.setReleaseTime(value, this->sampleRate);
-    }
+    voice.op1.env.setReleaseTime(value, this->sampleRate);
+    voice.op2.env.setReleaseTime(value, this->sampleRate);
+    voice.op3.env.setReleaseTime(value, this->sampleRate);
+    voice.op4.env.setReleaseTime(value, this->sampleRate);
   }
 };

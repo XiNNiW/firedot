@@ -139,7 +139,7 @@ template <typename sample_t> struct MultiOscillator {
 // };
 
 template <typename sample_t> struct SubtractiveDrumSynthVoice {
-  Parameter<sample_t> frequency;
+  sample_t frequency;
   ClapEnvelope<sample_t> env;
   ADEnvelope<sample_t> timbreEnv;
   ADEnvelope<sample_t> pitchEnv;
@@ -185,7 +185,7 @@ template <typename sample_t> struct SubtractiveDrumSynthVoice {
                   lerp<sample_t>(10, 75, soundSource), sampleRate);
     pitchEnv.set(0, lerp<sample_t>(15, 35, soundSource), sampleRate);
 
-    auto f = frequency.next();
+    auto f = frequency;
     auto pitchEnvSample = pitchEnv.next();
     f += pitchEnvSample * pitchModulationDepth;
     auto f1 = fmax(f - detune * soundSource, 0);
@@ -235,23 +235,17 @@ template <typename sample_t> struct SubtractiveDrumSynthVoice {
 
 template <typename sample_t>
 struct SubtractiveDrumSynth
-    : AbstractPolyphonicSynthesizer<sample_t, SubtractiveDrumSynth<sample_t>> {
+    : AbstractMonophonicSynthesizer<sample_t, SubtractiveDrumSynth<sample_t>> {
 
-  SubtractiveDrumSynthVoice<sample_t> voices[SubtractiveDrumSynth::MAX_VOICES];
-
-  inline void setSoundSource(sample_t value) {
-    value = clamp<sample_t>(value, 0, 1);
-    for (auto &voice : voices) {
-      voice.osc1.oscMix = value;
-    }
-  }
+  SubtractiveDrumSynthVoice<sample_t> voice;
 };
 
 template <typename sample_t> struct SubtractiveVoice {
   sample_t sampleRate = 48000.0;
   sample_t active = false;
-  Parameter<sample_t> frequency = Parameter<sample_t>(440);
+  sample_t frequency = 440;
   sample_t gain = 1;
+  sample_t soundSource = 0;
   sample_t filterCutoff = 19000;
   sample_t filterQuality = 0.1;
   sample_t attackTime = 10;
@@ -276,8 +270,9 @@ template <typename sample_t> struct SubtractiveVoice {
   inline void setGate(sample_t gate) { env.setGate(gate); }
 
   inline const sample_t next() {
-    auto nextFrequency = frequency.next();
+    auto nextFrequency = frequency;
     osc.setFrequency(nextFrequency, sampleRate);
+    osc.oscMix = soundSource;
     auto out = osc.next();
     env.set(attackTime, releaseTime, sampleRate);
     auto envelopeSample = env.next();
@@ -293,7 +288,7 @@ template <typename sample_t> struct SubtractiveVoice {
 
 template <typename sample_t>
 struct SubtractiveSynthesizer
-    : AbstractPolyphonicSynthesizer<sample_t,
+    : AbstractMonophonicSynthesizer<sample_t,
                                     SubtractiveSynthesizer<sample_t>> {
-  SubtractiveVoice<sample_t> voices[SubtractiveSynthesizer::MAX_VOICES];
+  SubtractiveVoice<sample_t> voice;
 };

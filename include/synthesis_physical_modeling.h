@@ -222,7 +222,7 @@ template <typename sample_t> struct KarplusStringVoice {
 
   sample_t exciterMix = 0.5;
   sample_t allpassFilterGain = -0.5;
-  Parameter<sample_t> frequency = Parameter<sample_t>(440);
+  sample_t frequency = 440;
   sample_t feedback = 0.99;
   sample_t b1Coefficient = 1.0;
   sample_t h1 = 1.0;
@@ -254,14 +254,17 @@ template <typename sample_t> struct KarplusStringVoice {
   void setAllpassHarmonic(const sample_t ratio) { h1 = ratio; }
 
   void setSampleRate(sample_t sr) { sampleRate = sr; }
+  void setGate(sample_t gate) {
+    env.setGate(gate);
+    exciterEnvelope.setGate(gate);
+  }
 
   const inline sample_t next() {
 
-    const sample_t freq = frequency.next();
-    const sample_t dtime = (sampleRate / freq);
-    const sample_t allpassDelayTimeSamples = (sampleRate / (h1 * freq));
+    const sample_t dtime = (sampleRate / frequency);
+    const sample_t allpassDelayTimeSamples = (sampleRate / (h1 * frequency));
 
-    exciterTone.setFrequency(freq, sampleRate);
+    exciterTone.setFrequency(frequency, sampleRate);
     sample_t tone = exciterTone.next();
     sample_t noise = exciterNoise.next();
 
@@ -298,31 +301,22 @@ template <typename sample_t> struct KarplusStringVoice {
   }
 };
 
-template <typename sample_t> struct KarplusStrongSynthesizer {
-  static const size_t MAX_VOICES = 8;
+template <typename sample_t>
+struct KarplusStrongSynthesizer
+    : AbstractMonophonicSynthesizer<sample_t,
+                                    KarplusStrongSynthesizer<sample_t>> {
   sample_t gain = 1;
-  KarplusStringVoice<sample_t> voices[MAX_VOICES];
-  int notes[MAX_VOICES] = {-1, -1, -1, -1, -1, -1, -1, -1};
-  size_t voiceIndex = 0;
+  KarplusStringVoice<sample_t> voice;
   sample_t sampleRate = 48000;
 
+  KarplusStrongSynthesizer<sample_t>() { setSampleRate(sampleRate); }
   inline void setSampleRate(sample_t sr) {
     sampleRate = sr;
-    for (auto &voice : voices) {
-      voice.setSampleRate(sampleRate);
-    }
+    voice.setSampleRate(sampleRate);
   }
-
-  KarplusStrongSynthesizer<sample_t>() { setSampleRate(sampleRate); }
-
   inline const sample_t next() {
     sample_t out = 0;
-    for (auto &string : voices) {
-      if (string.active) {
-        out += string.next();
-      }
-    }
-    return (out * gain);
+    return (voice.next() * gain);
   }
 
   inline void process(sample_t *buffer, const size_t bufferSize) {
@@ -331,67 +325,16 @@ template <typename sample_t> struct KarplusStrongSynthesizer {
     }
   }
 
-  inline void note(sample_t frequency, sample_t gain) {
-
-    if (gain > 0) {
-      SDL_Log("phys note on (%f, %f) for %d", frequency, gain, voiceIndex);
-      voices[voiceIndex].frequency.set(frequency, 5, sampleRate);
-      voices[voiceIndex].gain = gain;
-      voices[voiceIndex].exciterTone.phase = 0;
-      voices[voiceIndex].env.setGate(true);
-      voices[voiceIndex].exciterEnvelope.setGate(true);
-      voices[voiceIndex].active = true;
-      notes[voiceIndex] = frequency;
-      voiceIndex = (voiceIndex + 1) % MAX_VOICES;
-    } else {
-      for (size_t i = 0; i < MAX_VOICES; i++) {
-        if (notes[i] == frequency) {
-          voices[i].exciterEnvelope.setGate(false);
-          voices[i].env.setGate(false);
-          notes[i] = -1;
-          break;
-        }
-      }
-    }
-  }
-  inline void bendNote(const sample_t frequency,
-                       const sample_t destinationFrequency) {
-    for (size_t i = 0; i < MAX_VOICES; ++i) {
-      if (notes[i] == frequency) {
-        voices[i].frequency.set(destinationFrequency, 30.0, sampleRate);
-      }
-    }
-  }
   inline void setGain(sample_t value) { gain = value; }
   inline void setFilterCutoff(sample_t value) {
     value = clamp<sample_t>(value, 0, 1);
     value = lerp<sample_t>(0.125, 2, value);
-    for (auto &voice : voices) {
-      voice.h1 = value;
-    }
+    voice.h1 = value;
   }
   inline void setFilterQuality(sample_t value) {
     value = clamp<sample_t>(value, 0, 1);
     value = lerp<sample_t>(-0.999, 0.999, value);
-    for (auto &voice : voices) {
-      voice.allpassFilterGain = value;
-    }
-  }
-  inline void setSoundSource(sample_t value) {
-    for (auto &voice : voices) {
-      voice.soundSource = value;
-    }
-  }
-  inline void setAttackTime(sample_t value) {
-    value *= 1000;
-    for (auto &voice : voices) {
-      voice.attackTime = value;
-    }
-  }
-  inline void setReleaseTime(sample_t value) {
-    value *= 1000;
-    for (auto &voice : voices) {
-      voice.releaseTime = value;
-    }
+
+    voice.allpassFilterGain = value;
   }
 };

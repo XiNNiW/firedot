@@ -1,6 +1,5 @@
 #pragma once
 
-#include "sensor.h"
 #include <algae.h>
 #include <atomic>
 #include <cstddef>
@@ -40,16 +39,6 @@ static const char *getDisplayName(MomentaryParameterType type) {
           "gate"};
   return MomentaryParameterTypeDisplayNames[static_cast<int>(type)];
 }
-
-template <typename sample_t> struct NoteEvent {
-  sample_t frequency = 440;
-  sample_t gate = 0;
-};
-
-template <typename sample_t> struct ParameterChangeEvent {
-  ContinuousParameterType type;
-  sample_t value;
-};
 
 using algae::dsp::filter::SmoothParameter;
 

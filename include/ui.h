@@ -32,7 +32,7 @@ struct UserInterface : public AbstractUI {
             InstrumentSetupUI(synth, sensorMapping, saveState, &navigation)),
         playInstrumentUI(PlayInstrumentUI(synth, sequencer, sensorMapping,
                                           saveState, &navigation)),
-        settingsUI(SettingsMenu(&navigation)) {}
+        settingsUI(SettingsMenu(&navigation, saveState, synth)) {}
 
   inline void buildLayout(const AxisAlignedBoundingBox &shape) {
 
