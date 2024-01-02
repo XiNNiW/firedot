@@ -19,16 +19,17 @@ INCLUDE(FindPkgConfig)
 
 # Searching SDL2 package.
 PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
-find_package(SDL2_image REQUIRED)
+find_package(SDL2_image  REQUIRED)
 find_package(SDL2_ttf REQUIRED)
 
 
+cmake_print_variables(SDL2_INCLUDE_DIRS)
 cmake_print_variables(SDL2_IMAGE_INCLUDE_DIRS)
 cmake_print_variables(SDL2TTF_INCLUDE_DIR)
 cmake_print_variables(SDL2_IMAGE_LIBRARIES)
 cmake_print_variables(SDL2TTF_LIBRARY)
 
-add_compile_definitions(SDL_AUDIODRIVER="jack")
+add_compile_definitions(SDL_AUDIODRIVER="pipewire")
 
 set(ALGAE_INCLUDE_DIRS, "/usr/local/include/")
 set(ALGAE_LIBRARIES, "/usr/local/lib/libalgae.a")
@@ -36,4 +37,5 @@ set(ALGAE_LIBRARIES, "/usr/local/lib/libalgae.a")
 INCLUDE_DIRECTORIES(${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS} ${SDL2TTF_INCLUDE_DIR} ${ALGAE_INCLUDE_DIRS})
 
 # Linking SDL2 library with our project.
-target_link_libraries(keyboard_synth ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${SDL2TTF_LIBRARY} ${ALGAE_LIBRARIES})
+target_link_libraries(keyboard_synth /usr/lib/x86_64-linux-gnu/libSDL2.so /usr/lib/x86_64-linux-gnu/libSDL2_image.so /usr/lib/x86_64-linux-gnu/libSDL2_ttf.so ${ALGAE_LIBRARIES})
+#target_link_libraries(keyboard_synth ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${SDL2TTF_LIBRARY} ${ALGAE_LIBRARIES})

@@ -50,10 +50,6 @@
 
 #include <vector>
 
-#ifndef SDL_AUDIODRIVER
-#define SDL_AUDIODRIVER "jack"
-#endif // !SDL_AUDIODRIVER
-
 // enum class GameState { RUNNING, WAITING_FOR_FRAME_SYNC, PAUSED };
 
 static inline const bool LoadIconTexture(SDL_Renderer *renderer,
@@ -425,14 +421,11 @@ public:
     // config that is saved between runs
     // of the app
 
-    if (std::string(SDL_AUDIODRIVER).compare("jack") == 0) {
+    // if (getenv(SDL_AUDIODRIVER) == NULL) {
 
-      putenv((char *)"SDL_AUDIODRIVER=jack");
-    } else {
-
-      putenv((char *)"SDL_AUDIODRIVER="
-                     "openslES");
-    }
+    //  putenv((char *)"SDL_AUDIODRIVER="
+    //                 "openslES");
+    //}
     return true;
   }
 
