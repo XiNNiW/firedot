@@ -13,6 +13,7 @@
 #include "SDL_timer.h"
 #include "SDL_video.h"
 #include "include/collider.h"
+#include "include/game.h"
 #include "include/game_object.h"
 #include "include/metaphor.h"
 #include "include/physics.h"
@@ -51,25 +52,6 @@
 #include <vector>
 
 // enum class GameState { RUNNING, WAITING_FOR_FRAME_SYNC, PAUSED };
-
-static inline const bool LoadIconTexture(SDL_Renderer *renderer,
-                                         std::string path,
-                                         SDL_Texture *texture) {
-
-  SDL_Surface *surface = IMG_Load(path.c_str());
-  texture = SDL_CreateTextureFromSurface(renderer, surface);
-  SDL_FreeSurface(surface);
-
-  if (texture == NULL) {
-    SDL_LogError(0,
-                 "Unable to load image %s! "
-                 "SDL Error: %s\n",
-                 path.c_str(), SDL_GetError());
-    return false;
-  } else {
-    return true;
-  }
-}
 
 inline void FreeSampleInfo(AudioSample *sampleInfo) {
   // free(sampleInfo->buffer);
@@ -240,15 +222,7 @@ public:
       return false;
     }
 
-    auto font = TTF_OpenFont("fonts/Roboto-Medium.ttf", 36);
-    if (font == NULL) {
-      SDL_LogError(0, "failed to load font: %s\n", SDL_GetError());
-      return false;
-    }
-
-    style = Style{
-        .font = font,
-    };
+    style = new Style(renderer);
 
     if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0)
       SDL_LogError(0, "SDL_audio could not initialize! Error: %s\n",
@@ -325,17 +299,20 @@ public:
     synth.setReleaseTime(1);
     synth.activeSample = audioSample;
 
+    saveState.setInstrumentMetaphor(KEYBOARD);
+    saveState.sensorMapping.addMapping(TILT,
+                                       ContinuousParameterType::SOUND_SOURCE);
+
+    saveState.sensorMapping.addMapping(KEYBOARD_KEY,
+                                       ContinuousParameterType::FREQUENCY);
+    saveState.sensorMapping.addMapping(ACCELERATION,
+                                       ContinuousParameterType::FILTER_CUTOFF);
+
     userInterface.buildLayout(
         {.position = {.x = static_cast<float>(width / 2.0),
                       .y = static_cast<float>(height / 2.0)},
          .halfSize = {.x = static_cast<float>(width / 2.0),
                       .y = static_cast<float>(height / 2.0)}});
-
-    sensorMapping.addMapping(TILT, ContinuousParameterType::SOUND_SOURCE);
-    sensorMapping.addMapping(INSTRUMENT_GATE, MomentaryParameterType::GATE);
-    sensorMapping.addMapping(KEYBOARD_KEY, ContinuousParameterType::FREQUENCY);
-    sensorMapping.addMapping(ACCELERATION,
-                             ContinuousParameterType::FILTER_CUTOFF);
 
     SDL_PauseAudioDevice(audioDeviceID, 0); // start playback
 
@@ -370,8 +347,10 @@ public:
     menuIcon = NULL;
     SDL_DestroyTexture(synthSelectIcon);
     synthSelectIcon = NULL;
-    TTF_CloseFont(style.font);
-    style.font = NULL;
+    delete style;
+    style = NULL;
+    // TTF_CloseFont(style.font);
+    // style.font = NULL;
     TTF_Quit();
     IMG_Quit();
     SDL_Quit();
@@ -429,28 +408,11 @@ public:
     return true;
   }
 
-  bool loadMedia() {
-
-    if (!LoadIconTexture(renderer, "images/p04_shape1.bmp", gCursor)) {
-      return false;
-    }
-
-    if (!LoadIconTexture(renderer, "images/menu-burger-svgrepo-com.svg",
-                         menuIcon)) {
-      return false;
-    }
-
-    if (!LoadIconTexture(renderer, "images/colour-tuneing-svgrepo-com.svg",
-                         synthSelectIcon)) {
-      return false;
-    }
-
-    return true;
-  }
+  bool loadMedia() { return true; }
 
   void update(SDL_Event &event) {
     // frame rate sync
-    auto deltaTimeMilliseconds = SDL_GetTicks() - lastFrameTime;
+    double deltaTimeMilliseconds = SDL_GetTicks() - lastFrameTime;
     //  auto timeToWait = FRAME_DELTA_MILLIS - deltaTimeMilliseconds;
     frameDeltaTimeSeconds = deltaTimeMilliseconds / 1000.0;
     //  if ((timeToWait > 0) && (timeToWait < FRAME_DELTA_MILLIS)) {
@@ -458,16 +420,24 @@ public:
     //  }
     lastFrameTime = SDL_GetTicks();
 
-    if (saveState.instrumentMetaphor == InstrumentMetaphorType::SEQUENCER) {
+    switch (saveState.getInstrumentMetaphorType()) {
+    case KEYBOARD:
+      break;
+    case SEQUENCER:
       sequencer.update(frameDeltaTimeSeconds);
+      break;
+    case TOUCH_PAD:
+      break;
+    case GAME:
+      game.update(frameDeltaTimeSeconds);
+      break;
+    default:
+      break;
     }
+
     handleEvents(event);
     if (event.type == SDL_QUIT || (!renderIsOn))
       return;
-
-    updatePhysics(event);
-
-    evaluateGameRules(event);
   }
 
   void handleEvents(SDL_Event &event) {
@@ -561,8 +531,8 @@ public:
           ss << "sensor: " << sensorName << " " << event.sensor.data[0] << ", "
              << event.sensor.data[1] << ", " << event.sensor.data[2];
 
-          physics.gravity = vec2f_t{.x = event.sensor.data[0] * -3,
-                                    .y = event.sensor.data[1] * 3};
+          game.physics.gravity = vec2f_t{.x = event.sensor.data[0] * -3,
+                                         .y = event.sensor.data[1] * 3};
           auto acc3 = vec3f_t{.x = event.sensor.data[0] * -1,
                               .y = event.sensor.data[1],
                               .z = event.sensor.data[2]}
@@ -570,9 +540,8 @@ public:
 
           auto accVector = vec2f_t{.x = acc3.x, .y = acc3.y};
 
-          // synth.setSoundSource(accVector.length());
-          sensorMapping.emitEvent(&synth, ContinuousInputType::TILT,
-                                  accVector.length());
+          saveState.sensorMapping.emitEvent(&synth, ContinuousInputType::TILT,
+                                            accVector.length());
 
           break;
         }
@@ -582,18 +551,9 @@ public:
           auto velocity = vec3f_t{.x = event.sensor.data[0],
                                   .y = event.sensor.data[1],
                                   .z = event.sensor.data[2]};
-          sensorMapping.emitEvent(&synth, ContinuousInputType::ACCELERATION,
-                                  clip<float>(velocity.length()));
-          // SDL_LogInfo(0, "%s", ss.str().c_str());
-          // sensorMapping.emitEvent(&synth, ContinuousInputType::ROLL,
-          //                        fmax(0, fmin(1,
-          //                        abs(event.sensor.data[0]))));
-          // sensorMapping.emitEvent(&synth, ContinuousInputType::PITCH,
-          //                        fmax(0, fmin(1,
-          //                        abs(event.sensor.data[1]))));
-          // sensorMapping.emitEvent(&synth, ContinuousInputType::YAW,
-          //                        fmax(0, fmin(1,
-          //                        abs(event.sensor.data[2]))));
+          saveState.sensorMapping.emitEvent(&synth,
+                                            ContinuousInputType::ACCELERATION,
+                                            clip<float>(velocity.length()));
           break;
         }
         default:
@@ -607,12 +567,6 @@ public:
     // aoshd
   }
 
-  void updatePhysics(SDL_Event &event) {
-    physics.update(frameDeltaTimeSeconds, &gameObjects);
-  }
-
-  void evaluateGameRules(SDL_Event &event) {}
-
   void draw(SDL_Event &event) {
     // drawing code here
     if (event.type == SDL_QUIT || (!renderIsOn))
@@ -622,7 +576,7 @@ public:
     for (auto object : gameObjects) {
     }
 
-    userInterface.draw(renderer, style);
+    userInterface.draw(renderer, *style);
     SDL_RenderPresent(renderer);
   }
 
@@ -646,20 +600,20 @@ private:
   GameObject *wall1, *wall2, *wall3, *wall4;
   AudioSample *audioSample = NULL;
 
-  Style style;
+  Style *style = NULL;
   SDL_Texture *menuIcon = NULL;
   SDL_Texture *synthSelectIcon = NULL;
 
   // Model objects
   Synthesizer<float> synth;
-  InputMapping<float> sensorMapping;
-  Sequencer sequencer = Sequencer(&synth, &sensorMapping);
 
   SaveState saveState;
+  Sequencer sequencer = Sequencer(&synth, &saveState);
+  Game game = Game(&saveState.sensorMapping, &synth);
 
   // UI objects
   UserInterface userInterface =
-      UserInterface(&synth, &sensorMapping, &sequencer, &saveState);
+      UserInterface(&synth, &sequencer, &game, &saveState);
 
   SDL_Color textColor = {20, 20, 20};
   SDL_Color textBackgroundColor = {0, 0, 0};
@@ -678,7 +632,6 @@ private:
   bool renderIsOn = true;
   int audioDeviceID = -1;
   double previousAccelerationZ = 9.8;
-  Physics physics;
   double frameDeltaTimeSeconds;
 };
 

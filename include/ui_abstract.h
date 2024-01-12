@@ -6,6 +6,8 @@
 #include "widget_style.h"
 class AbstractUI {
 public:
+  AxisAlignedBoundingBox shape;
+  virtual inline void refreshLayout() { buildLayout(shape); }
   virtual void buildLayout(const AxisAlignedBoundingBox &shape) = 0;
 
   virtual void handleFingerMove(const SDL_FingerID &fingerId,

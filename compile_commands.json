@@ -2,17 +2,16 @@
   {
     "arguments": [
       "/usr/bin/c++",
-      "-DSDL_AUDIODRIVER=\"jack\"",
       "-I/usr/include/SDL2",
       "-std=c++17",
       "-g",
       "-c",
       "-o",
-      "CMakeFiles/imu_synth.dir/main.cpp.o",
+      "CMakeFiles/keyboard_synth.dir/main.cpp.o",
       "/home/xinniw/Development/THESIS-sustainable_computing-dev/keyboard_synth/main.cpp"
     ],
     "directory": "/home/xinniw/Development/THESIS-sustainable_computing-dev/keyboard_synth/build",
     "file": "/home/xinniw/Development/THESIS-sustainable_computing-dev/keyboard_synth/main.cpp",
-    "output": "/home/xinniw/Development/THESIS-sustainable_computing-dev/keyboard_synth/build/CMakeFiles/imu_synth.dir/main.cpp.o"
+    "output": "/home/xinniw/Development/THESIS-sustainable_computing-dev/keyboard_synth/build/CMakeFiles/keyboard_synth.dir/main.cpp.o"
   }
 ]

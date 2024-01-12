@@ -139,7 +139,6 @@ template <typename sample_t> struct MultiOscillator {
 // };
 
 template <typename sample_t> struct SubtractiveDrumSynthVoice {
-  sample_t frequency;
   ClapEnvelope<sample_t> env;
   ADEnvelope<sample_t> timbreEnv;
   ADEnvelope<sample_t> pitchEnv;
@@ -150,17 +149,18 @@ template <typename sample_t> struct SubtractiveDrumSynthVoice {
   Biquad<sample_t, sample_t> hp1;
   MultiOscillator<sample_t> osc1;
   MultiOscillator<sample_t> osc2;
+  sample_t frequency = 440;
   sample_t attackTime = 1;
   sample_t releaseTime = 1000;
   sample_t soundSource = 0;
-  sample_t filterCutoff = 0;
+  sample_t filterCutoff = 19000;
   sample_t filterQuality = 0;
   sample_t detune = 15;
   sample_t pitchModulationDepth = 1000;
-  sample_t phi = 0;
-  sample_t gain = 0;
-  sample_t active = 0;
+  sample_t gain = 1;
+  sample_t active = false;
   sample_t sampleRate = 48000;
+  sample_t phi = 0;
 
   SubtractiveDrumSynthVoice() { init(); }
 
@@ -171,7 +171,9 @@ template <typename sample_t> struct SubtractiveDrumSynthVoice {
     pitchEnv.set(0, 25, sampleRate);
   }
 
-  inline void setSampleRate(sample_t _sampleRate) { sampleRate = _sampleRate; }
+  inline void setSampleRate(sample_t sampleRate) {
+    this->sampleRate = sampleRate;
+  }
   inline void setGate(sample_t gate) {
     env.setGate(gate);
     pitchEnv.setGate(gate);
@@ -202,7 +204,7 @@ template <typename sample_t> struct SubtractiveDrumSynthVoice {
     lp1.lowpass(pitchEnvSample * pitchModulationDepth +
                     lerp<sample_t>(65, 10000, soundSource),
                 1 - pitchEnvSample, sampleRate);
-    lp2.lowpass(15000 * filterCutoff, 0.01, sampleRate);
+    lp2.lowpass(filterCutoff, 0.01, sampleRate);
     auto bp1Freq = lerp<sample_t>(100, 10000, soundSource);
     auto bp2Freq = bp1Freq - detune;
     bp1Freq += detune;
@@ -214,22 +216,19 @@ template <typename sample_t> struct SubtractiveDrumSynthVoice {
     out += lp1.next(oscillatorSample) * (1 - soundSource);
     out = lp2.next(out);
     out = hp1.next(out);
-
-    // auto out = oscillatorSample;
+    out *= 4;
 
     env.set(attackTime + soundSource * 30, releaseTime, sampleRate);
     auto envelopeSample = env.next();
     envelopeSample *= envelopeSample;
     envelopeSample *= envelopeSample;
     envelopeSample *= envelopeSample;
-    // envelopeSample *= envelopeSample;
 
     if (env.stage == ClapEnvelope<sample_t>::OFF) {
       active = false;
     }
-    // SDL_Log("val: %f", f);
 
-    return clip(out * (envelopeSample + (pitchEnvSample * 2))) * gain;
+    return clip(out * (envelopeSample + (pitchEnvSample * 4))) * gain;
   }
 };
 

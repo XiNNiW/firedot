@@ -1,7 +1,9 @@
 #pragma once
+#include "collider.h"
 #include "game_object.h"
 #include "vector_math.h"
 #include <cfloat>
+#include <memory>
 #include <optional>
 #include <vector>
 
@@ -15,121 +17,14 @@ class Physics {
 public:
   vec2f_t gravity = vec2f_t{.x = 0, .y = 0};
   double pixelPerMeter = 1000;
-  void update(const float deltaTimeSeconds,
-              std::vector<GameObject *> *gameObjects) {
+  void update(const double deltaTimeSeconds,
+              std::vector<std::unique_ptr<GameObject>> *gameObjects) {
     updatePositions(deltaTimeSeconds, gameObjects);
     detectCollisions(gameObjects);
     handleCollisions();
   }
 
   const std::vector<collision_t> &getCollisions() { return collisions; }
-  static inline std::optional<vec2f_t>
-  intersection(const CircleCollider &circle1, const CircleCollider &circle2) {
-    auto seperationVector = circle1.position.subtract(circle2.position);
-    auto distance = seperationVector.length();
-    auto sumOfRadii = (circle1.radius + circle2.radius);
-    if (distance > sumOfRadii) {
-      return std::nullopt;
-    }
-    auto overlap = distance - sumOfRadii;
-    auto minTranslationVector = seperationVector.norm().scale(overlap);
-    return minTranslationVector;
-  }
-  static inline std::optional<vec2f_t>
-  intersection(const CircleCollider &circle, const OrientedBoundingBox &box) {
-    auto boxVertices = box.vertices();
-    auto axes =
-        std::array<vec2f_t, 4>({box.axisX,
-                                {.x = -box.axisX.x, .y = -box.axisX.y},
-                                box.axisY,
-                                {.x = -box.axisY.x, .y = -box.axisY.y}});
-
-    float minOverlap = MAXFLOAT;
-    vec2f_t minAxis;
-
-    // for each axis project all vertices and detect overlap
-    for (auto &axis : axes) {
-
-      auto toEdge = axis.scale(circle.radius);
-      auto circleEdgePoint1 = circle.position.add(toEdge);
-      auto circleEdgePoint2 = circle.position.subtract(toEdge);
-      auto proj1 = circleEdgePoint1.dot(axis);
-      auto proj2 = circleEdgePoint2.dot(axis);
-      auto circleProjection = projection_t{.minimum = std::min(proj1, proj2),
-                                           .maximum = std::max(proj1, proj2)};
-
-      auto boxProjection = projection_t{.minimum = FLT_MAX, .maximum = FLT_MIN};
-      for (auto &vertex : boxVertices) {
-        auto proj = vertex.dot(axis);
-        boxProjection.minimum = std::min(boxProjection.minimum, proj);
-        boxProjection.maximum = std::max(boxProjection.maximum, proj);
-      }
-      auto overlap = circleProjection.overlap(boxProjection);
-
-      if (overlap == 0) {
-        return std::nullopt;
-      } else if (overlap < minOverlap) {
-        minOverlap = overlap;
-        minAxis = axis;
-      }
-    }
-    // auto minTranslationVector = minAxis.scale(minOverlap);
-
-    auto minTranslationVector = minAxis.scale(minOverlap);
-    return minTranslationVector;
-  }
-
-  static inline std::optional<vec2f_t>
-  intersection(const OrientedBoundingBox &box1,
-               const OrientedBoundingBox &box2) {
-
-    // detect intersection using seperating axis theorem
-    auto box1Vertices = box1.vertices();
-    auto box2Vertices = box2.vertices();
-    constexpr size_t NUM_VERTICES = 4;
-    constexpr size_t NUM_AXES = 4;
-    auto axes = std::array<vec2f_t, NUM_AXES>(
-        {box1.axisX, box1.axisY, box2.axisX, box2.axisY});
-    auto minTranslationVector = axes.at(0);
-    float minOverlap = MAXFLOAT;
-
-    // for each axis project all vertices and detect overlap
-    for (size_t a = 0; a < NUM_AXES; a++) {
-      auto axis = axes[a];
-      auto minBox1Projection = axis.dot(box1Vertices.at(0));
-      // auto maxBox1Projection = minBox1Projection;
-      auto box1Projection = projection_t{.minimum = minBox1Projection,
-                                         .maximum = minBox1Projection};
-
-      auto minBox2Projection = axis.dot(box2Vertices.at(0));
-      // auto maxBox2Projection = minBox2Projection;
-      auto box2Projection = projection_t{.minimum = minBox2Projection,
-                                         .maximum = minBox2Projection};
-      for (size_t i = 1; i < NUM_VERTICES; i++) {
-        auto projection1 = axis.dot(box1Vertices[i]);
-        auto projection2 = axis.dot(box2Vertices[i]);
-        box1Projection.minimum = std::min(box1Projection.minimum, projection1);
-        box1Projection.maximum = std::max(box1Projection.maximum, projection1);
-        box2Projection.minimum = std::min(box2Projection.minimum, projection2);
-        box2Projection.maximum = std::max(box2Projection.maximum, projection2);
-      }
-
-      auto overlap = box1Projection.overlap(box2Projection);
-
-      if (overlap == 0) {
-        // no overlap! found seperating axis... these shapes are not touching
-        return std::nullopt;
-      }
-      if (overlap < minOverlap) {
-        minOverlap = overlap;
-        minTranslationVector = axis;
-      }
-    }
-
-    // no seperating axis was found... return the vector to get the colliding
-    // shape out of the other one (minTranslationVector)
-    return minTranslationVector.scale(minOverlap);
-  }
 
 private:
   struct projection_t {
@@ -190,7 +85,7 @@ private:
     // r=d−2(d⋅n)n
     auto n = minTranslationVector.norm();
     auto d = p1->velocity;
-    auto r = d.subtract(n.scale(2 * d.dot(n)));
+    auto r = d.subtract(n.scale(2.0 * d.dot(n)));
 
     // update velocity with some loss
     float loss = 0.9;
@@ -200,16 +95,20 @@ private:
   // dont need to handle this
   // void interact(Wall *w1, Wall *w2) {}
 
-  void updatePositions(const float deltaTimeSeconds,
-                       std::vector<GameObject *> *gameObjects) {
+  void updatePositions(const double deltaTimeSeconds,
+                       std::vector<std::unique_ptr<GameObject>> *gameObjects) {
     for (size_t i = 0; i < gameObjects->size(); i++) {
-      auto object = gameObjects->at(i);
+      auto &object = gameObjects->at(i);
       switch (object->type) {
-      case GameObject::PARTICLE:
+      case GameObject::PARTICLE: {
         object->object.particle.velocity = object->object.particle.velocity.add(
             gravity.scale(deltaTimeSeconds));
-        object->object.particle.update(deltaTimeSeconds, pixelPerMeter);
+        auto *collider = object->getCollider();
+        object->setPosition(collider->getPosition().add(
+            object->object.particle.velocity.scale(deltaTimeSeconds)
+                .scale(pixelPerMeter)));
         break;
+      }
       case GameObject::WALL:
         break;
       }
@@ -219,6 +118,7 @@ private:
     for (auto &collision : collisions) {
       auto object1 = collision.object1;
       auto object2 = collision.object2;
+
       switch (object1->type) {
       case GameObject::PARTICLE: {
         auto particle1 = &object1->object.particle;
@@ -251,13 +151,14 @@ private:
       }
     }
   }
-  void detectCollisions(const std::vector<GameObject *> *gameObjects) {
+  void detectCollisions(
+      const std::vector<std::unique_ptr<GameObject>> *gameObjects) {
     collisions.clear();
     for (size_t i = 0; i < gameObjects->size(); i++) {
       for (size_t j = i + 1; j < gameObjects->size(); j++) {
 
-        auto object1 = gameObjects->at(i);
-        auto object2 = gameObjects->at(j);
+        auto &object1 = gameObjects->at(i);
+        auto &object2 = gameObjects->at(j);
 
         switch (object1->type) {
         case GameObject::PARTICLE: {
@@ -268,8 +169,8 @@ private:
             auto mvt = particle1->collider.intersection(particle2->collider);
             if (mvt.has_value()) {
               collisions.push_back(
-                  collision_t{.object1 = object1,
-                              .object2 = object2,
+                  collision_t{.object1 = object1.get(),
+                              .object2 = object2.get(),
                               .minimumTranslationVector = mvt.value()});
             }
             break;
@@ -279,8 +180,8 @@ private:
             auto mvt = particle1->collider.intersection(wall2->collider);
             if (mvt.has_value()) {
               collisions.push_back(
-                  collision_t{.object1 = object1,
-                              .object2 = object2,
+                  collision_t{.object1 = object1.get(),
+                              .object2 = object2.get(),
                               .minimumTranslationVector = mvt.value()});
             }
             break;
@@ -296,8 +197,8 @@ private:
             auto mvt = particle2->collider.intersection(wall1->collider);
             if (mvt.has_value()) {
               collisions.push_back(
-                  collision_t{.object1 = object2,
-                              .object2 = object1,
+                  collision_t{.object1 = object2.get(),
+                              .object2 = object1.get(),
                               .minimumTranslationVector = mvt.value()});
             }
 

@@ -11,17 +11,21 @@
 #include "vector_math.h"
 #include "widget_button.h"
 #include <sstream>
+#include <vector>
 
 struct MappingUI {
-  InputMapping<float> *sensorMapping = NULL;
   SaveState *saveState = NULL;
-  Label *pageTitleLabel = new Label("choose your abilities!");
-  std::map<MomentaryInputType, Button> momentaryInputButtons;
-  std::map<ContinuousInputType, Button> sensorButtons;
+  Label pageTitleLabel = Label("choose your abilities!");
+  Label momentaryInputLabel = Label("momentary inputs");
+  Label continuousInputLabel = Label("continuous inputs");
+
+  std::map<MomentaryInputType, Button> momentaryInputButtons =
+      std::map<MomentaryInputType, Button>();
+  std::map<ContinuousInputType, Button> continuousInputButtons =
+      std::map<ContinuousInputType, Button>();
+
   Button parameterButtons[NUM_PARAMETER_TYPES];
   Button momentaryParameterButtons[NUM_MOMENTARY_PARAMETER_TYPES];
-
-  AxisAlignedBoundingBox pageTitleLabelShape;
 
   AxisAlignedBoundingBox shape;
   AxisAlignedBoundingBox bodyShape;
@@ -32,92 +36,127 @@ struct MappingUI {
   int heldMomentarySensor = -1;
   vec2f_t lastMousePosition;
 
-  MappingUI(InputMapping<float> *_mapping, SaveState *_saveState)
-      : sensorMapping(_mapping), saveState(_saveState) {}
+  MappingUI(SaveState *_saveState) : saveState(_saveState) {}
 
-  ~MappingUI() { delete pageTitleLabel; }
+  ~MappingUI() {}
 
   void refreshLayout() { buildLayout(shape); }
   void buildLayout(const AxisAlignedBoundingBox &shape) {
+    momentaryInputButtons.clear();
+    continuousInputButtons.clear();
+    std::vector<MomentaryInputType> momentaryInputTypes;
+    std::vector<ContinuousInputType> continuousInputTypes;
+    getMomentaryInputsForInstrumentType(saveState->getInstrumentMetaphorType(),
+                                        &momentaryInputTypes);
+    getContinuousInputsForInstrumentType(saveState->getInstrumentMetaphorType(),
+                                         &continuousInputTypes);
+
+    auto maxNumButtons =
+        std::max(momentaryInputTypes.size() + continuousInputTypes.size() +
+                     NUM_SENSOR_INPUT_TYPES,
+                 NUM_PARAMETER_TYPES + 2);
     this->shape = shape;
+
     auto pageLabelHeight = 50;
+
     auto topPosition = shape.position.y - shape.halfSize.y;
-    pageTitleLabelShape = AxisAlignedBoundingBox{
+    pageTitleLabel.shape = AxisAlignedBoundingBox{
         .position = {.x = shape.position.x,
                      .y = topPosition +
                           static_cast<float>(pageLabelHeight / 2.0)},
         .halfSize = {.x = shape.halfSize.x,
-                     .y = topPosition +
-                          static_cast<float>(pageLabelHeight / 2.0)}};
+                     .y = static_cast<float>(pageLabelHeight / 2.0)}};
     bodyShape = AxisAlignedBoundingBox{
         .position = {.x = shape.position.x,
                      .y = shape.position.y + pageLabelHeight},
         .halfSize = {
             .x = shape.halfSize.x,
             .y = static_cast<float>(shape.halfSize.y - pageLabelHeight / 2.0)}};
+
     auto width = (bodyShape.halfSize.x * 2);
     auto height = (bodyShape.halfSize.y * 2);
     auto xOffset = bodyShape.position.x - bodyShape.halfSize.x;
     auto yOffset = bodyShape.position.y - bodyShape.halfSize.y;
 
-    auto buttonHalfSize = vec2f_t{.x = 150, .y = 75};
-    auto sensorButtonSpaceY =
-        height / float(NUM_CONTINUOUS_INPUT_TYPES + NUM_MOMENTARY_INPUT_TYPES);
-    auto parameterButtonSpaceY =
-        height / float(NUM_PARAMETER_TYPES + NUM_MOMENTARY_PARAMETER_TYPES);
-    int inputButtonCounter = 0;
+    auto buttonHalfSize = vec2f_t{.x = bodyShape.halfSize.x / 3,
+                                  .y = (bodyShape.halfSize.y - pageLabelHeight -
+                                        (buttonMargin * maxNumButtons)) /
+                                       maxNumButtons};
+    auto buttonSpace = buttonMargin + buttonHalfSize.y * 2;
 
-    for (auto inputType : MomentaryInputTypes) {
-      momentaryInputButtons[inputType] = Button{
-          .label = Label(getDisplayName(inputType)),
-          .shape = AxisAlignedBoundingBox{
-              .position = {.x = buttonHalfSize.x + xOffset,
-                           .y = inputButtonCounter++ * sensorButtonSpaceY +
-                                buttonHalfSize.y + yOffset},
-              .halfSize = buttonHalfSize}};
+    auto yPos = yOffset + 5;
+
+    momentaryInputLabel.shape = AxisAlignedBoundingBox{
+        .position = {.x = xOffset + bodyShape.halfSize.x / 3 + sideMargin,
+                     .y = yPos + static_cast<float>(pageLabelHeight +
+                                                    buttonMargin / 2)},
+        .halfSize = {.x = bodyShape.halfSize.x / 3,
+                     .y = static_cast<float>(pageLabelHeight / 2.0)}};
+    yPos = momentaryInputLabel.shape.position.y +
+           momentaryInputLabel.shape.halfSize.y + buttonHalfSize.y +
+           buttonMargin;
+
+    for (auto inputType : momentaryInputTypes) {
+      momentaryInputButtons[inputType] =
+          Button{.label = Label(getDisplayName(inputType)),
+                 .shape = AxisAlignedBoundingBox{
+                     .position = {.x = buttonHalfSize.x + xOffset, .y = yPos},
+                     .halfSize = buttonHalfSize}};
+      yPos += buttonSpace;
     }
 
-    for (auto &sensorType : InstrumentInputTypes) {
-      if (isInstrumentInputType(saveState->instrumentMetaphor, sensorType)) {
-        sensorButtons[sensorType] = Button{
-            .label = Label(getDisplayName(sensorType)),
-            .shape = AxisAlignedBoundingBox{
-                .position = {.x = buttonHalfSize.x + xOffset,
-                             .y = inputButtonCounter++ * sensorButtonSpaceY +
-                                  buttonHalfSize.y + yOffset},
-                .halfSize = buttonHalfSize}};
-      }
+    continuousInputLabel.shape = AxisAlignedBoundingBox{
+        .position = {.x = xOffset + bodyShape.halfSize.x / 3 + sideMargin,
+                     .y = yPos + static_cast<float>(pageLabelHeight +
+                                                    buttonMargin / 2)},
+        .halfSize = {.x = bodyShape.halfSize.x / 3,
+                     .y = static_cast<float>(pageLabelHeight / 2.0)}};
+    yPos = continuousInputLabel.shape.position.y +
+           continuousInputLabel.shape.halfSize.y + buttonHalfSize.y +
+           buttonMargin;
+
+    for (auto &sensorType : continuousInputTypes) {
+      continuousInputButtons[sensorType] =
+          Button{.label = Label(getDisplayName(sensorType)),
+                 .shape = AxisAlignedBoundingBox{
+                     .position = {.x = buttonHalfSize.x + xOffset, .y = yPos},
+                     .halfSize = buttonHalfSize}};
+      yPos += buttonSpace;
     }
 
     for (auto &sensorType : SensorInputTypes) {
-      sensorButtons[sensorType] = Button{
-          .label = Label(getDisplayName(sensorType)),
-          .shape = AxisAlignedBoundingBox{
-              .position = {.x = buttonHalfSize.x + xOffset,
-                           .y = inputButtonCounter++ * sensorButtonSpaceY +
-                                buttonHalfSize.y + yOffset},
-              .halfSize = buttonHalfSize}};
+      continuousInputButtons[sensorType] =
+          Button{.label = Label(getDisplayName(sensorType)),
+                 .shape = AxisAlignedBoundingBox{
+                     .position = {.x = buttonHalfSize.x + xOffset, .y = yPos},
+                     .halfSize = buttonHalfSize}};
+      yPos += buttonSpace;
     }
 
-    int outputButtonCounter = 0;
+    yPos = momentaryInputLabel.shape.position.y +
+           momentaryInputLabel.shape.halfSize.y + buttonHalfSize.y +
+           buttonMargin;
+
     for (auto &parameterType : MomentaryParameterTypes) {
       momentaryParameterButtons[parameterType] = Button{
           .label = Label(getDisplayName(parameterType)),
           .shape = AxisAlignedBoundingBox{
-              .position = {.x = width - buttonHalfSize.x + xOffset,
-                           .y = outputButtonCounter++ * parameterButtonSpaceY +
-                                buttonHalfSize.y + yOffset},
+              .position = {.x = width - buttonHalfSize.x + xOffset, .y = yPos},
               .halfSize = buttonHalfSize}};
+      yPos += buttonSpace;
     }
+
+    yPos = continuousInputLabel.shape.position.y +
+           continuousInputLabel.shape.halfSize.y + buttonHalfSize.y +
+           buttonMargin;
 
     for (auto &parameterType : ParameterTypes) {
       parameterButtons[parameterType] = Button{
           .label = Label(getDisplayName(parameterType)),
           .shape = AxisAlignedBoundingBox{
-              .position = {.x = width - buttonHalfSize.x + xOffset,
-                           .y = outputButtonCounter++ * parameterButtonSpaceY +
-                                buttonHalfSize.y + yOffset},
+              .position = {.x = width - buttonHalfSize.x + xOffset, .y = yPos},
               .halfSize = buttonHalfSize}};
+      yPos += buttonSpace;
     }
   }
 
@@ -137,8 +176,9 @@ struct MappingUI {
       }
     }
     for (auto &sensorType : ContinuousInputTypes) {
-      if ((sensorButtons.find(sensorType) != sensorButtons.end()) &&
-          DoButtonClick(&sensorButtons[sensorType], mousePosition)) {
+      if ((continuousInputButtons.find(sensorType) !=
+           continuousInputButtons.end()) &&
+          DoButtonClick(&continuousInputButtons[sensorType], mousePosition)) {
         heldSensor = sensorType;
       }
     }
@@ -146,14 +186,14 @@ struct MappingUI {
     for (auto &parameterType : ParameterTypes) {
       if (DoButtonClick(&parameterButtons[parameterType], mousePosition)) {
 
-        sensorMapping->removeMappingForParameterType(parameterType);
+        saveState->sensorMapping.removeMappingForParameterType(parameterType);
       }
     }
     for (auto &parameterType : MomentaryParameterTypes) {
       if (DoButtonClick(&momentaryParameterButtons[parameterType],
                         mousePosition)) {
 
-        sensorMapping->removeMappingForParameterType(parameterType);
+        saveState->sensorMapping.removeMappingForParameterType(parameterType);
       }
     }
   }
@@ -164,8 +204,8 @@ struct MappingUI {
       if ((heldSensor > -1)) {
         if (DoButtonClick(&parameterButtons[parameterType], mousePosition)) {
 
-          sensorMapping->addMapping((ContinuousInputType)heldSensor,
-                                    parameterType);
+          saveState->sensorMapping.addMapping((ContinuousInputType)heldSensor,
+                                              parameterType);
         } else {
           SDL_Log("remove mapping!");
         }
@@ -176,8 +216,8 @@ struct MappingUI {
         if (DoButtonClick(&momentaryParameterButtons[parameterType],
                           mousePosition)) {
 
-          sensorMapping->addMapping((MomentaryInputType)heldMomentarySensor,
-                                    parameterType);
+          saveState->sensorMapping.addMapping(
+              (MomentaryInputType)heldMomentarySensor, parameterType);
         } else {
           SDL_Log("remove mapping!");
         }
@@ -195,62 +235,74 @@ struct MappingUI {
   inline void handleFingerUp(const SDL_FingerID &fingerId,
                              const vec2f_t &position, const float pressure) {}
 
-  inline void drawConnectionLine(SDL_Renderer *renderer, vec2f_t position1,
-                                 vec2f_t position2) {
+  inline void drawConnectionLine(SDL_Renderer *renderer,
+                                 const vec2f_t &position1,
+                                 const vec2f_t &position2) {
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderDrawLine(renderer, position1.x, position1.y, position2.x,
                        position2.y);
 
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
   }
+  inline void drawConnectionLine(SDL_Renderer *renderer, const Button &button1,
+                                 const Button &button2) {
+    drawConnectionLine(
+        renderer,
+        vec2f_t{.x = button1.shape.position.x + button1.shape.halfSize.x,
+                .y = button1.shape.position.y},
+        vec2f_t{.x = button2.shape.position.x - button2.shape.halfSize.x,
+                .y = button2.shape.position.y});
+  }
 
   inline void draw(SDL_Renderer *renderer, const Style &style) {
 
-    auto pageLabelRect = ConvertAxisAlignedBoxToSDL_Rect(pageTitleLabelShape);
-    pageTitleLabel->draw(
-        style.hoverColor, style.unavailableColor, pageLabelRect, renderer,
-        style, HorizontalAlignment::CENTER, VerticalAlignment::CENTER);
-    for (auto &keyValuePair : sensorMapping->continuous_mappings) {
-      auto sensorButton = sensorButtons[keyValuePair.first];
-      auto parameterButton = parameterButtons[keyValuePair.second];
-      drawConnectionLine(renderer, sensorButton.shape.position,
-                         parameterButton.shape.position);
+    for (auto &keyValuePair : saveState->sensorMapping.continuousMappings) {
+      auto &sensorButton = continuousInputButtons[keyValuePair.first];
+      auto &parameterButton = parameterButtons[keyValuePair.second];
+      drawConnectionLine(renderer, sensorButton, parameterButton);
     }
-    for (auto &keyValuePair : sensorMapping->momentary_mappings) {
-      auto sensorButton = momentaryInputButtons[keyValuePair.first];
-      auto parameterButton = momentaryParameterButtons[keyValuePair.second];
-      drawConnectionLine(renderer, sensorButton.shape.position,
-                         parameterButton.shape.position);
+    for (auto &keyValuePair : saveState->sensorMapping.momentaryMappings) {
+      auto &sensorButton = momentaryInputButtons[keyValuePair.first];
+      auto &parameterButton = momentaryParameterButtons[keyValuePair.second];
+      drawConnectionLine(renderer, sensorButton, parameterButton);
     }
     if (heldSensor > -1) {
-      auto sensorButton = sensorButtons[(ContinuousInputType)heldSensor];
+      auto &sensorButton =
+          continuousInputButtons[(ContinuousInputType)heldSensor];
 
       drawConnectionLine(renderer, sensorButton.shape.position,
                          lastMousePosition);
     }
     if (heldMomentarySensor > -1) {
-      auto sensorButton =
+      auto &sensorButton =
           momentaryInputButtons[(MomentaryInputType)heldMomentarySensor];
       drawConnectionLine(renderer, sensorButton.shape.position,
                          lastMousePosition);
-    }
-    auto momentaryStyle = style;
-    momentaryStyle.color2 = style.color0;
+    };
 
     for (auto &typeButtonPair : momentaryInputButtons) {
-      DrawButton(&typeButtonPair.second, renderer, momentaryStyle);
+      DrawButton(&typeButtonPair.second, renderer, style, style.color1);
     }
-
+    for (auto &typeButtonPair : continuousInputButtons) {
+      DrawButton(&typeButtonPair.second, renderer, style);
+    }
     for (auto &button : momentaryParameterButtons) {
-      DrawButton(&button, renderer, momentaryStyle);
+      DrawButton(&button, renderer, style, style.color1);
     }
 
     for (auto &button : parameterButtons) {
       DrawButton(&button, renderer, style);
     }
 
-    for (auto &typeButtonPair : sensorButtons) {
-      DrawButton(&typeButtonPair.second, renderer, style);
-    }
+    pageTitleLabel.draw(style.hoverColor, style.unavailableColor, renderer,
+                        style, HorizontalAlignment::CENTER,
+                        VerticalAlignment::CENTER);
+    momentaryInputLabel.draw(style.hoverColor, style.unavailableColor, renderer,
+                             style, HorizontalAlignment::LEFT,
+                             VerticalAlignment::CENTER);
+
+    continuousInputLabel.draw(style.hoverColor, style.unavailableColor,
+                              renderer, style, HorizontalAlignment::LEFT,
+                              VerticalAlignment::CENTER);
   }
 };

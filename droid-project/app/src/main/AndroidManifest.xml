@@ -70,6 +70,7 @@
         <!-- Example of setting SDL hints from AndroidManifest.xml:
         <meta-data android:name="SDL_ENV.SDL_ACCELEROMETER_AS_JOYSTICK" android:value="0"/>
          -->
+        <meta-data android:name="SDL_ENV.SDL_AUDIODRIVER" android:value="openslES"/>
 
 <!--        android:configChanges="locale|uiMode|screenLayout|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"-->
 

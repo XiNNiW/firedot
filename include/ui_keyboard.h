@@ -2,6 +2,7 @@
 
 #include "collider.h"
 #include "metaphor.h"
+#include "save_state.h"
 #include "sensor.h"
 #include "sequencer.h"
 #include "synthesis.h"
@@ -61,7 +62,7 @@ struct KeyboardUI {
   static constexpr size_t NUM_KEY_BUTTONS = NoteMap::NUM_NOTES;
 
   Synthesizer<float> *synth = NULL;
-  InputMapping<float> *mapping = NULL;
+  SaveState *saveState;
 
   std::map<SDL_FingerID, int> heldKeys;
   int fingerPositions[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
@@ -74,8 +75,8 @@ struct KeyboardUI {
   float buttonMargin = 5;
   float topMargin = 15;
 
-  KeyboardUI(Synthesizer<float> *_synth, InputMapping<float> *_mapping)
-      : synth(_synth), mapping(_mapping) {}
+  KeyboardUI(Synthesizer<float> *_synth, SaveState *_saveState)
+      : synth(_synth), saveState(_saveState) {}
 
   void buildLayout(const AxisAlignedBoundingBox &shape) {
     auto pageMargin = 50;
@@ -97,14 +98,16 @@ struct KeyboardUI {
     for (size_t i = 0; i < NUM_KEY_BUTTONS; ++i) {
 
       keyButtons[i] = Button{
-          .label = Label(GetNoteName(mapping->noteMap.notes[i])),
+          .label =
+              Label(GetNoteName(saveState->sensorMapping.noteMap.notes[i])),
           .shape = AxisAlignedBoundingBox{
-              .position = vec2f_t{.x = static_cast<float>(
-                                      pageMargin + keySize / 2.0 +
-                                      (i % int(keysPerRow)) * (keySize)),
-                                  .y = static_cast<float>(
-                                      titleBarHeight + keySize / 2.0 +
-                                      floor(i / keysPerRow) * (keySize))},
+              .position =
+                  vec2f_t{
+                      .x = static_cast<float>(
+                          shape.position.x - (keysPerRow / 2.0) * keySize +
+                          keySize / 2 + (i % int(keysPerRow)) * keySize),
+                      .y = static_cast<float>(titleBarHeight + keySize / 2.0 +
+                                              floor(i / keysPerRow) * keySize)},
               .halfSize = vec2f_t{.x = static_cast<float>(keySize / 2),
                                   .y = static_cast<float>(keySize / 2)}}};
     }
@@ -114,11 +117,12 @@ struct KeyboardUI {
                                const vec2f_t &position, const float pressure) {
     for (size_t i = 0; i < NUM_KEY_BUTTONS; ++i) {
       if (DoButtonHover(&keyButtons[i], position)) {
-        auto bentNote = mapping->noteMap.notes[heldKeys[fingerId]];
-        auto bendDestination = mapping->noteMap.notes[i];
+        auto bentNote =
+            saveState->sensorMapping.noteMap.notes[heldKeys[fingerId]];
+        auto bendDestination = saveState->sensorMapping.noteMap.notes[i];
         // synth->bendNote(bentNote, bendDestination);
-        mapping->emitEvent(synth, KEYBOARD_KEY,
-                           float(i) / float(NUM_KEY_BUTTONS - 1));
+        saveState->sensorMapping.emitEvent(
+            synth, KEYBOARD_KEY, float(i) / float(NUM_KEY_BUTTONS - 1));
         fingerPositions[fingerId] = i;
       }
     }
@@ -138,14 +142,18 @@ struct KeyboardUI {
       // evaluate clicks
       if (DoButtonClick(&keyButtons[i], position, WidgetState::ACTIVE)) {
         // play sound
-        // auto note = mapping->notes[i];
+        // auto note = saveState->sensorMapping.notes[i];
         heldKeys[fingerId] = i;
-        // mapping->noteOn(synth, InputType::KEYBOARD_KEY, mtof(note));
-        mapping->emitEvent(synth, ContinuousInputType::KEYBOARD_KEY,
-                           float(i) / float(NUM_KEY_BUTTONS - 1));
-        // mapping->emitEvent(synth, ContinuousInputType::KEYBOARD_KEY,
+        // saveState->sensorMapping.noteOn(synth, InputType::KEYBOARD_KEY,
+        // mtof(note));
+        saveState->sensorMapping.emitEvent(
+            synth, ContinuousInputType::KEYBOARD_KEY,
+            float(i) / float(NUM_KEY_BUTTONS - 1));
+        // saveState->sensorMapping.emitEvent(synth,
+        // ContinuousInputType::KEYBOARD_KEY,
         //                    mtof(note));
-        mapping->emitEvent(synth, MomentaryInputType::INSTRUMENT_GATE, 1);
+        saveState->sensorMapping.emitEvent(
+            synth, MomentaryInputType::KEYBOARD_GATE, 1);
       }
     }
   }
@@ -155,9 +163,11 @@ struct KeyboardUI {
 
     if (auto buttonIdx = heldKeys[fingerId]) {
       keyButtons[buttonIdx].state = WidgetState::INACTIVE;
-      mapping->emitEvent(synth, ContinuousInputType::KEYBOARD_KEY,
-                         float(buttonIdx) / float(NUM_KEY_BUTTONS - 1));
-      mapping->emitEvent(synth, MomentaryInputType::INSTRUMENT_GATE, 0);
+      saveState->sensorMapping.emitEvent(
+          synth, ContinuousInputType::KEYBOARD_KEY,
+          float(buttonIdx) / float(NUM_KEY_BUTTONS - 1));
+      saveState->sensorMapping.emitEvent(synth,
+                                         MomentaryInputType::KEYBOARD_GATE, 0);
       heldKeys.erase(fingerId);
     }
 
@@ -183,9 +193,11 @@ struct KeyboardUI {
     for (size_t i = 0; i < NUM_KEY_BUTTONS; ++i) {
       if (keyButtons[i].state == WidgetState::ACTIVE) {
         keyButtons[i].state = WidgetState::INACTIVE;
-        mapping->emitEvent(synth, ContinuousInputType::KEYBOARD_KEY,
-                           float(i) / float(NUM_KEY_BUTTONS - 1));
-        mapping->emitEvent(synth, MomentaryInputType::INSTRUMENT_GATE, 0);
+        saveState->sensorMapping.emitEvent(
+            synth, ContinuousInputType::KEYBOARD_KEY,
+            float(i) / float(NUM_KEY_BUTTONS - 1));
+        saveState->sensorMapping.emitEvent(
+            synth, MomentaryInputType::KEYBOARD_GATE, 0);
         heldKeys.clear();
       } else if (keyButtons[i].state == WidgetState::HOVER) {
         keyButtons[i].state = WidgetState::INACTIVE;
@@ -195,7 +207,7 @@ struct KeyboardUI {
 
   inline void draw(SDL_Renderer *renderer, const Style &style) {
     for (size_t i = 0; i < NUM_KEY_BUTTONS; i++) {
-      DrawButton(&keyButtons[i], renderer, style);
+      DrawButton(&keyButtons[i], renderer, style, SDL_Color{0, 0, 0, 0});
     }
   }
 };

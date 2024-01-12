@@ -2,6 +2,7 @@
 #include "SDL_rect.h"
 #include "SDL_render.h"
 #include "collider.h"
+#include "widget_icon.h"
 #include "widget_label.h"
 #include "widget_state.h"
 #include "widget_style.h"
@@ -43,6 +44,7 @@ struct Button {
   AxisAlignedBoundingBox shape =
       AxisAlignedBoundingBox{.position = {0, 0}, .halfSize = {100, 100}};
   WidgetState state = INACTIVE;
+  IconType iconType = IconType::NONE;
 };
 
 inline const bool DoButtonClick(Button *button, const vec2f_t mousePosition,
@@ -100,15 +102,33 @@ inline const void DrawButtonLabel(
                      style, horizontalAlignment, verticalAlignment);
 }
 inline const void DrawButton(Button *button, SDL_Renderer *renderer,
-                             const Style &style) {
+                             const Style &style, SDL_Color borderColor) {
 
   if (button->state != HIDDEN) {
-    auto color = style.getWidgetColor(button->state);
     auto rect = ConvertAxisAlignedBoxToSDL_Rect(button->shape);
-    DrawFilledRect(rect, renderer, color);
-    DrawBoxOutline(rect, renderer, style.color2);
-    if (button->label.getText().size() > 0) {
-      DrawButtonLabel(button, renderer, style);
+    if (button->iconType != IconType::NONE) {
+      auto color = style.getWidgetIconColor(button->state);
+      auto texture = style.getIconTexture(button->iconType);
+
+      if (texture != NULL) {
+        SDL_SetTextureColorMod(texture, color.r, color.g, color.b);
+        rect.x = rect.x + (rect.w - rect.h) / 2;
+        rect.w = rect.h;
+        SDL_RenderCopy(renderer, texture, NULL, &rect);
+      }
+    } else {
+      auto color = style.getWidgetColor(button->state);
+      DrawFilledRect(rect, renderer, color);
+      DrawBoxOutline(rect, renderer, borderColor);
+      if (button->label.getText().size() > 0) {
+        DrawButtonLabel(button, renderer, style);
+      }
     }
   }
+}
+
+inline const void DrawButton(Button *button, SDL_Renderer *renderer,
+                             const Style &style) {
+
+  DrawButton(button, renderer, style, style.color2);
 }

@@ -63,13 +63,13 @@ struct SettingsMenu : public AbstractUI {
 
   virtual void handleMouseDown(const vec2f_t &mousePosition) {
     if (DoButtonClick(&newGameButton, mousePosition)) {
-      navigation->page = Navigation::NEW_GAME;
+      navigation->setPage(Navigation::NEW_GAME);
     }
     if (DoButtonClick(&saveGameButton, mousePosition)) {
-      SaveGame("game name", *synth, *saveState);
+      SaveState::SaveGame("game name", *synth, saveState);
     }
     if (DoButtonClick(&loadGameButton, mousePosition)) {
-      LoadGame("game name", synth, saveState);
+      SaveState::LoadGame("game name", synth, saveState);
     }
   };
 

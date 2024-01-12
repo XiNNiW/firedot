@@ -92,7 +92,7 @@ template <typename sample_t> struct SamplerVoice {
     sample_t out = lerp(buffer[r1], buffer[r2], mantissa);
 
     out = filter.next(out);
-    out *= env.next();
+    out *= env.next() * 4;
 
     phase += phaseIncrement;
     phase = phase > 1 ? phase - 1 : phase;

@@ -1,4 +1,5 @@
 #pragma once
+#include "SDL_rect.h"
 #include "vector_math.h"
 #include <array>
 #include <cfloat>
@@ -58,6 +59,8 @@ struct OrientedBoundingBox {
     }
     return vec2f_t{.x = minProjBox2On1x, .y = maxProjBox2On1x};
   }
+
+  inline float getAngle() { return 0; }
 };
 
 struct AxisAlignedBoundingBox {
@@ -76,7 +79,6 @@ struct AxisAlignedBoundingBox {
     return (abs(dist.x) <= halfSize.x) && (abs(dist.y) <= halfSize.y);
   }
 };
-
 struct Collider {
   enum ColliderType {
     CIRCLE,
@@ -208,6 +210,55 @@ struct Collider {
     return 0;
   }
 
+  const SDL_Rect computeRenderBox() const {
+    switch (type) {
+
+    case CIRCLE: {
+      auto circumference = object.circle.radius * 2.0;
+
+      return SDL_Rect{
+          .x =
+              static_cast<int>(object.circle.position.x - object.circle.radius),
+          .y =
+              static_cast<int>(object.circle.position.y - object.circle.radius),
+          .w = static_cast<int>(circumference),
+          .h = static_cast<int>(circumference),
+      };
+      break;
+    }
+    case ORIENTED_BOUNDING_BOX: {
+      auto width = object.orientedBoundingBox.halfSize.x;
+      auto height = object.orientedBoundingBox.halfSize.y;
+      auto &halfSize = object.orientedBoundingBox.halfSize;
+      return SDL_Rect{
+          .x = static_cast<int>(object.orientedBoundingBox.position.x -
+                                halfSize.x),
+          .y = static_cast<int>(object.orientedBoundingBox.position.y -
+                                halfSize.y),
+          .w = static_cast<int>(width),
+          .h = static_cast<int>(height),
+      };
+      break;
+    }
+    case AXIS_ALIGNED_BOUNDING_BOX: {
+      auto width = object.axisAlignedBoundingBox.halfSize.x;
+      auto height = object.axisAlignedBoundingBox.halfSize.y;
+      auto &halfSize = object.axisAlignedBoundingBox.halfSize;
+      return SDL_Rect{
+          .x = static_cast<int>(object.axisAlignedBoundingBox.position.x -
+                                halfSize.x),
+          .y = static_cast<int>(object.axisAlignedBoundingBox.position.y -
+                                halfSize.y),
+          .w = static_cast<int>(width),
+          .h = static_cast<int>(height),
+      };
+      break;
+    }
+    default:
+      return SDL_Rect{};
+    }
+  }
+
   inline const bool contains(vec2f_t &point) {
     switch (type) {
 
@@ -293,21 +344,46 @@ struct Collider {
     return minTranslationVector;
   }
 
-  static inline const std::optional<vec2f_t>
+  // static inline const std::optional<vec2f_t>
+  // intersection(const CircleCollider &circle,
+  //              const AxisAlignedBoundingBox &box) {
+
+  // auto circleToBox = circle.position.subtract(box.position);
+  // auto circleToClosestBoxPoint =
+  //     circleToBox.clamp(box.halfSize.scale(-1), box.halfSize);
+
+  // auto distanceToBoxSurface = circleToClosestBoxPoint.length();
+  // if (circle.radius < distanceToBoxSurface) {
+  //   return std::nullopt;
+  // } else {
+  //   return circleToClosestBoxPoint.norm().scale(circle.radius -
+  //                                               distanceToBoxSurface);
+  // }
+  // }
+
+  static inline std::optional<vec2f_t>
   intersection(const CircleCollider &circle,
                const AxisAlignedBoundingBox &box) {
 
-    auto circleToBox = circle.position.subtract(box.position);
-    auto circleToClosestBoxPoint =
-        circleToBox.clamp(box.halfSize.scale(-1), box.halfSize);
-
-    auto distanceToBoxSurface = circleToClosestBoxPoint.length();
-    if (circle.radius < distanceToBoxSurface) {
+    auto rectSizePlusCircleRadius = AxisAlignedBoundingBox{
+        .position = box.position,
+        .halfSize = box.halfSize.add({circle.radius, circle.radius})};
+    if (!rectSizePlusCircleRadius.contains(circle.position)) {
       return std::nullopt;
-    } else {
-      return circleToClosestBoxPoint.norm().scale(circle.radius -
-                                                  distanceToBoxSurface);
     }
+    auto circleToBox = circle.position.subtract(box.position);
+
+    vec2f_t clampedCircleToBox = {
+        .x = std::clamp(circleToBox.x, -box.halfSize.x, box.halfSize.x),
+        .y = std::clamp(circleToBox.y, -box.halfSize.y, box.halfSize.y)};
+
+    vec2f_t closestPoint = box.position.add(clampedCircleToBox);
+    auto closestPointToCircleCenter = closestPoint.subtract(circle.position);
+    auto distance = closestPointToCircleCenter.length();
+    auto overlap = distance - circle.radius;
+    auto minTranslationVector =
+        closestPointToCircleCenter.norm().scale(-overlap);
+    return minTranslationVector;
   }
   static inline const std::optional<vec2f_t>
   intersection(const AxisAlignedBoundingBox &box1,
@@ -385,7 +461,8 @@ struct Collider {
       auto overlap = box1Projection.overlap(box2Projection);
 
       if (overlap == 0) {
-        // no overlap! found seperating axis... these shapes are not touching
+        // no overlap! found seperating axis... these shapes are not
+        // touching
         return std::nullopt;
       }
       if (overlap < minOverlap) {
@@ -394,8 +471,8 @@ struct Collider {
       }
     }
 
-    // no seperating axis was found... return the vector to get the colliding
-    // shape out of the other one (minTranslationVector)
+    // no seperating axis was found... return the vector to get the
+    // colliding shape out of the other one (minTranslationVector)
     return minTranslationVector.scale(minOverlap);
   }
 };

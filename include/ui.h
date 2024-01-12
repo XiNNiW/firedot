@@ -17,24 +17,22 @@
 #include "widget_button.h"
 #include "widget_radio_button.h"
 
-enum IconType { MENU, SYNTH_SELECT };
-
 struct UserInterface : public AbstractUI {
   Navigation navigation;
-
   InstrumentSetupUI instrumentSetupUI;
   PlayInstrumentUI playInstrumentUI;
   SettingsMenu settingsUI;
 
-  UserInterface(Synthesizer<float> *synth, InputMapping<float> *sensorMapping,
-                Sequencer *sequencer, SaveState *saveState)
-      : instrumentSetupUI(
-            InstrumentSetupUI(synth, sensorMapping, saveState, &navigation)),
-        playInstrumentUI(PlayInstrumentUI(synth, sequencer, sensorMapping,
-                                          saveState, &navigation)),
-        settingsUI(SettingsMenu(&navigation, saveState, synth)) {}
+  UserInterface(Synthesizer<float> *synth, Sequencer *sequencer, Game *game,
+                SaveState *saveState)
+      : instrumentSetupUI(InstrumentSetupUI(synth, saveState, &navigation)),
+        playInstrumentUI(
+            PlayInstrumentUI(synth, sequencer, game, saveState, &navigation)),
+        settingsUI(SettingsMenu(&navigation, saveState, synth)),
+        navigation(this) {}
 
   inline void buildLayout(const AxisAlignedBoundingBox &shape) {
+    this->shape = shape;
 
     instrumentSetupUI.buildLayout(shape);
     playInstrumentUI.buildLayout(shape);
@@ -43,7 +41,7 @@ struct UserInterface : public AbstractUI {
 
   inline void handleFingerMove(const SDL_FingerID &fingerId,
                                const vec2f_t &position, const float pressure) {
-    switch (navigation.page) {
+    switch (navigation.getPage()) {
     case Navigation::NEW_GAME:
       instrumentSetupUI.handleFingerMove(fingerId, position, pressure);
       break;
@@ -58,7 +56,7 @@ struct UserInterface : public AbstractUI {
 
   inline void handleFingerDown(const SDL_FingerID &fingerId,
                                const vec2f_t &position, const float pressure) {
-    switch (navigation.page) {
+    switch (navigation.getPage()) {
     case Navigation::NEW_GAME:
       instrumentSetupUI.handleFingerDown(fingerId, position, pressure);
       break;
@@ -73,7 +71,7 @@ struct UserInterface : public AbstractUI {
 
   inline void handleFingerUp(const SDL_FingerID &fingerId,
                              const vec2f_t &position, const float pressure) {
-    switch (navigation.page) {
+    switch (navigation.getPage()) {
     case Navigation::NEW_GAME:
       instrumentSetupUI.handleFingerUp(fingerId, position, pressure);
       break;
@@ -87,7 +85,7 @@ struct UserInterface : public AbstractUI {
   }
 
   inline void handleMouseMove(const vec2f_t &mousePosition) {
-    switch (navigation.page) {
+    switch (navigation.getPage()) {
     case Navigation::NEW_GAME:
       instrumentSetupUI.handleMouseMove(mousePosition);
       break;
@@ -101,7 +99,7 @@ struct UserInterface : public AbstractUI {
   }
 
   inline void handleMouseDown(const vec2f_t &mousePosition) {
-    switch (navigation.page) {
+    switch (navigation.getPage()) {
     case Navigation::NEW_GAME:
       instrumentSetupUI.handleMouseDown(mousePosition);
       break;
@@ -115,7 +113,7 @@ struct UserInterface : public AbstractUI {
   }
 
   inline void handleMouseUp(const vec2f_t &mousePosition) {
-    switch (navigation.page) {
+    switch (navigation.getPage()) {
     case Navigation::NEW_GAME:
       instrumentSetupUI.handleMouseUp(mousePosition);
       break;
@@ -129,7 +127,7 @@ struct UserInterface : public AbstractUI {
   }
 
   inline void draw(SDL_Renderer *renderer, const Style &style) {
-    switch (navigation.page) {
+    switch (navigation.getPage()) {
     case Navigation::NEW_GAME:
       instrumentSetupUI.draw(renderer, style);
       break;

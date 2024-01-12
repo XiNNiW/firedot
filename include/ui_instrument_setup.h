@@ -7,6 +7,7 @@
 #include "ui_navigation.h"
 #include "ui_sound_edit.h"
 #include "widget_state.h"
+#include "widget_style.h"
 
 struct InstrumentSetupUI {
 
@@ -25,13 +26,11 @@ struct InstrumentSetupUI {
   Button nextButton;
   float sideMargin = 15;
   float bottomMargin = 15;
-  InstrumentSetupUI(Synthesizer<float> *synth,
-                    InputMapping<float> *sensorMapping, SaveState *saveState,
+  InstrumentSetupUI(Synthesizer<float> *synth, SaveState *saveState,
                     Navigation *_navigation)
       : chooseCharacterUI(ChooseCharacterUI(saveState)),
-        mappingUI(MappingUI(sensorMapping, saveState)),
-        soundEditUI(SoundEditUI(synth, sensorMapping)),
-        navigation(_navigation) {}
+        mappingUI(MappingUI(saveState)),
+        soundEditUI(SoundEditUI(synth, saveState)), navigation(_navigation) {}
   void buildLayout(const AxisAlignedBoundingBox &shape) {
     auto width = shape.halfSize.x * 2;
     auto height = shape.halfSize.y * 2;
@@ -44,7 +43,8 @@ struct InstrumentSetupUI {
                                .y = static_cast<float>(
                                    height - buttonHeight / 2.0 - bottomMargin)},
                   .halfSize = {.x = static_cast<float>(buttonWidth / 2.0),
-                               .y = static_cast<float>(buttonHeight / 2.0)}}};
+                               .y = static_cast<float>(buttonHeight / 2.0)}},
+        .iconType = IconType::LEFT_ARROW};
     nextButton = Button{
         .label = Label("next"),
         .shape = {.position = {.x = static_cast<float>(shape.halfSize.x * 2 -
@@ -53,7 +53,8 @@ struct InstrumentSetupUI {
                                .y = static_cast<float>(
                                    height - buttonHeight / 2.0 - bottomMargin)},
                   .halfSize = {.x = static_cast<float>(buttonWidth / 2.0),
-                               .y = static_cast<float>(buttonHeight / 2.0)}}};
+                               .y = static_cast<float>(buttonHeight / 2.0)}},
+        .iconType = IconType::RIGHT_ARROW};
 
     AxisAlignedBoundingBox topShape = AxisAlignedBoundingBox{
         .position = {.x = shape.halfSize.x,
@@ -151,7 +152,7 @@ struct InstrumentSetupUI {
         break;
       case SOUND_EDIT:
         page = CHARACTER_CHOOSER;
-        navigation->page = Navigation::INSTRUMENT;
+        navigation->setPage(Navigation::INSTRUMENT);
         break;
       }
     }

@@ -8,8 +8,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 # Our project name
 project (keyboard_synth)
-
-add_executable(keyboard_synth main.cpp)
+file(GLOB SOURCES "src/*.cpp")
+add_executable(keyboard_synth ${SOURCES} main.cpp)
 
 # For finding our SDL2 package!
 INCLUDE(FindPkgConfig)
@@ -29,8 +29,6 @@ cmake_print_variables(SDL2TTF_INCLUDE_DIR)
 cmake_print_variables(SDL2_IMAGE_LIBRARIES)
 cmake_print_variables(SDL2TTF_LIBRARY)
 
-add_compile_definitions(SDL_AUDIODRIVER="pipewire")
-
 set(ALGAE_INCLUDE_DIRS, "/usr/local/include/")
 set(ALGAE_LIBRARIES, "/usr/local/lib/libalgae.a")
 # Including our external library's directory for header files!
@@ -38,4 +36,5 @@ INCLUDE_DIRECTORIES(${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS} ${SDL2TTF_IN
 
 # Linking SDL2 library with our project.
 target_link_libraries(keyboard_synth /usr/lib/x86_64-linux-gnu/libSDL2.so /usr/lib/x86_64-linux-gnu/libSDL2_image.so /usr/lib/x86_64-linux-gnu/libSDL2_ttf.so ${ALGAE_LIBRARIES})
+
 #target_link_libraries(keyboard_synth ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${SDL2TTF_LIBRARY} ${ALGAE_LIBRARIES})

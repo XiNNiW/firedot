@@ -1,8 +1,12 @@
 #pragma once
 
+#include "SDL_log.h"
 #include "SDL_render.h"
+#include "collider.h"
+#include "vector_math.h"
 #include "widget_state.h"
 #include "widget_style.h"
+#include "widget_utils.h"
 #include <memory>
 #include <string>
 
@@ -13,6 +17,7 @@ private:
   SDL_Rect cachedSourceRect;
 
 public:
+  AxisAlignedBoundingBox shape;
   Label() {}
   Label(std::string _text) : text(_text) {}
   inline void setText(std::string text) {
@@ -23,7 +28,22 @@ public:
     }
   }
 
+  ~Label() {
+    if (cachedTexture != NULL) {
+      SDL_DestroyTexture(cachedTexture);
+      cachedTexture = NULL;
+    }
+  }
+
   inline const std::string &getText() { return text; }
+  inline const void draw(
+      const SDL_Color &textColor, const SDL_Color &backgroundColor,
+      SDL_Renderer *renderer, const Style &style,
+      const HorizontalAlignment horizontalAlignment = HorizontalAlignment::LEFT,
+      const VerticalAlignment verticalAlignment = VerticalAlignment::TOP) {
+    draw(textColor, backgroundColor, ConvertAxisAlignedBoxToSDL_Rect(shape),
+         renderer, style, horizontalAlignment, verticalAlignment);
+  }
 
   inline const void draw(
       const SDL_Color &textColor, const SDL_Color &backgroundColor,
@@ -37,8 +57,10 @@ public:
 
       if (cachedTexture == NULL) {
 
-        auto textSurface = TTF_RenderUTF8_LCD(style.font, labelText, textColor,
-                                              backgroundColor);
+        auto font = style.getFont();
+        // SDL_LogInfo(0, "font %d", font);
+        auto textSurface =
+            TTF_RenderUTF8_LCD(font, labelText, textColor, backgroundColor);
         if (textSurface != NULL) {
           cachedSourceRect = SDL_Rect{
               .x = 0, .y = 0, .w = textSurface->w, .h = textSurface->h};

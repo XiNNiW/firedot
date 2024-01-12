@@ -22,25 +22,26 @@ inline void DrawRadioButtonSingle(Button *button, SDL_Renderer *renderer,
     outlineColor = style.color0;
   }
 
-  SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g,
-                         backgroundColor.b, backgroundColor.a);
-
-  SDL_RenderFillRect(renderer, &rect);
-  //  SDL_SetRenderDrawColor(renderer, outlineColor.r, outlineColor.g,
-  //                         outlineColor.b, outlineColor.a);
-  //  SDL_RenderDrawRect(renderer, &rect);
-
-  if (button->state == ACTIVE) {
-    //  auto smallerRectAABB = button.shape;
-    // smallerRectAABB.halfSize = smallerRectAABB.halfSize.scale(0.33);
-    // auto smallerRect = ConvertAxisAlignedBoxToSDL_Rect(smallerRectAABB);
-    SDL_SetRenderDrawColor(renderer, style.color1.r, style.color1.g,
-                           style.color1.b, style.color1.a);
-    SDL_RenderFillRect(renderer, &rect);
-  }
-
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-  if (button->label.getText().size() > 0) {
+  if (button->iconType != IconType::NONE) {
+    auto texture = style.getIconTexture(button->iconType);
+    auto color = style.getWidgetIconColor(button->state);
+    auto backgroundColor = style.inactiveColor;
+    DrawFilledRect(rect, renderer, backgroundColor);
+    SDL_SetTextureColorMod(texture, color.r, color.g, color.b);
+    auto iconRect = rect;
+    iconRect.x = iconRect.x + (iconRect.w - iconRect.h) / 2;
+    iconRect.w = iconRect.h;
+    SDL_RenderCopy(renderer, texture, NULL, &iconRect);
+  } else {
+    SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g,
+                           backgroundColor.b, backgroundColor.a);
+    SDL_RenderFillRect(renderer, &rect);
+    if (button->state == ACTIVE) {
+      SDL_SetRenderDrawColor(renderer, style.color1.r, style.color1.g,
+                             style.color1.b, style.color1.a);
+      SDL_RenderFillRect(renderer, &rect);
+    }
 
     button->label.draw(style.hoverColor, backgroundColor, rect, renderer,
                        style);
@@ -103,7 +104,7 @@ inline void DrawRadioGroup(RadioGroup *group, SDL_Renderer *renderer,
   //                         style.color2.b, style.color2.a);
   //  SDL_RenderFillRect(renderer, &radiogroupBackgroundRect);
   for (auto &button : group->options) {
-    // DrawButton(button, renderer, style);
+    // DrawButton(&button, renderer, style);
     DrawRadioButtonSingle(&button, renderer, style);
   }
 }

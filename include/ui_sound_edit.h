@@ -1,14 +1,16 @@
 #pragma once
 
 #include "collider.h"
+#include "save_state.h"
 #include "sensor.h"
 #include "synthesis.h"
 #include "synthesis_parameter.h"
 #include "ui_navigation.h"
+#include "widget_style.h"
 
 struct SoundEditUI {
   Synthesizer<float> *synth = NULL;
-  InputMapping<float> *sensorMapping = NULL;
+  SaveState *saveState = NULL;
 
   RadioGroup synthSelectRadioGroup;
   std::map<ContinuousParameterType, HSlider> parameterSliders;
@@ -24,15 +26,22 @@ struct SoundEditUI {
   float topMargin = 50;
   float pageMargin = 50;
 
-  SoundEditUI(Synthesizer<float> *_synth, InputMapping<float> *_mapping)
-      : synth(_synth), sensorMapping(_mapping) {
+  SoundEditUI(Synthesizer<float> *_synth, SaveState *_saveState)
+      : synth(_synth), saveState(_saveState) {
     const size_t initialSynthTypeSelection = synth->type;
     std::vector<std::string> synthOptionLabels = {};
     for (auto &synthType : SynthTypes) {
       synthOptionLabels.push_back(SynthTypeDisplayNames[synthType]);
     }
     synthSelectRadioGroup =
-        RadioGroup(synthOptionLabels, SUBTRACTIVE_DRUM_SYNTH);
+        RadioGroup(synthOptionLabels, saveState->synthesizerSettings.synthType);
+    synthSelectRadioGroup.options[SUBTRACTIVE_DRUM_SYNTH].iconType =
+        IconType::DRUM;
+    synthSelectRadioGroup.options[SUBTRACTIVE].iconType = IconType::SINE_WAVE;
+    synthSelectRadioGroup.options[PHYSICAL_MODEL].iconType = IconType::GUITAR;
+    synthSelectRadioGroup.options[FREQUENCY_MODULATION].iconType =
+        IconType::GRAPH;
+    synthSelectRadioGroup.options[SAMPLER].iconType = IconType::CASSETTE;
   }
 
   ~SoundEditUI() { delete pageTitleLabel; }
@@ -83,7 +92,7 @@ struct SoundEditUI {
         continue;
       }
       parameterSliders[parameter] = HSlider{
-          .label = new Label(getDisplayName(parameter)),
+          .label = Label(getDisplayName(parameter)),
 
           .shape =
               AxisAlignedBoundingBox{
@@ -187,7 +196,7 @@ struct SoundEditUI {
       if (parameterSliders.find(parameterType) == parameterSliders.end()) {
         continue;
       }
-      if (sensorMapping->isMapped(parameterType)) {
+      if (saveState->sensorMapping.isMapped(parameterType)) {
         auto rect = ConvertAxisAlignedBoxToSDL_Rect(
             parameterSliders[parameterType].shape);
         SDL_SetRenderDrawColor(
@@ -199,12 +208,12 @@ struct SoundEditUI {
         SDL_SetRenderDrawColor(renderer, style.hoverColor.r, style.hoverColor.g,
                                style.hoverColor.b, style.hoverColor.a);
         SDL_RenderFillRect(renderer, &percentRect);
-        parameterSliders[parameterType].label->draw(
+        parameterSliders[parameterType].label.draw(
             style.hoverColor, style.unavailableColor, rect, renderer, style);
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
       } else {
 
-        DrawHSlider(parameterSliders[parameterType],
+        DrawHSlider(&parameterSliders[parameterType],
                     synth->getParameter(parameterType), renderer, style);
       }
     }

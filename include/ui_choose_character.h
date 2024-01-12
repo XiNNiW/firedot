@@ -7,6 +7,7 @@
 #include "widget_label.h"
 #include "widget_radio_button.h"
 #include "widget_state.h"
+#include "widget_style.h"
 #include "widget_utils.h"
 
 struct ChooseCharacterUI {
@@ -36,10 +37,15 @@ struct ChooseCharacterUI {
     for (auto &instrumentType : InstrumentMetaphorTypes) {
       instrumentOptionLabels.push_back(getDisplayName(instrumentType));
     }
-    characterChooser = RadioGroup(instrumentOptionLabels, 0);
+    characterChooser = RadioGroup(instrumentOptionLabels,
+                                  saveState->getInstrumentMetaphorType());
     characterChooser.buildLayout(
         {.position = {.x = bodyShape.halfSize.x, .y = bodyShape.halfSize.y},
          .halfSize = {.x = bodyShape.halfSize.x - 30, .y = 75}});
+    characterChooser.options[KEYBOARD].iconType = IconType::PIANO;
+    characterChooser.options[TOUCH_PAD].iconType = IconType::SLIDERS;
+    characterChooser.options[GAME].iconType = IconType::GAME_PAD;
+    characterChooser.options[SEQUENCER].iconType = IconType::GRID;
   };
 
   void handleFingerMove(const SDL_FingerID &fingerId, const vec2f_t &position,
@@ -56,8 +62,8 @@ struct ChooseCharacterUI {
   void handleMouseDown(const vec2f_t &mousePosition) {
     int selectedIndex = 0;
     if (DoClickRadioGroup(&characterChooser, mousePosition)) {
-      saveState->instrumentMetaphor =
-          InstrumentMetaphorTypes[characterChooser.selectedIndex];
+      saveState->setInstrumentMetaphor(
+          InstrumentMetaphorTypes[characterChooser.selectedIndex]);
     }
   };
 

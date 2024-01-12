@@ -348,7 +348,7 @@ template <typename sample_t> struct Synthesizer {
     eventQueue.push(SynthesizerEvent<sample_t>(type));
   }
 
-  inline SynthesizerType getSynthType() { return type; }
+  inline SynthesizerType getSynthType() const { return type; }
 
   inline void setFrequency(sample_t value) {
     eventQueue.push(SynthesizerEvent<sample_t>(
@@ -386,7 +386,7 @@ template <typename sample_t> struct Synthesizer {
   }
 
   inline const sample_t
-  getParameter(const ContinuousParameterType parameterType) {
+  getParameter(const ContinuousParameterType parameterType) const {
 
     // TODO this also needs threading consideration
     switch (parameterType) {

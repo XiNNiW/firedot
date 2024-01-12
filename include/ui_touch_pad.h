@@ -3,6 +3,7 @@
 #include "SDL_render.h"
 #include "SDL_touch.h"
 #include "collider.h"
+#include "save_state.h"
 #include "sensor.h"
 #include "synthesis.h"
 #include "vector_math.h"
@@ -17,19 +18,21 @@ struct TouchPadUI {
   bool fingerActivity[NUM_FINGERS] = {false, false, false, false, false,
                                       false, false, false, false, false};
   Synthesizer<float> *synth;
-  InputMapping<float> *mapping;
+  SaveState *saveState;
   AxisAlignedBoundingBox shape;
-  TouchPadUI(Synthesizer<float> *_synth, InputMapping<float> *_mapping)
-      : synth(_synth), mapping(_mapping) {}
+  TouchPadUI(Synthesizer<float> *_synth, SaveState *_saveState)
+      : synth(_synth), saveState(_saveState) {}
   inline void buildLayout(const AxisAlignedBoundingBox &shape){};
 
   inline void handleFingerMove(const SDL_FingerID &fingerId,
                                const vec2f_t &position, const float pressure) {
     // fingerPositions[fingerId] = position;
-    mapping->emitEvent(synth, ContinuousInputType::TOUCH_X_POSITION,
-                       position.x / (shape.halfSize.x * 2.0));
-    mapping->emitEvent(synth, ContinuousInputType::TOUCH_Y_POSITION,
-                       position.y / (shape.halfSize.y * 2.0));
+    saveState->sensorMapping.emitEvent(synth,
+                                       ContinuousInputType::TOUCH_X_POSITION,
+                                       position.x / (shape.halfSize.x * 2.0));
+    saveState->sensorMapping.emitEvent(synth,
+                                       ContinuousInputType::TOUCH_Y_POSITION,
+                                       position.y / (shape.halfSize.y * 2.0));
     // send messages to update synth parameters
   };
 
@@ -38,24 +41,32 @@ struct TouchPadUI {
     fingerPositions[fingerId] = position;
     fingerActivity[fingerId] = true;
     // send triggers
-    mapping->emitEvent(synth, ContinuousInputType::TOUCH_X_POSITION,
-                       position.x / (shape.halfSize.x * 2.0));
-    mapping->emitEvent(synth, ContinuousInputType::TOUCH_Y_POSITION,
-                       position.y / (shape.halfSize.y * 2.0));
-    mapping->emitEvent(synth, MomentaryInputType::INSTRUMENT_GATE, 1);
+    saveState->sensorMapping.emitEvent(synth,
+                                       ContinuousInputType::TOUCH_X_POSITION,
+                                       position.x / (shape.halfSize.x * 2.0));
+    saveState->sensorMapping.emitEvent(synth,
+                                       ContinuousInputType::TOUCH_Y_POSITION,
+                                       position.y / (shape.halfSize.y * 2.0));
+    saveState->sensorMapping.emitEvent(synth,
+                                       MomentaryInputType::TOUCH_PAD_GATE, 1);
 
-    // mapping->noteOn(synth, InputType::TOUCH_Y_POSITION, float value)
+    // saveState->sensorMapping.noteOn(synth, InputType::TOUCH_Y_POSITION, float
+    // value)
   };
 
   inline void handleFingerUp(const SDL_FingerID &fingerId,
                              const vec2f_t &position, const float pressure) {
     fingerActivity[fingerId] = false;
-    mapping->emitEvent(synth, ContinuousInputType::TOUCH_X_POSITION,
-                       fingerPositions[fingerId].x / (shape.halfSize.x * 2.0));
-    mapping->emitEvent(synth, ContinuousInputType::TOUCH_Y_POSITION,
-                       fingerPositions[fingerId].y / (shape.halfSize.y * 2.0));
-    mapping->emitEvent(synth, MomentaryInputType::INSTRUMENT_GATE, 0);
-    // mapping->noteOff(synth, InputType::KEYBOARD_KEY, float value)
+    saveState->sensorMapping.emitEvent(
+        synth, ContinuousInputType::TOUCH_X_POSITION,
+        fingerPositions[fingerId].x / (shape.halfSize.x * 2.0));
+    saveState->sensorMapping.emitEvent(
+        synth, ContinuousInputType::TOUCH_Y_POSITION,
+        fingerPositions[fingerId].y / (shape.halfSize.y * 2.0));
+    saveState->sensorMapping.emitEvent(synth,
+                                       MomentaryInputType::TOUCH_PAD_GATE, 0);
+    // saveState->sensorMapping.noteOff(synth, InputType::KEYBOARD_KEY, float
+    // value)
   };
 
   inline void handleMouseMove(const vec2f_t &mousePosition){};
@@ -69,7 +80,7 @@ struct TouchPadUI {
     for (int i = 0; i < NUM_FINGERS; ++i) {
       if (fingerActivity[i]) {
         auto position = fingerPositions[i];
-        auto size = 100;
+        auto size = 200;
         auto fingerRect =
             SDL_Rect{.x = static_cast<int>(position.x - size / 2.0),
                      .y = static_cast<int>(position.y - size / 2.0),
@@ -87,7 +98,7 @@ struct TouchPadUI {
 
     DrawBoxOutline(
         ConvertAxisAlignedBoxToSDL_Rect(AxisAlignedBoundingBox{
-            .position = shape.position, .halfSize = shape.halfSize.scale(0.8)}),
+            .position = shape.position, .halfSize = shape.halfSize.scale(0.7)}),
         renderer, style.color0);
   };
 };

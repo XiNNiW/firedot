@@ -5,12 +5,14 @@
 #include "widget_button.h"
 #include "widget_hslider.h"
 #include "widget_state.h"
+#include "widget_style.h"
 #include "widget_vslider.h"
 
 struct SequencerUI {
   Sequencer *sequencer = NULL;
   HSlider stepButtons[Sequencer::MAX_STEPS];
   Button playButton;
+  HSlider tempoSlider;
 
   int fingerPositions[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 
@@ -25,6 +27,7 @@ struct SequencerUI {
     const int numButtonsPerRow = 4;
     auto buttonWidth = (width - pageMargin) / numButtonsPerRow;
     auto buttonHeight = buttonWidth;
+    auto sliderHeight = buttonHeight;
     for (int i = 0; i < Sequencer::MAX_STEPS; i++) {
       stepButtons[i] = HSlider{
           .shape = {
@@ -37,6 +40,17 @@ struct SequencerUI {
               .halfSize = {.x = static_cast<float>(buttonWidth / 2.0 - 10),
                            .y = static_cast<float>(buttonHeight / 2.0 - 10)}}};
     }
+
+    tempoSlider = HSlider{
+        .label = Label("tempo"),
+        .shape = {.position = {.x = shape.position.x,
+                               .y = static_cast<float>(
+                                   shape.halfSize.y * 2 - sliderHeight / 2.0 -
+                                   buttonHeight - pageMargin / 2.0)},
+                  .halfSize = {.x = static_cast<float>(shape.halfSize.x -
+                                                       pageMargin / 2.0),
+                               .y = static_cast<float>(buttonHeight / 2.0)}},
+    };
     playButton = Button{
         .label = Label("play"),
         .shape = {.position = {.x = shape.position.x,
@@ -44,7 +58,9 @@ struct SequencerUI {
                                                        buttonHeight / 2.0 -
                                                        pageMargin / 2.0)},
                   .halfSize = {.x = static_cast<float>(buttonWidth / 2.0),
-                               .y = static_cast<float>(buttonHeight / 4.0)}}};
+                               .y = static_cast<float>(buttonHeight / 4.0)}},
+        .iconType = IconType::PLAY,
+    };
   };
 
   void handleFingerMove(const SDL_FingerID &fingerId, const vec2f_t &position,
@@ -79,7 +95,13 @@ struct SequencerUI {
     fingerPositions[fingerId] = -1;
   };
 
-  void handleMouseMove(const vec2f_t &mousePosition){};
+  void handleMouseMove(const vec2f_t &mousePosition) {
+    auto tempoRange = (sequencer->maxBPM - sequencer->minBPM);
+    float sliderValue = sequencer->getTempoNormalized();
+    if (DoHSliderDrag(&tempoSlider, &sliderValue, mousePosition)) {
+      sequencer->setTempoNormalized(sliderValue);
+    };
+  };
 
   void handleMouseDown(const vec2f_t &mousePosition) {
     if (DoButtonClick(&playButton, mousePosition)) {
@@ -87,13 +109,21 @@ struct SequencerUI {
 
       if (sequencer->running) {
         playButton.label.setText("stop");
+        playButton.iconType = IconType::STOP;
       } else {
         playButton.label.setText("play");
+        playButton.iconType = IconType::PLAY;
       }
     }
+    float sliderValue = sequencer->getTempoNormalized();
+    if (DoHSliderClick(&tempoSlider, &sliderValue, mousePosition)) {
+      sequencer->setTempoNormalized(sliderValue);
+    };
   };
 
-  void handleMouseUp(const vec2f_t &mousePosition){};
+  void handleMouseUp(const vec2f_t &mousePosition) {
+    tempoSlider.state = INACTIVE;
+  };
 
   void draw(SDL_Renderer *renderer, const Style &style) {
     for (int i = 0; i < Sequencer::MAX_STEPS; i++) {
@@ -102,8 +132,10 @@ struct SequencerUI {
       } else if (stepButtons[i].state != ACTIVE) {
         stepButtons[i].state = INACTIVE;
       }
-      DrawHSlider(stepButtons[i], sequencer->stepValues[i], renderer, style);
+      DrawHSlider(&stepButtons[i], sequencer->stepValues[i], renderer, style);
     }
     DrawButton(&playButton, renderer, style);
+    auto tempoRange = (sequencer->maxBPM - sequencer->minBPM);
+    DrawHSlider(&tempoSlider, sequencer->getTempoNormalized(), renderer, style);
   };
 };

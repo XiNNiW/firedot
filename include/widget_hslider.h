@@ -11,7 +11,7 @@
 
 struct HSlider {
   WidgetState state = INACTIVE;
-  Label *label = new Label();
+  Label label = Label();
   AxisAlignedBoundingBox shape;
 };
 
@@ -43,20 +43,20 @@ inline bool DoHSliderDrag(HSlider *slider, float *sliderValue,
   return false;
 }
 
-inline void DrawHSlider(const HSlider &slider, const float &sliderValue,
+inline void DrawHSlider(HSlider *slider, const float &sliderValue,
                         SDL_Renderer *renderer, const Style &style) {
-  auto sliderBounds = ConvertAxisAlignedBoxToSDL_Rect(slider.shape);
+  auto sliderBounds = ConvertAxisAlignedBoxToSDL_Rect(slider->shape);
   auto dataBounds = sliderBounds;
   dataBounds.w *= sliderValue;
   auto valueColor = style.color1;
-  if (slider.state == ACTIVE) {
+  if (slider->state == ACTIVE) {
     valueColor = style.color0;
   }
   SDL_SetRenderDrawColor(renderer, style.inactiveColor.r, style.inactiveColor.g,
                          style.inactiveColor.b, style.inactiveColor.a);
 
   SDL_RenderFillRect(renderer, &sliderBounds);
-  if (slider.state == HOVER) {
+  if (slider->state == HOVER) {
     SDL_SetRenderDrawColor(renderer, style.hoverColor.r, style.hoverColor.g,
                            style.hoverColor.b, style.hoverColor.a);
     SDL_RenderDrawRect(renderer, &sliderBounds);
@@ -66,7 +66,7 @@ inline void DrawHSlider(const HSlider &slider, const float &sliderValue,
   SDL_RenderFillRect(renderer, &dataBounds);
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 
-  slider.label->draw(style.getWidgetLabelColor(slider.state),
-                     style.getWidgetColor(slider.state), sliderBounds, renderer,
-                     style);
+  slider->label.draw(style.getWidgetLabelColor(slider->state),
+                     style.getWidgetColor(slider->state), sliderBounds,
+                     renderer, style);
 }

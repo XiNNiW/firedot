@@ -1,9 +1,12 @@
 #pragma once
 
 #include "SDL_render.h"
+#include "game.h"
 #include "metaphor.h"
 #include "save_state.h"
 #include "ui_abstract.h"
+#include "ui_game.h"
+#include "ui_instrument_setup.h"
 #include "ui_keyboard.h"
 #include "ui_mapping.h"
 #include "ui_navigation.h"
@@ -29,19 +32,20 @@ struct PlayInstrumentUI {
   KeyboardUI keyboardUI;
   SequencerUI sequencerUI;
   TouchPadUI touchPadUI;
+  GameUI gameUI;
   SoundEditUI soundEditUI;
   MappingUI mappingUI;
   SettingsMenu settingsMenu;
   float topMargin = 15;
   float sideMargin = 15;
 
-  PlayInstrumentUI(Synthesizer<float> *synth, Sequencer *sequencer,
-                   InputMapping<float> *mapping, SaveState *_saveState,
-                   Navigation *_navigation)
-      : keyboardUI(KeyboardUI(synth, mapping)),
-        sequencerUI(SequencerUI(sequencer)), touchPadUI(synth, mapping),
-        soundEditUI(SoundEditUI(synth, mapping)),
-        mappingUI(MappingUI(mapping, saveState)),
+  PlayInstrumentUI(Synthesizer<float> *synth, Sequencer *sequencer, Game *game,
+                   SaveState *_saveState, Navigation *_navigation)
+      : keyboardUI(KeyboardUI(synth, _saveState)),
+        sequencerUI(SequencerUI(sequencer)),
+        touchPadUI(TouchPadUI(synth, _saveState)), gameUI(GameUI(game)),
+        soundEditUI(SoundEditUI(synth, _saveState)),
+        mappingUI(MappingUI(_saveState)),
         settingsMenu(SettingsMenu(_navigation, _saveState, synth)),
         saveState(_saveState), navigation(_navigation) {}
 
@@ -51,6 +55,10 @@ struct PlayInstrumentUI {
 
     pageSelector =
         RadioGroup({"play", "edit sound", "edit sensors", "settings"}, PLAY);
+    pageSelector.options[PLAY].iconType = IconType::NOTES;
+    pageSelector.options[EDIT_MAPPING].iconType = IconType::MAP;
+    pageSelector.options[EDIT_SOUND].iconType = IconType::SLIDERS;
+    pageSelector.options[SETTINGS].iconType = IconType::GEAR;
     auto upperShape = AxisAlignedBoundingBox{
         .position = {.x = shape.position.x,
                      .y = static_cast<float>(navGroupHeight / 2.0)},
@@ -67,6 +75,7 @@ struct PlayInstrumentUI {
     keyboardUI.buildLayout(lowerShape);
     sequencerUI.buildLayout(lowerShape);
     touchPadUI.buildLayout(lowerShape);
+    gameUI.buildLayout(lowerShape);
     soundEditUI.buildLayout(lowerShape);
     mappingUI.buildLayout(lowerShape);
     settingsMenu.buildLayout(lowerShape);
@@ -77,7 +86,7 @@ struct PlayInstrumentUI {
     switch (page) {
 
     case PLAY:
-      switch (saveState->instrumentMetaphor) {
+      switch (saveState->getInstrumentMetaphorType()) {
       case InstrumentMetaphorType::KEYBOARD:
         keyboardUI.handleFingerMove(fingerId, position, pressure);
         break;
@@ -86,6 +95,12 @@ struct PlayInstrumentUI {
         break;
       case InstrumentMetaphorType::TOUCH_PAD:
         touchPadUI.handleFingerMove(fingerId, position, pressure);
+        break;
+      case InstrumentMetaphorType::GAME:
+        gameUI.handleFingerMove(fingerId, position, pressure);
+        break;
+      case InstrumentMetaphorType__SIZE:
+        break;
       }
       break;
     case EDIT_SOUND:
@@ -105,7 +120,7 @@ struct PlayInstrumentUI {
     switch (page) {
 
     case PLAY:
-      switch (saveState->instrumentMetaphor) {
+      switch (saveState->getInstrumentMetaphorType()) {
       case InstrumentMetaphorType::KEYBOARD:
         keyboardUI.handleFingerDown(fingerId, position, pressure);
         break;
@@ -114,6 +129,10 @@ struct PlayInstrumentUI {
         break;
       case InstrumentMetaphorType::TOUCH_PAD:
         touchPadUI.handleFingerDown(fingerId, position, pressure);
+      case InstrumentMetaphorType::GAME:
+        gameUI.handleFingerDown(fingerId, position, pressure);
+      case InstrumentMetaphorType::InstrumentMetaphorType__SIZE:
+        break;
       }
       break;
     case EDIT_SOUND:
@@ -133,7 +152,7 @@ struct PlayInstrumentUI {
     switch (page) {
 
     case PLAY:
-      switch (saveState->instrumentMetaphor) {
+      switch (saveState->getInstrumentMetaphorType()) {
       case InstrumentMetaphorType::KEYBOARD:
         keyboardUI.handleFingerUp(fingerId, position, pressure);
         break;
@@ -142,6 +161,10 @@ struct PlayInstrumentUI {
         break;
       case InstrumentMetaphorType::TOUCH_PAD:
         touchPadUI.handleFingerUp(fingerId, position, pressure);
+      case InstrumentMetaphorType::GAME:
+        gameUI.handleFingerUp(fingerId, position, pressure);
+      case InstrumentMetaphorType::InstrumentMetaphorType__SIZE:
+        break;
       }
       break;
     case EDIT_SOUND:
@@ -157,11 +180,10 @@ struct PlayInstrumentUI {
   };
 
   void handleMouseMove(const vec2f_t &mousePosition) {
-
     switch (page) {
 
     case PLAY:
-      switch (saveState->instrumentMetaphor) {
+      switch (saveState->getInstrumentMetaphorType()) {
       case InstrumentMetaphorType::KEYBOARD:
         keyboardUI.handleMouseMove(mousePosition);
         break;
@@ -170,8 +192,12 @@ struct PlayInstrumentUI {
         break;
       case InstrumentMetaphorType::TOUCH_PAD:
         touchPadUI.handleMouseMove(mousePosition);
+      case InstrumentMetaphorType::GAME:
+        gameUI.handleMouseMove(mousePosition);
+        break;
+      case InstrumentMetaphorType__SIZE:
+        break;
       }
-      break;
     case EDIT_SOUND:
       soundEditUI.handleMouseMove(mousePosition);
       break;
@@ -187,7 +213,7 @@ struct PlayInstrumentUI {
   void handleMouseDown(const vec2f_t &mousePosition) {
     switch (page) {
     case PLAY:
-      switch (saveState->instrumentMetaphor) {
+      switch (saveState->getInstrumentMetaphorType()) {
       case InstrumentMetaphorType::KEYBOARD:
         keyboardUI.handleMouseDown(mousePosition);
         break;
@@ -196,6 +222,12 @@ struct PlayInstrumentUI {
         break;
       case InstrumentMetaphorType::TOUCH_PAD:
         touchPadUI.handleMouseDown(mousePosition);
+        break;
+      case InstrumentMetaphorType::GAME:
+        gameUI.handleMouseDown(mousePosition);
+        break;
+      case InstrumentMetaphorType__SIZE:
+        break;
       }
       break;
     case EDIT_SOUND:
@@ -218,7 +250,7 @@ struct PlayInstrumentUI {
     switch (page) {
 
     case PLAY:
-      switch (saveState->instrumentMetaphor) {
+      switch (saveState->getInstrumentMetaphorType()) {
       case InstrumentMetaphorType::KEYBOARD:
         keyboardUI.handleMouseUp(mousePosition);
         break;
@@ -227,6 +259,12 @@ struct PlayInstrumentUI {
         break;
       case InstrumentMetaphorType::TOUCH_PAD:
         touchPadUI.handleMouseUp(mousePosition);
+        break;
+      case InstrumentMetaphorType::GAME:
+        gameUI.handleMouseUp(mousePosition);
+        break;
+      case InstrumentMetaphorType::InstrumentMetaphorType__SIZE:
+        break;
       }
       break;
     case EDIT_SOUND:
@@ -242,11 +280,10 @@ struct PlayInstrumentUI {
   };
 
   void draw(SDL_Renderer *renderer, const Style &style) {
-
     switch (page) {
 
     case PLAY:
-      switch (saveState->instrumentMetaphor) {
+      switch (saveState->getInstrumentMetaphorType()) {
       case InstrumentMetaphorType::KEYBOARD:
         keyboardUI.draw(renderer, style);
         break;
@@ -255,6 +292,10 @@ struct PlayInstrumentUI {
         break;
       case InstrumentMetaphorType::TOUCH_PAD:
         touchPadUI.draw(renderer, style);
+      case InstrumentMetaphorType::GAME:
+        gameUI.draw(renderer, style);
+      case InstrumentMetaphorType::InstrumentMetaphorType__SIZE:
+        break;
       }
       break;
     case EDIT_SOUND:

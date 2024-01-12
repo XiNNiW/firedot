@@ -21,10 +21,24 @@ static const ContinuousParameterType ParameterTypes[NUM_PARAMETER_TYPES] = {
     FILTER_QUALITY, ATTACK_TIME, RELEASE_TIME};
 
 static const char *getDisplayName(ContinuousParameterType type) {
-  static const char *ParameterTypeDisplayNames[NUM_PARAMETER_TYPES] = {
-      "frequency",      "gain",        "sound source", "filter cutoff",
-      "filter quality", "attack time", "release time"};
-  return ParameterTypeDisplayNames[static_cast<int>(type)];
+  switch (type) {
+  case FREQUENCY:
+    return "frequency";
+  case GAIN:
+    return "gain";
+  case SOUND_SOURCE:
+    return "sound source";
+  case FILTER_CUTOFF:
+    return "filter cutoff";
+  case FILTER_QUALITY:
+    return "filter quality";
+  case ATTACK_TIME:
+    return "attack time";
+  case RELEASE_TIME:
+    return "release time";
+    break;
+  }
+  return "";
 }
 enum MomentaryParameterType { GATE };
 static const size_t NUM_MOMENTARY_PARAMETER_TYPES = 1;
@@ -34,10 +48,12 @@ static const MomentaryParameterType
     MomentaryParameterTypes[NUM_MOMENTARY_PARAMETER_TYPES] = {GATE};
 
 static const char *getDisplayName(MomentaryParameterType type) {
-  static const char
-      *MomentaryParameterTypeDisplayNames[NUM_MOMENTARY_PARAMETER_TYPES] = {
-          "gate"};
-  return MomentaryParameterTypeDisplayNames[static_cast<int>(type)];
+  switch (type) {
+  case GATE:
+    return "gate";
+    break;
+  }
+  return "";
 }
 
 using algae::dsp::filter::SmoothParameter;
