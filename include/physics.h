@@ -178,12 +178,20 @@ private:
           case GameObject::WALL: {
             Wall *wall2 = &object2->object.wall;
             auto mvt = particle1->collider.intersection(wall2->collider);
+
             if (mvt.has_value()) {
               collisions.push_back(
                   collision_t{.object1 = object1.get(),
                               .object2 = object2.get(),
                               .minimumTranslationVector = mvt.value()});
             }
+
+            // TODO catch fast moving particles
+            //  auto motionLine =
+            //      object1->getPosition().subtract(object1->getLastPosition());
+
+            //  if () {
+            //  }
             break;
           }
           }

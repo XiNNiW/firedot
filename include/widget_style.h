@@ -24,9 +24,10 @@ enum class IconType {
   RIGHT_ARROW,
   LEFT_ARROW,
   GEAR,
+  TOUCH,
   NONE
 };
-static const size_t NUM_ICONS = 17;
+static const size_t NUM_ICONS = 18;
 static_assert(NUM_ICONS == static_cast<size_t>(IconType::NONE),
               "IconType enum and size must agree");
 static const IconType iconTypes[NUM_ICONS] = {
@@ -35,7 +36,7 @@ static const IconType iconTypes[NUM_ICONS] = {
     IconType::GAME_PAD,   IconType::SINE_WAVE, IconType::PIANO,
     IconType::DRUM,       IconType::SAVE,      IconType::NOTES,
     IconType::MAP,        IconType::SLIDERS,   IconType::RIGHT_ARROW,
-    IconType::LEFT_ARROW, IconType::GEAR};
+    IconType::LEFT_ARROW, IconType::GEAR,      IconType::TOUCH};
 static const char *iconPaths[NUM_ICONS] = {
     "images/guitar-svgrepo-com.svg",
     "images/cassette-tape-svgrepo-com.svg",
@@ -53,7 +54,8 @@ static const char *iconPaths[NUM_ICONS] = {
     "images/tuning-3-svgrepo-com.svg",
     "images/arrow-right-svgrepo-com.svg",
     "images/arrow-left-svgrepo-com.svg",
-    "images/gear-svgrepo-com.svg"};
+    "images/gear-svgrepo-com.svg",
+    "images/touch-svgrepo-com.svg"};
 
 static inline const bool LoadIconTexture(SDL_Renderer *renderer,
                                          std::string path,

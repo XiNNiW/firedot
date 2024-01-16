@@ -28,6 +28,7 @@ struct SequencerUI {
     auto buttonWidth = (width - pageMargin) / numButtonsPerRow;
     auto buttonHeight = buttonWidth;
     auto sliderHeight = buttonHeight;
+    auto yPos = yOffset + pageMargin;
     for (int i = 0; i < Sequencer::MAX_STEPS; i++) {
       stepButtons[i] = HSlider{
           .shape = {
@@ -36,30 +37,34 @@ struct SequencerUI {
                                buttonWidth / 2.0 + xOffset + pageMargin / 2.0),
                            .y = static_cast<float>(
                                buttonHeight * floor(i / numButtonsPerRow) +
-                               buttonHeight / 2.0 + yOffset + pageMargin)},
+                               buttonHeight / 2.0 + yPos)},
               .halfSize = {.x = static_cast<float>(buttonWidth / 2.0 - 10),
                            .y = static_cast<float>(buttonHeight / 2.0 - 10)}}};
     }
+    yPos += buttonHeight * 4 + buttonHeight / 2.0;
+
+    // yPos = tempoSlider;
+    playButton = Button{
+        .label = Label("play"),
+        .shape = {.position = {.x = shape.position.x,
+                               .y = static_cast<float>(
+                                   shape.position.y + shape.halfSize.y -
+                                   buttonHeight / 2.0 - pageMargin / 2.0)},
+                  .halfSize = {.x = static_cast<float>(buttonWidth / 2.0),
+                               .y = static_cast<float>(buttonHeight / 4.0)}},
+        .iconType = IconType::PLAY,
+    };
 
     tempoSlider = HSlider{
         .label = Label("tempo"),
         .shape = {.position = {.x = shape.position.x,
-                               .y = static_cast<float>(
-                                   shape.halfSize.y * 2 - sliderHeight / 2.0 -
-                                   buttonHeight - pageMargin / 2.0)},
+                               .y = static_cast<float>(shape.position.y +
+                                                       shape.halfSize.y -
+                                                       2 * buttonHeight / 2.0 -
+                                                       pageMargin / 2.0 - 15)},
                   .halfSize = {.x = static_cast<float>(shape.halfSize.x -
                                                        pageMargin / 2.0),
-                               .y = static_cast<float>(buttonHeight / 2.0)}},
-    };
-    playButton = Button{
-        .label = Label("play"),
-        .shape = {.position = {.x = shape.position.x,
-                               .y = static_cast<float>(shape.halfSize.y * 2 -
-                                                       buttonHeight / 2.0 -
-                                                       pageMargin / 2.0)},
-                  .halfSize = {.x = static_cast<float>(buttonWidth / 2.0),
-                               .y = static_cast<float>(buttonHeight / 4.0)}},
-        .iconType = IconType::PLAY,
+                               .y = static_cast<float>(buttonHeight / 6.0)}},
     };
   };
 

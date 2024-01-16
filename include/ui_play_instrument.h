@@ -50,11 +50,12 @@ struct PlayInstrumentUI {
         saveState(_saveState), navigation(_navigation) {}
 
   void buildLayout(const AxisAlignedBoundingBox &shape) {
+    page = PLAY;
     auto navGroupHeight = 100;
     auto buttonWidth = 200;
 
     pageSelector =
-        RadioGroup({"play", "edit sound", "edit sensors", "settings"}, PLAY);
+        RadioGroup({"play", "edit sound", "edit sensors", "settings"}, page);
     pageSelector.options[PLAY].iconType = IconType::NOTES;
     pageSelector.options[EDIT_MAPPING].iconType = IconType::MAP;
     pageSelector.options[EDIT_SOUND].iconType = IconType::SLIDERS;

@@ -13,12 +13,11 @@
 struct ChooseCharacterUI {
   SaveState *saveState;
   RadioGroup characterChooser;
-  Label *pageTitleLabel = new Label("choose your character!");
+  Label pageTitleLabel = Label("choose your character!");
   AxisAlignedBoundingBox pageTitleLabelShape;
   AxisAlignedBoundingBox bodyShape;
 
   ChooseCharacterUI(SaveState *_saveState) : saveState(_saveState) {}
-  ~ChooseCharacterUI() { delete pageTitleLabel; }
 
   void buildLayout(const AxisAlignedBoundingBox &shape) {
     auto pageLabelHeight = 50;
@@ -43,7 +42,7 @@ struct ChooseCharacterUI {
         {.position = {.x = bodyShape.halfSize.x, .y = bodyShape.halfSize.y},
          .halfSize = {.x = bodyShape.halfSize.x - 30, .y = 75}});
     characterChooser.options[KEYBOARD].iconType = IconType::PIANO;
-    characterChooser.options[TOUCH_PAD].iconType = IconType::SLIDERS;
+    characterChooser.options[TOUCH_PAD].iconType = IconType::TOUCH;
     characterChooser.options[GAME].iconType = IconType::GAME_PAD;
     characterChooser.options[SEQUENCER].iconType = IconType::GRID;
   };
@@ -71,9 +70,9 @@ struct ChooseCharacterUI {
 
   void draw(SDL_Renderer *renderer, const Style &style) {
     auto pageLabelRect = ConvertAxisAlignedBoxToSDL_Rect(pageTitleLabelShape);
-    pageTitleLabel->draw(
-        style.hoverColor, style.unavailableColor, pageLabelRect, renderer,
-        style, HorizontalAlignment::CENTER, VerticalAlignment::CENTER);
+    pageTitleLabel.draw(style.hoverColor, style.unavailableColor, pageLabelRect,
+                        renderer, style, HorizontalAlignment::CENTER,
+                        VerticalAlignment::CENTER);
     DrawRadioGroup(&characterChooser, renderer, style);
   };
 };

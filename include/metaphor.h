@@ -25,7 +25,7 @@ static const char *getDisplayName(const InstrumentMetaphorType type) {
   case TOUCH_PAD:
     return "touch pad";
   case GAME:
-    return "touch pad";
+    return "game";
   case InstrumentMetaphorType__SIZE:
     return "";
     break;

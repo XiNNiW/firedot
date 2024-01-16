@@ -21,6 +21,7 @@ struct Wall {
 class GameObject {
 private:
   vec2f_t position;
+  vec2f_t lastPosition;
   SDL_Rect renderBox;
   const void setColliderPosition(const vec2f_t &position) {
     auto *collider = getCollider();
@@ -46,7 +47,9 @@ public:
   const SDL_Rect &getRenderBox() const { return renderBox; }
 
   const vec2f_t &getPosition() const { return position; }
+  const vec2f_t &getLastPosition() const { return lastPosition; }
   const void setPosition(const vec2f_t &position) {
+    this->lastPosition = this->position;
     this->position = position;
     renderBox.x = position.x - renderBox.w / 2.0;
     renderBox.y = position.y - renderBox.h / 2.0;

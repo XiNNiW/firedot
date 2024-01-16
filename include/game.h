@@ -61,16 +61,15 @@ struct Game {
           auto collisionVelocity = p2.velocity.subtract(p1.velocity).length() >
                                    MIN_COLLISION_VELOCITY;
           if (collisionVelocity) {
-            auto v1 = lerp<float>(1, 127, p2.velocity.length() / 4.0);
-            auto v2 = lerp<float>(1, 127, p2.velocity.length() / 4.0);
-
             mapping->emitEvent(synth, ContinuousInputType::COLLISION_VELOCITY,
-                               collisionVelocity);
+                               collisionVelocity / 1000.0);
             mapping->emitEvent(synth, ContinuousInputType::COLLISION_POSITION_X,
-                               p1.collider.getPosition().x);
+                               p1.collider.getPosition().x /
+                                   float(bounds.halfSize.x * 2));
 
             mapping->emitEvent(synth, ContinuousInputType::COLLISION_POSITION_Y,
-                               p1.collider.getPosition().y);
+                               p1.collider.getPosition().y /
+                                   float(bounds.halfSize.y * 2));
             mapping->emitEvent(synth, MomentaryInputType::COLLISION, true);
             activeGateTimes.push_back(0);
           }
@@ -83,12 +82,14 @@ struct Game {
           if (collisionVelocity) {
 
             mapping->emitEvent(synth, ContinuousInputType::COLLISION_VELOCITY,
-                               collisionVelocity);
+                               collisionVelocity / 1000.0);
             mapping->emitEvent(synth, ContinuousInputType::COLLISION_POSITION_X,
-                               p1.collider.getPosition().x);
+                               p1.collider.getPosition().x /
+                                   float(bounds.halfSize.x * 2));
 
             mapping->emitEvent(synth, ContinuousInputType::COLLISION_POSITION_Y,
-                               p1.collider.getPosition().y);
+                               p1.collider.getPosition().y /
+                                   float(bounds.halfSize.y * 2));
             mapping->emitEvent(synth, MomentaryInputType::COLLISION, true);
             activeGateTimes.push_back(0);
           }
