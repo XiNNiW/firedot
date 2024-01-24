@@ -317,6 +317,26 @@ template <typename sample_t> struct InputMapping {
     return false;
   }
 
+  inline const bool getMapping(const ContinuousParameterType parameterType,
+                               ContinuousInputType *mappedType) {
+    for (auto &pair : continuousMappings) {
+      if (pair.second == parameterType)
+        *mappedType = pair.first;
+      return true;
+    }
+    return false;
+  }
+
+  inline const bool getMapping(const MomentaryParameterType parameterType,
+                               MomentaryInputType *mappedType) {
+    for (auto &pair : momentaryMappings) {
+      if (pair.second == parameterType)
+        *mappedType = pair.first;
+      return true;
+    }
+    return false;
+  }
+
   inline void
   removeMappingForParameterType(ContinuousParameterType parameterType) {
     bool shouldRemove = false;

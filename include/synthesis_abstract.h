@@ -133,7 +133,7 @@ struct AbstractMonophonicSynthesizer {
   }
 
   inline void setFilterQuality(sample_t value) {
-    value = clamp<sample_t>(value, 0.001, 1);
+    value = clamp<sample_t>(value, 0.01, 1);
     value *= 3;
     static_cast<DerivedT *>(this)->voice.filterQuality = value;
   }

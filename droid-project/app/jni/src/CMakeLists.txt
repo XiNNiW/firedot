@@ -16,7 +16,9 @@ find_library(SPSCQueue SPSCQueue)
 
 add_library(main SHARED)
 
-target_sources(main PRIVATE ../../../../main.cpp)
+file(GLOB SOURCES "../../../../src/*.cpp")
+
+target_sources(main PRIVATE ${SOURCES} ../../../../main.cpp)
 
 target_link_libraries(main SDL2 SDL2_image algae
         SDL2_ttf

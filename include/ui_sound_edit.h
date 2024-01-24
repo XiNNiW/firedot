@@ -10,10 +10,12 @@
 
 struct SoundEditUI {
   Synthesizer<float> *synth = NULL;
+  InputMapping<float> *mapping = NULL;
   SaveState *saveState = NULL;
 
   RadioGroup synthSelectRadioGroup;
   std::map<ContinuousParameterType, HSlider> parameterSliders;
+  std::map<ContinuousParameterType, Button> mappingButtons;
   int fingerPositions[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 
   Label *pageTitleLabel = new Label("choose your sound!");
@@ -26,8 +28,9 @@ struct SoundEditUI {
   float topMargin = 50;
   float pageMargin = 50;
 
-  SoundEditUI(Synthesizer<float> *_synth, SaveState *_saveState)
-      : synth(_synth), saveState(_saveState) {
+  SoundEditUI(Synthesizer<float> *_synth, InputMapping<float> *_mapping,
+              SaveState *_saveState)
+      : synth(_synth), mapping(_mapping), saveState(_saveState) {
     const size_t initialSynthTypeSelection = synth->type;
     std::vector<std::string> synthOptionLabels = {};
     for (auto &synthType : SynthTypes) {
@@ -81,34 +84,49 @@ struct SoundEditUI {
     synthSelectRadioGroup.buildLayout(AxisAlignedBoundingBox{
 
         .position = {.x = shape.halfSize.x + xOffset,
-                     .y = static_cast<float>(topMargin + height / 24.0 +
-                                             yOffset)},
+                     .y = static_cast<float>(height / 24.0 + yOffset)},
         .halfSize = {.x = (width - 2 * pageMargin) / 2,
                      .y = static_cast<float>(height / 24.0)}});
 
     int sliderCounter = 0;
+    auto initialSliderY = synthSelectRadioGroup.shape.position.y +
+                          2 * synthSelectRadioGroup.shape.halfSize.y +
+                          buttonMargin * 2;
+    auto usefulWidth = width - pageMargin;
+    auto rowMargin = usefulWidth / 128;
+    auto buttonWidth = 0 * (usefulWidth - rowMargin) / 8;
+    auto sliderWidth = usefulWidth - rowMargin - buttonWidth;
+    auto rowHeight = height / 12.0;
     for (auto &parameter : ParameterTypes) {
-      if (parameter == FREQUENCY) {
+      if (parameter == FREQUENCY)
         continue;
-      }
+      auto rowY =
+          initialSliderY +
+          sliderCounter++ * (static_cast<float>(height / 12.0) + buttonMargin);
       parameterSliders[parameter] = HSlider{
           .label = Label(getDisplayName(parameter)),
-
           .shape =
               AxisAlignedBoundingBox{
                   .position =
                       {
-                          .x = width / 2 + xOffset,
-                          .y = synthSelectRadioGroup.shape.position.y +
-                               synthSelectRadioGroup.shape.halfSize.y +
-                               buttonMargin + yOffset + 25 +
-                               sliderCounter++ *
-                                   (static_cast<float>(height / 12.0) +
-                                    buttonMargin),
+                          .x = xOffset + pageMargin / 2 + sliderWidth / 2,
+                          .y = rowY,
                       },
-                  .halfSize = {.x = (width - 2 * pageMargin) / 2,
-                               .y = static_cast<float>(height / 24.0)}},
+                  .halfSize = {.x = sliderWidth / 2,
+                               .y = static_cast<float>(rowHeight / 2)}},
       };
+      ContinuousInputType mappedInput;
+      auto buttonText = mapping->getMapping(parameter, &mappedInput)
+                            ? getDisplayName(mappedInput)
+                            : "none";
+      mappingButtons[parameter] =
+          Button{.label = Label(buttonText),
+                 .shape = AxisAlignedBoundingBox{
+                     .position = {.x = xOffset + pageMargin / 2 + sliderWidth +
+                                       rowMargin + buttonWidth / 2,
+                                  .y = rowY},
+                     .halfSize = {.x = buttonWidth / 2,
+                                  .y = static_cast<float>(rowHeight / 2)}}};
     }
   }
 
@@ -216,6 +234,8 @@ struct SoundEditUI {
         DrawHSlider(&parameterSliders[parameterType],
                     synth->getParameter(parameterType), renderer, style);
       }
+
+      //  DrawButton(&mappingButtons[parameterType], renderer, style);
     }
   }
 };

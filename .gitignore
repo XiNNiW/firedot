@@ -50,3 +50,6 @@ build/*/
 .idea
 .idea/**/*
 .idea/*
+
+*.wav
+*.WAV

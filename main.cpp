@@ -22,6 +22,7 @@
 #include "include/sequencer.h"
 #include "include/synthesis.h"
 #include "include/synthesis_parameter.h"
+#include "include/synthesis_sampling.h"
 #include "include/ui.h"
 #include "include/vector_math.h"
 #include <SDL.h>
@@ -37,6 +38,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <filesystem>
 #include <functional>
 #include <map>
 #include <math.h>
@@ -53,101 +55,13 @@
 
 // enum class GameState { RUNNING, WAITING_FOR_FRAME_SYNC, PAUSED };
 
-inline void FreeSampleInfo(AudioSample *sampleInfo) {
-  // free(sampleInfo->buffer);
-  // free(sampleInfo);
-  delete sampleInfo;
-}
-
-static inline bool LoadWAVSampleAsMono(std::string samplePath,
-                                       AudioSample **sampleInfo) {
-
-  SDL_AudioSpec wavSpec;
-  Uint32 wavLength;
-  Uint8 *wavBuffer;
-  long bufferSize = 0;
-
-  SDL_LoadWAV(samplePath.c_str(), &wavSpec, &wavBuffer, &wavLength);
-
-  bool isSupportedFormat = false;
-
-  switch (wavSpec.format) {
-  case AUDIO_S8: {
-    const int bytesPerSample = sizeof(int8_t);
-    SDL_Log("its a signed 8bit int!");
-    break;
-  }
-  case AUDIO_U8: {
-    const int bytesPerSample = sizeof(uint8_t);
-    SDL_Log("its a unsigned 8bit int!");
-    break;
-  }
-  case AUDIO_S16: {
-    const int bytesPerSample = sizeof(int16_t);
-    isSupportedFormat = true;
-    SDL_Log("its a signed 16bit int!");
-    int16_t *stream = (int16_t *)wavBuffer;
-
-    SDL_Log("sample info: %d %f %d - %f", wavLength,
-            wavLength / float(bytesPerSample), wavSpec.freq,
-            float(wavLength / float(bytesPerSample * wavSpec.channels)) /
-                float(wavSpec.freq));
-    bufferSize = wavLength / bytesPerSample;
-    *sampleInfo = new AudioSample(wavSpec.freq, wavSpec.channels, bufferSize);
-    if (*sampleInfo == NULL) {
-      SDL_LogError(0, "sample failed to init!");
-    }
-    if ((*sampleInfo)->buffer == NULL) {
-      return false;
-    }
-    for (size_t i = 0; i < bufferSize; ++i) {
-      (*sampleInfo)->buffer[i] = 0;
-      for (size_t ch = 0; ch < wavSpec.channels; ++ch) {
-        (*sampleInfo)->buffer[i] +=
-            float(stream[i + ch]) / float(std::numeric_limits<int16_t>::max());
-      }
-    }
-
-    break;
-  }
-  case AUDIO_U16: {
-    const int bytesPerSample = sizeof(uint16_t);
-    SDL_Log("its a unsigned 16 bit int!");
-    break;
-  }
-  case AUDIO_S32: {
-    const int bytesPerSample = sizeof(int32_t);
-    SDL_Log("its a signed 32 bit int!");
-    break;
-  }
-  case AUDIO_F32: {
-    const int bytesPerSample = sizeof(float);
-    isSupportedFormat = true;
-    SDL_Log("its a float!");
-    break;
-  }
-  default:
-    SDL_Log("could not detect datatype");
-  }
-
-  free(wavBuffer);
-  if ((*sampleInfo) == NULL) {
-
-    SDL_LogError(0, "freeing wav buffer killed sample info!");
-  }
-  SDL_Log("loaded sample!");
-  return isSupportedFormat;
-}
-
 class Framework {
 public:
   static inline void forwardAudioCallback(void *userdata, Uint8 *stream,
                                           int len) {
     static_cast<Framework *>(userdata)->audioCallback(stream, len);
   }
-  Framework(int width_, int height_)
-      : height(height_), width(width_),
-        synth(Synthesizer<float>(SubtractiveSynthesizer<float>())) {}
+  Framework(int width_, int height_) : height(height_), width(width_) {}
 
   inline const bool init() {
 
@@ -267,14 +181,25 @@ public:
     ss << "size: " << config.size << "\n";
     ss << "silence: " << config.silence << "\n";
 
-    if (!LoadWAVSampleAsMono("sounds/autoharp 13 C3.wav", &audioSample)) {
-      SDL_LogError(0, "could not read sample!");
-      return false;
-    };
-    if (audioSample == NULL) {
-      SDL_LogError(0, "sampleLoad failed!");
-      return false;
+    using std::filesystem::directory_iterator;
+    using std::filesystem::path;
+
+    auto soundPath = path{"sounds"};
+    for (auto &item : directory_iterator(soundPath)) {
+      if (item.is_directory())
+        continue;
+
+      sampleBank.loadSample(item.path());
     }
+
+    // if (!LoadWAVSampleAsMono("sounds/autoharp 13 C3.wav", &audioSample)) {
+    //   SDL_LogError(0, "could not read sample!");
+    //   return false;
+    // };
+    // if (audioSample == NULL) {
+    //   SDL_LogError(0, "sampleLoad failed!");
+    //   return false;
+    // }
 
     SDL_LogInfo(0, "%s", ss.str().c_str());
 
@@ -297,16 +222,15 @@ public:
     synth.setSoundSource(0.5);
     synth.setAttackTime(0.001);
     synth.setReleaseTime(1);
-    synth.activeSample = audioSample;
 
     saveState.setInstrumentMetaphor(KEYBOARD);
-    saveState.sensorMapping.addMapping(TILT,
-                                       ContinuousParameterType::SOUND_SOURCE);
-
-    saveState.sensorMapping.addMapping(KEYBOARD_KEY,
-                                       ContinuousParameterType::FREQUENCY);
-    saveState.sensorMapping.addMapping(ACCELERATION,
-                                       ContinuousParameterType::FILTER_CUTOFF);
+    //    saveState.sensorMapping.addMapping(TILT,
+    //                                       ContinuousParameterType::SOUND_SOURCE);
+    //
+    //    saveState.sensorMapping.addMapping(KEYBOARD_KEY,
+    //                                       ContinuousParameterType::FREQUENCY);
+    //    saveState.sensorMapping.addMapping(ACCELERATION,
+    //                                       ContinuousParameterType::FILTER_CUTOFF);
 
     userInterface.buildLayout(
         {.position = {.x = static_cast<float>(width / 2.0),
@@ -333,7 +257,7 @@ public:
     }
     gameObjects.clear();
 
-    FreeSampleInfo(audioSample);
+    // FreeSampleInfo(audioSample);
 
     SDL_JoystickClose(gGameController);
     gGameController = NULL;
@@ -598,14 +522,16 @@ private:
   // GameState gameState = GameState::RUNNING;
   std::vector<GameObject *> gameObjects;
   GameObject *wall1, *wall2, *wall3, *wall4;
-  AudioSample *audioSample = NULL;
+  // AudioSample *audioSample = NULL;
+  SampleBank<float> sampleBank =
+      SampleBank<float>(sizeof(float) * 48000 * 60 * 8);
 
   Style *style = NULL;
   SDL_Texture *menuIcon = NULL;
   SDL_Texture *synthSelectIcon = NULL;
 
   // Model objects
-  Synthesizer<float> synth;
+  Synthesizer<float> synth = Synthesizer<float>(&sampleBank);
 
   SaveState saveState;
   Sequencer sequencer = Sequencer(&synth, &saveState);

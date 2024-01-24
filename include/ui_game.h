@@ -2,13 +2,12 @@
 #include "SDL_render.h"
 #include "collider.h"
 #include "game.h"
-#include "ui_abstract.h"
 #include "vector_math.h"
 #include "widget_button.h"
 #include "widget_utils.h"
 #include <cstddef>
 #include <cstdlib>
-struct GameUI : public AbstractUI {
+struct GameUI {
   Game *game = NULL;
   bool mouseIsDown = false;
   vec2f_t mouseDownPosition;

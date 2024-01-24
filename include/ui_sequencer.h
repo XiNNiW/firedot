@@ -1,7 +1,6 @@
 #pragma once
 
 #include "sequencer.h"
-#include "ui_abstract.h"
 #include "widget_button.h"
 #include "widget_hslider.h"
 #include "widget_state.h"

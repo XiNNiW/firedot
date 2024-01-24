@@ -29,9 +29,7 @@ struct MappingUI {
 
   AxisAlignedBoundingBox shape;
   AxisAlignedBoundingBox bodyShape;
-  float sideMargin = 15;
-  float topMargin = 50;
-  float buttonMargin = 50;
+
   int heldSensor = -1;
   int heldMomentarySensor = -1;
   vec2f_t lastMousePosition;
@@ -57,7 +55,7 @@ struct MappingUI {
                  NUM_PARAMETER_TYPES + 2);
     this->shape = shape;
 
-    auto pageLabelHeight = 50;
+    auto pageLabelHeight = shape.halfSize.y / 24;
 
     auto topPosition = shape.position.y - shape.halfSize.y;
     pageTitleLabel.shape = AxisAlignedBoundingBox{
@@ -77,11 +75,14 @@ struct MappingUI {
     auto height = (bodyShape.halfSize.y * 2);
     auto xOffset = bodyShape.position.x - bodyShape.halfSize.x;
     auto yOffset = bodyShape.position.y - bodyShape.halfSize.y;
-
-    auto buttonHalfSize = vec2f_t{.x = bodyShape.halfSize.x / 3,
-                                  .y = (bodyShape.halfSize.y - pageLabelHeight -
-                                        (buttonMargin * maxNumButtons)) /
-                                       maxNumButtons};
+    float sideMargin = bodyShape.halfSize.x / 10;
+    float topMargin = bodyShape.halfSize.y / 10;
+    float buttonMargin = bodyShape.halfSize.y / 32;
+    auto buttonHalfSize =
+        vec2f_t{.x = bodyShape.halfSize.x / 3,
+                .y = (bodyShape.halfSize.y - pageLabelHeight / 2 -
+                      (buttonMargin * maxNumButtons)) /
+                     maxNumButtons};
     auto buttonSpace = buttonMargin + buttonHalfSize.y * 2;
 
     auto yPos = yOffset + 5;
@@ -284,19 +285,19 @@ struct MappingUI {
       DrawButton(&typeButtonPair.second, renderer, style, style.color1);
     }
     for (auto &typeButtonPair : continuousInputButtons) {
-      DrawButton(&typeButtonPair.second, renderer, style);
+      DrawButton(&typeButtonPair.second, renderer, style, style.color2);
     }
     for (auto &button : momentaryParameterButtons) {
       DrawButton(&button, renderer, style, style.color1);
     }
-
     for (auto &button : parameterButtons) {
-      DrawButton(&button, renderer, style);
+      DrawButton(&button, renderer, style, style.color2);
     }
 
     pageTitleLabel.draw(style.hoverColor, style.unavailableColor, renderer,
                         style, HorizontalAlignment::CENTER,
                         VerticalAlignment::CENTER);
+
     momentaryInputLabel.draw(style.hoverColor, style.unavailableColor, renderer,
                              style, HorizontalAlignment::LEFT,
                              VerticalAlignment::CENTER);

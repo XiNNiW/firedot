@@ -36,6 +36,7 @@ public:
   }
 
   inline const std::string &getText() { return text; }
+
   inline const void draw(
       const SDL_Color &textColor, const SDL_Color &backgroundColor,
       SDL_Renderer *renderer, const Style &style,

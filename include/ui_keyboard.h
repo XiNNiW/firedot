@@ -6,7 +6,6 @@
 #include "sensor.h"
 #include "sequencer.h"
 #include "synthesis.h"
-#include "ui_abstract.h"
 #include "ui_navigation.h"
 #include "widget_state.h"
 #include "widget_vslider.h"

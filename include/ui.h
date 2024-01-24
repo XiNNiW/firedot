@@ -6,7 +6,6 @@
 #include "metaphor.h"
 #include "save_state.h"
 #include "sequencer.h"
-#include "ui_abstract.h"
 #include "ui_instrument_setup.h"
 #include "ui_keyboard.h"
 #include "ui_mapping.h"
@@ -17,11 +16,12 @@
 #include "widget_button.h"
 #include "widget_radio_button.h"
 
-struct UserInterface : public AbstractUI {
+struct UserInterface {
   Navigation navigation;
   InstrumentSetupUI instrumentSetupUI;
   PlayInstrumentUI playInstrumentUI;
   SettingsMenu settingsUI;
+  AxisAlignedBoundingBox shape;
 
   UserInterface(Synthesizer<float> *synth, Sequencer *sequencer, Game *game,
                 SaveState *saveState)
@@ -38,6 +38,8 @@ struct UserInterface : public AbstractUI {
     playInstrumentUI.buildLayout(shape);
     settingsUI.buildLayout(shape);
   }
+
+  inline void refreshLayout() { buildLayout(shape); }
 
   inline void handleFingerMove(const SDL_FingerID &fingerId,
                                const vec2f_t &position, const float pressure) {

@@ -22,7 +22,9 @@ struct TouchPadUI {
   AxisAlignedBoundingBox shape;
   TouchPadUI(Synthesizer<float> *_synth, SaveState *_saveState)
       : synth(_synth), saveState(_saveState) {}
-  inline void buildLayout(const AxisAlignedBoundingBox &shape){};
+  inline void buildLayout(const AxisAlignedBoundingBox &shape) {
+    this->shape = shape;
+  };
 
   inline void handleFingerMove(const SDL_FingerID &fingerId,
                                const vec2f_t &position, const float pressure) {
@@ -96,9 +98,10 @@ struct TouchPadUI {
       }
     }
 
-    DrawBoxOutline(
-        ConvertAxisAlignedBoxToSDL_Rect(AxisAlignedBoundingBox{
-            .position = shape.position, .halfSize = shape.halfSize.scale(0.7)}),
-        renderer, style.color0);
+    //   DrawBoxOutline(
+    //       ConvertAxisAlignedBoxToSDL_Rect(AxisAlignedBoundingBox{
+    //           .position = shape.position, .halfSize =
+    //           shape.halfSize.scale(0.9)}),
+    //       renderer, style.color0);
   };
 };

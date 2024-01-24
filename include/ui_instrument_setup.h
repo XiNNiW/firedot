@@ -30,7 +30,8 @@ struct InstrumentSetupUI {
                     Navigation *_navigation)
       : chooseCharacterUI(ChooseCharacterUI(saveState)),
         mappingUI(MappingUI(saveState)),
-        soundEditUI(SoundEditUI(synth, saveState)), navigation(_navigation) {}
+        soundEditUI(SoundEditUI(synth, &saveState->sensorMapping, saveState)),
+        navigation(_navigation) {}
   void buildLayout(const AxisAlignedBoundingBox &shape) {
     auto width = shape.halfSize.x * 2;
     auto height = shape.halfSize.y * 2;

@@ -8,6 +8,7 @@
 #include "widget_style.h"
 #include "widget_utils.h"
 #include <string>
+
 inline void DrawFilledRect(const SDL_Rect &rect, SDL_Renderer *renderer,
                            const SDL_Color &color) {
 
@@ -101,6 +102,7 @@ inline const void DrawButtonLabel(
                      ConvertAxisAlignedBoxToSDL_Rect(button->shape), renderer,
                      style, horizontalAlignment, verticalAlignment);
 }
+
 inline const void DrawButton(Button *button, SDL_Renderer *renderer,
                              const Style &style, SDL_Color borderColor) {
 
@@ -130,5 +132,5 @@ inline const void DrawButton(Button *button, SDL_Renderer *renderer,
 inline const void DrawButton(Button *button, SDL_Renderer *renderer,
                              const Style &style) {
 
-  DrawButton(button, renderer, style, style.color2);
+  DrawButton(button, renderer, style, style.inactiveColor);
 }

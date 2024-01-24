@@ -4,7 +4,6 @@
 #include "game.h"
 #include "metaphor.h"
 #include "save_state.h"
-#include "ui_abstract.h"
 #include "ui_game.h"
 #include "ui_instrument_setup.h"
 #include "ui_keyboard.h"
@@ -44,15 +43,15 @@ struct PlayInstrumentUI {
       : keyboardUI(KeyboardUI(synth, _saveState)),
         sequencerUI(SequencerUI(sequencer)),
         touchPadUI(TouchPadUI(synth, _saveState)), gameUI(GameUI(game)),
-        soundEditUI(SoundEditUI(synth, _saveState)),
+        soundEditUI(SoundEditUI(synth, &_saveState->sensorMapping, _saveState)),
         mappingUI(MappingUI(_saveState)),
         settingsMenu(SettingsMenu(_navigation, _saveState, synth)),
         saveState(_saveState), navigation(_navigation) {}
 
   void buildLayout(const AxisAlignedBoundingBox &shape) {
     page = PLAY;
-    auto navGroupHeight = 100;
-    auto buttonWidth = 200;
+    auto navGroupHeight = shape.halfSize.y / 6;
+    auto buttonWidth = shape.halfSize.x / 5;
 
     pageSelector =
         RadioGroup({"play", "edit sound", "edit sensors", "settings"}, page);
@@ -293,6 +292,7 @@ struct PlayInstrumentUI {
         break;
       case InstrumentMetaphorType::TOUCH_PAD:
         touchPadUI.draw(renderer, style);
+        break;
       case InstrumentMetaphorType::GAME:
         gameUI.draw(renderer, style);
       case InstrumentMetaphorType::InstrumentMetaphorType__SIZE:

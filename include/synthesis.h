@@ -71,22 +71,7 @@ template <typename sample_t> struct SynthesizerEvent {
 };
 
 template <typename sample_t> struct Synthesizer {
-  // struct ActiveNote {
-  //   Synthesizer<sample_t> *synth;
-  //   sample_t noteID = 440;
 
-  //   static ActiveNote makeNoteOnEvent(Synthesizer<sample_t> *synth,
-  //                                     sample_t frequency, sample_t gain) {
-  //     synth->eventQueue.push(
-  //         NoteEvent<sample_t>{.frequency = frequency, .gain = gain});
-  //     return ActiveNote{.synth = synth, .noteID = frequency};
-  //   }
-
-  //   inline void noteOff() {
-  //     synth->eventQueue.push(
-  //         NoteEvent<sample_t>{.frequency = noteID, .gain = 0});
-  //   }
-  // };
   Parameter<sample_t> frequency = Parameter<sample_t>(440);
   Parameter<sample_t> gain = Parameter<sample_t>(1);
   Parameter<sample_t> filterCutoff = Parameter<sample_t>(1);
@@ -96,7 +81,8 @@ template <typename sample_t> struct Synthesizer {
   Parameter<sample_t> releaseTime = Parameter<sample_t>(1);
 
   sample_t sampleRate = 48000;
-  AudioSample *activeSample = NULL;
+  // AudioSample *activeSample = NULL;
+  SampleBank<sample_t> *sampleBank = NULL;
 
   SynthesizerType type;
   union uSynthesizer {
@@ -117,16 +103,19 @@ template <typename sample_t> struct Synthesizer {
   rigtorp::SPSCQueue<SynthesizerEvent<sample_t>> eventQueue =
       rigtorp::SPSCQueue<SynthesizerEvent<sample_t>>(20);
 
-  Synthesizer<sample_t>(const SubtractiveDrumSynth<sample_t> &s)
-      : object(s), type(SUBTRACTIVE_DRUM_SYNTH) {}
-  Synthesizer<sample_t>(const SubtractiveSynthesizer<sample_t> &s)
-      : object(s), type(SUBTRACTIVE) {}
-  Synthesizer<sample_t>(const KarplusStrongSynthesizer<sample_t> &s)
-      : object(s), type(PHYSICAL_MODEL) {}
-  Synthesizer<sample_t>(const FMSynthesizer<sample_t> &s)
-      : object(s), type(FREQUENCY_MODULATION) {}
-  Synthesizer<sample_t>(const Sampler<sample_t> &s)
-      : object(s), type(SAMPLER) {}
+  Synthesizer<sample_t>(SampleBank<sample_t> *bank)
+      : sampleBank(bank), object(SubtractiveDrumSynth<sample_t>()),
+        type(SUBTRACTIVE_DRUM_SYNTH) {}
+  //  Synthesizer<sample_t>(const SubtractiveDrumSynth<sample_t> &s)
+  //      : object(s), type(SUBTRACTIVE_DRUM_SYNTH) {}
+  //  Synthesizer<sample_t>(const SubtractiveSynthesizer<sample_t> &s)
+  //      : object(s), type(SUBTRACTIVE) {}
+  //  Synthesizer<sample_t>(const KarplusStrongSynthesizer<sample_t> &s)
+  //      : object(s), type(PHYSICAL_MODEL) {}
+  //  Synthesizer<sample_t>(const FMSynthesizer<sample_t> &s)
+  //      : object(s), type(FREQUENCY_MODULATION) {}
+  //  Synthesizer<sample_t>(const Sampler<sample_t> &s)
+  //      : object(s), type(SAMPLER) {}
 
   inline const void process(sample_t *block, const size_t &blockSize) {
     consumeMessagesFromQueue();
@@ -239,8 +228,7 @@ template <typename sample_t> struct Synthesizer {
         }
         case SAMPLER: {
           type = SAMPLER;
-          object.sampler =
-              Sampler<sample_t>(activeSample->buffer, activeSample->size);
+          object.sampler = Sampler<sample_t>(sampleBank);
           break;
         }
         }
