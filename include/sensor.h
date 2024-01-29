@@ -246,8 +246,10 @@ struct NoteMap {
 };
 
 template <typename sample_t> struct InputMapping {
-  std::map<ContinuousInputType, ContinuousParameterType> continuousMappings;
-  std::map<MomentaryInputType, MomentaryParameterType> momentaryMappings;
+  std::map<ContinuousInputType, ContinuousParameterType> continuousMappings =
+      std::map<ContinuousInputType, ContinuousParameterType>();
+  std::map<MomentaryInputType, MomentaryParameterType> momentaryMappings =
+      std::map<MomentaryInputType, MomentaryParameterType>();
   NoteMap noteMap;
   inline void emitEvent(Synthesizer<sample_t> *synth, ContinuousInputType type,
                         sample_t value) {
@@ -320,9 +322,10 @@ template <typename sample_t> struct InputMapping {
   inline const bool getMapping(const ContinuousParameterType parameterType,
                                ContinuousInputType *mappedType) {
     for (auto &pair : continuousMappings) {
-      if (pair.second == parameterType)
+      if (pair.second == parameterType) {
         *mappedType = pair.first;
-      return true;
+        return true;
+      }
     }
     return false;
   }
@@ -330,9 +333,10 @@ template <typename sample_t> struct InputMapping {
   inline const bool getMapping(const MomentaryParameterType parameterType,
                                MomentaryInputType *mappedType) {
     for (auto &pair : momentaryMappings) {
-      if (pair.second == parameterType)
+      if (pair.second == parameterType) {
         *mappedType = pair.first;
-      return true;
+        return true;
+      }
     }
     return false;
   }

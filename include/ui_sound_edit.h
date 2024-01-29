@@ -5,7 +5,9 @@
 #include "sensor.h"
 #include "synthesis.h"
 #include "synthesis_parameter.h"
+#include "ui_mapping_select_popup.h"
 #include "ui_navigation.h"
+#include "widget_button.h"
 #include "widget_style.h"
 
 struct SoundEditUI {
@@ -16,6 +18,7 @@ struct SoundEditUI {
   RadioGroup synthSelectRadioGroup;
   std::map<ContinuousParameterType, HSlider> parameterSliders;
   std::map<ContinuousParameterType, Button> mappingButtons;
+  MappingSelectPopupUI popup;
   int fingerPositions[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 
   Label *pageTitleLabel = new Label("choose your sound!");
@@ -50,8 +53,7 @@ struct SoundEditUI {
   ~SoundEditUI() { delete pageTitleLabel; }
 
   void buildLayout(const AxisAlignedBoundingBox &shape) {
-
-    auto pageLabelHeight = 50;
+    auto pageLabelHeight = shape.halfSize.y / 32;
     pageTitleLabelShape = AxisAlignedBoundingBox{
         .position = {.x = shape.position.x,
                      .y = shape.position.y - shape.halfSize.y +
@@ -64,6 +66,9 @@ struct SoundEditUI {
         .halfSize = {
             .x = shape.halfSize.x,
             .y = static_cast<float>(shape.halfSize.y - pageLabelHeight / 2.0)}};
+
+    popup.buildLayout(
+        {.position = shape.position, .halfSize = shape.halfSize.scale(0.85)});
     auto width = bodyShape.halfSize.x * 2;
     auto height = bodyShape.halfSize.y * 2;
     auto xOffset = bodyShape.position.x - bodyShape.halfSize.x;
@@ -94,7 +99,7 @@ struct SoundEditUI {
                           buttonMargin * 2;
     auto usefulWidth = width - pageMargin;
     auto rowMargin = usefulWidth / 128;
-    auto buttonWidth = 0 * (usefulWidth - rowMargin) / 8;
+    auto buttonWidth = (usefulWidth - rowMargin) / 4;
     auto sliderWidth = usefulWidth - rowMargin - buttonWidth;
     auto rowHeight = height / 12.0;
     for (auto &parameter : ParameterTypes) {
@@ -116,9 +121,8 @@ struct SoundEditUI {
                                .y = static_cast<float>(rowHeight / 2)}},
       };
       ContinuousInputType mappedInput;
-      auto buttonText = mapping->getMapping(parameter, &mappedInput)
-                            ? getDisplayName(mappedInput)
-                            : "none";
+      bool foundMapping = mapping->getMapping(parameter, &mappedInput);
+      auto buttonText = foundMapping ? getDisplayName(mappedInput) : "none";
       mappingButtons[parameter] =
           Button{.label = Label(buttonText),
                  .shape = AxisAlignedBoundingBox{
@@ -184,14 +188,48 @@ struct SoundEditUI {
   }
 
   inline void handleMouseDown(const vec2f_t &mousePosition) {
-    if (DoClickRadioGroup(&synthSelectRadioGroup, mousePosition)) {
-      synth->setSynthType(SynthTypes[synthSelectRadioGroup.selectedIndex]);
-      synth->setFrequency(mtof(36));
-      synth->pushGateEvent(MomentaryParameterType::GATE, 1);
-    };
+
+    switch (popup.mode) {
+
+    case MappingSelectPopupUI::OPEN:
+      popup.handleMouseDown(mousePosition);
+      break;
+    case MappingSelectPopupUI::CLOSED:
+
+      if (DoClickRadioGroup(&synthSelectRadioGroup, mousePosition)) {
+        synth->setSynthType(SynthTypes[synthSelectRadioGroup.selectedIndex]);
+        synth->setFrequency(mtof(36));
+        synth->pushGateEvent(MomentaryParameterType::GATE, 1);
+      };
+
+      for (auto &pair : mappingButtons) {
+        if (DoButtonClick(&pair.second, mousePosition)) {
+
+          popup.open();
+          // open menu
+        }
+      }
+
+      break;
+    case MappingSelectPopupUI::SELECTED:
+      break;
+    }
   }
 
   inline void handleMouseUp(const vec2f_t &mousePosition) {
+
+    switch (popup.mode) {
+
+    case MappingSelectPopupUI::OPEN:
+      break;
+    case MappingSelectPopupUI::CLOSED:
+      break;
+    case MappingSelectPopupUI::SELECTED:
+
+      // make the mapping
+
+      break;
+    }
     for (auto &parameterType : ParameterTypes) {
       if (parameterSliders.find(parameterType) == parameterSliders.end()) {
         continue;
@@ -203,39 +241,44 @@ struct SoundEditUI {
   }
 
   void draw(SDL_Renderer *renderer, const Style &style) {
+    if (popup.mode == MappingSelectPopupUI::OPEN) {
+      popup.draw(renderer, style);
+    } else {
 
-    auto pageLabelRect = ConvertAxisAlignedBoxToSDL_Rect(pageTitleLabelShape);
-    pageTitleLabel->draw(
-        style.hoverColor, style.unavailableColor, pageLabelRect, renderer,
-        style, HorizontalAlignment::CENTER, VerticalAlignment::CENTER);
-    synthSelectRadioGroup.selectedIndex = synth->getSynthType();
-    DrawRadioGroup(&synthSelectRadioGroup, renderer, style);
-    for (auto &parameterType : ParameterTypes) {
-      if (parameterSliders.find(parameterType) == parameterSliders.end()) {
-        continue;
+      auto pageLabelRect = ConvertAxisAlignedBoxToSDL_Rect(pageTitleLabelShape);
+      pageTitleLabel->draw(
+          style.hoverColor, style.unavailableColor, pageLabelRect, renderer,
+          style, HorizontalAlignment::CENTER, VerticalAlignment::CENTER);
+      synthSelectRadioGroup.selectedIndex = synth->getSynthType();
+      DrawRadioGroup(&synthSelectRadioGroup, renderer, style);
+      for (auto &parameterType : ParameterTypes) {
+        if (parameterSliders.find(parameterType) == parameterSliders.end()) {
+          continue;
+        }
+        if (saveState->sensorMapping.isMapped(parameterType)) {
+          auto rect = ConvertAxisAlignedBoxToSDL_Rect(
+              parameterSliders[parameterType].shape);
+          SDL_SetRenderDrawColor(
+              renderer, style.unavailableColor.r, style.unavailableColor.g,
+              style.unavailableColor.b, style.unavailableColor.a);
+          SDL_RenderFillRect(renderer, &rect);
+          auto percentRect = rect;
+          percentRect.w *= synth->getParameter(parameterType);
+          SDL_SetRenderDrawColor(renderer, style.hoverColor.r,
+                                 style.hoverColor.g, style.hoverColor.b,
+                                 style.hoverColor.a);
+          SDL_RenderFillRect(renderer, &percentRect);
+          parameterSliders[parameterType].label.draw(
+              style.hoverColor, style.unavailableColor, rect, renderer, style);
+          SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+        } else {
+
+          DrawHSlider(&parameterSliders[parameterType],
+                      synth->getParameter(parameterType), renderer, style);
+        }
+
+        DrawButton(&mappingButtons[parameterType], renderer, style);
       }
-      if (saveState->sensorMapping.isMapped(parameterType)) {
-        auto rect = ConvertAxisAlignedBoxToSDL_Rect(
-            parameterSliders[parameterType].shape);
-        SDL_SetRenderDrawColor(
-            renderer, style.unavailableColor.r, style.unavailableColor.g,
-            style.unavailableColor.b, style.unavailableColor.a);
-        SDL_RenderFillRect(renderer, &rect);
-        auto percentRect = rect;
-        percentRect.w *= synth->getParameter(parameterType);
-        SDL_SetRenderDrawColor(renderer, style.hoverColor.r, style.hoverColor.g,
-                               style.hoverColor.b, style.hoverColor.a);
-        SDL_RenderFillRect(renderer, &percentRect);
-        parameterSliders[parameterType].label.draw(
-            style.hoverColor, style.unavailableColor, rect, renderer, style);
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-      } else {
-
-        DrawHSlider(&parameterSliders[parameterType],
-                    synth->getParameter(parameterType), renderer, style);
-      }
-
-      //  DrawButton(&mappingButtons[parameterType], renderer, style);
     }
   }
 };

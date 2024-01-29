@@ -22,7 +22,6 @@ PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
 find_package(SDL2_image  REQUIRED)
 find_package(SDL2_ttf REQUIRED)
 
-
 cmake_print_variables(SDL2_INCLUDE_DIRS)
 cmake_print_variables(SDL2_IMAGE_INCLUDE_DIRS)
 cmake_print_variables(SDL2TTF_INCLUDE_DIR)

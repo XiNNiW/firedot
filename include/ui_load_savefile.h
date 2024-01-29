@@ -6,13 +6,11 @@
 #include "widget_button.h"
 #include "widget_state.h"
 #include "widget_utils.h"
-#include <filesystem>
+#include <dirent.h>
+#include <sstream>
 #include <string>
 #include <vector>
 
-using std::filesystem::create_directory;
-using std::filesystem::exists;
-using std::filesystem::path;
 struct FilebrowserUI {
   enum Mode { CLOSED, OPEN, SELECTED } mode = CLOSED;
   std::vector<Button> fileButtons;
@@ -41,30 +39,71 @@ struct FilebrowserUI {
         .position = {.x = shape.position.x, .y = yOffset + height / 50},
         .halfSize = {.x = shape.halfSize.x, .y = height / 50}};
 
-    const path saveDirectory = path{SDL_GetBasePath()} / "save_files";
-    if (!exists(saveDirectory)) {
-      create_directory(saveDirectory);
-    }
-    const auto numFiles =
-        std::distance(std::filesystem::directory_iterator(saveDirectory),
-                      std::filesystem::directory_iterator{});
-    auto buttonHeight =
-        numFiles > 0
-            ? std::min(shape.halfSize.y * 2.0 / static_cast<float>(numFiles),
-                       50.0)
-            : 50;
-    int fileCounter = 0;
-    for (auto const &dir_entry :
-         std::filesystem::directory_iterator{saveDirectory}) {
-      fileButtons.push_back(Button{
-          .label = Label(dir_entry.path().filename()),
-          .shape = {.position = {.x = shape.position.x,
-                                 .y = static_cast<float>(
-                                     yOffset + buttonHeight * fileCounter++)},
-                    .halfSize = {.x = shape.halfSize.x,
-                                 .y = static_cast<float>(buttonHeight / 2)}},
-      });
-    }
+    // const path saveDirectory = path{SDL_GetBasePath()} / "save_files";
+    // if (!exists(saveDirectory)) {
+    //   create_directory(saveDirectory);
+    // }
+    // const auto numFiles =
+    //     std::distance(boost::filesystem::directory_iterator(saveDirectory),
+    //                   boost::filesystem::directory_iterator{});
+
+    //  struct dirent *entry = nullptr;
+    //  DIR *dp = nullptr;
+
+    //  std::stringstream savefilepathstream;
+    //  savefilepathstream << SDL_GetBasePath() << "save_files";
+    //  dp = opendir(savefilepathstream.str().c_str());
+    //  int numFiles = 0;
+    //  if (dp != nullptr) {
+    //    while ((entry = readdir(dp))) {
+    //      if (entry->d_type == DT_DIR)
+    //        continue;
+    //      ++numFiles;
+    //    }
+    //  }
+
+    //  closedir(dp);
+
+    //  auto buttonHeight =
+    //      numFiles > 0
+    //          ? std::min(shape.halfSize.y * 2.0 /
+    //          static_cast<float>(numFiles),
+    //                     50.0)
+    //          : 50;
+    //  int fileCounter = 0;
+    // for (auto const &dir_entry :
+    //      boost::filesystem::directory_iterator{saveDirectory}) {
+    //   fileButtons.push_back(Button{
+    //       .label = Label(dir_entry.path().filename().string()),
+    //       .shape = {.position = {.x = shape.position.x,
+    //                              .y = static_cast<float>(
+    //                                  yOffset + buttonHeight *
+    //                                  fileCounter++)},
+    //                 .halfSize = {.x = shape.halfSize.x,
+    //                              .y = static_cast<float>(buttonHeight / 2)}},
+    //   });
+    // }
+
+    //   dp = opendir(savefilepathstream.str().c_str());
+    //   if (dp != nullptr) {
+    //     while ((entry = readdir(dp))) {
+    //       if (entry->d_type == DT_DIR)
+    //         continue;
+
+    //       fileButtons.push_back(Button{
+    //           .label = Label(entry->d_name),
+    //           .shape = {.position = {.x = shape.position.x,
+    //                                  .y = static_cast<float>(
+    //                                      yOffset + buttonHeight *
+    //                                      fileCounter++)},
+    //                     .halfSize = {.x = shape.halfSize.x,
+    //                                  .y = static_cast<float>(buttonHeight /
+    //                                  2)}},
+    //       });
+    //     }
+    //   }
+
+    //   closedir(dp);
 
     auto buttonMargin = shape.halfSize.x / 24;
     auto buttonHalfWidth = shape.halfSize.x / 2 - buttonMargin;

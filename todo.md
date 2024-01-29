@@ -6,3 +6,4 @@
 - [ ] - alternate mapping workflow
 - [ ] - inline instrument change
 - [ ] - bugs in game mode
+- [ ] - contact with committe ... committe meeting 2/15-20 / presentation

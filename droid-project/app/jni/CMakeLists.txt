@@ -20,5 +20,6 @@ add_subdirectory(SPSCQueue)
 
 
 add_compile_definitions(SDL_AUDIODRIVER="openslES")
+add_compile_definitions(PLATFORM_IS_ANDROID=1)
 # Your game and its CMakeLists.txt are in a subfolder named "src"
 add_subdirectory(src)

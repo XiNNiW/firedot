@@ -57,7 +57,6 @@ public:
     if (text.length() > 0) {
 
       if (cachedTexture == NULL) {
-
         auto font = style.getFont();
         // SDL_LogInfo(0, "font %d", font);
         auto textSurface =

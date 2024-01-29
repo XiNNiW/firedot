@@ -15,8 +15,10 @@
 #include "include/collider.h"
 #include "include/game.h"
 #include "include/game_object.h"
+#include "include/load_sound_files.h"
 #include "include/metaphor.h"
 #include "include/physics.h"
+#include "include/sample_load.h"
 #include "include/save_state.h"
 #include "include/sensor.h"
 #include "include/sequencer.h"
@@ -38,7 +40,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
-#include <filesystem>
+#include <dirent.h>
 #include <functional>
 #include <map>
 #include <math.h>
@@ -50,10 +52,7 @@
 #include <type_traits>
 #include <utility>
 #include <variant>
-
 #include <vector>
-
-// enum class GameState { RUNNING, WAITING_FOR_FRAME_SYNC, PAUSED };
 
 class Framework {
 public:
@@ -181,25 +180,7 @@ public:
     ss << "size: " << config.size << "\n";
     ss << "silence: " << config.silence << "\n";
 
-    using std::filesystem::directory_iterator;
-    using std::filesystem::path;
-
-    auto soundPath = path{"sounds"};
-    for (auto &item : directory_iterator(soundPath)) {
-      if (item.is_directory())
-        continue;
-
-      sampleBank.loadSample(item.path());
-    }
-
-    // if (!LoadWAVSampleAsMono("sounds/autoharp 13 C3.wav", &audioSample)) {
-    //   SDL_LogError(0, "could not read sample!");
-    //   return false;
-    // };
-    // if (audioSample == NULL) {
-    //   SDL_LogError(0, "sampleLoad failed!");
-    //   return false;
-    // }
+    LoadSoundFiles(&sampleBank);
 
     SDL_LogInfo(0, "%s", ss.str().c_str());
 
@@ -523,8 +504,9 @@ private:
   std::vector<GameObject *> gameObjects;
   GameObject *wall1, *wall2, *wall3, *wall4;
   // AudioSample *audioSample = NULL;
-  SampleBank<float> sampleBank =
-      SampleBank<float>(sizeof(float) * 48000 * 60 * 8);
+  const int arenaSizeSeconds = 60 * 4;
+  Arena sampleArena = Arena(sizeof(float) * 48000 * arenaSizeSeconds);
+  SampleBank<float> sampleBank = SampleBank<float>(&sampleArena);
 
   Style *style = NULL;
   SDL_Texture *menuIcon = NULL;
