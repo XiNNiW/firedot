@@ -97,8 +97,7 @@ struct KeyboardUI {
     for (size_t i = 0; i < NUM_KEY_BUTTONS; ++i) {
 
       keyButtons[i] = Button{
-          .label =
-              Label(GetNoteName(saveState->sensorMapping.noteMap.notes[i])),
+          .label = Label(GetNoteName(synth->noteMap.notes[i])),
           .shape = AxisAlignedBoundingBox{
               .position =
                   vec2f_t{
@@ -116,9 +115,8 @@ struct KeyboardUI {
                                const vec2f_t &position, const float pressure) {
     for (size_t i = 0; i < NUM_KEY_BUTTONS; ++i) {
       if (DoButtonHover(&keyButtons[i], position)) {
-        auto bentNote =
-            saveState->sensorMapping.noteMap.notes[heldKeys[fingerId]];
-        auto bendDestination = saveState->sensorMapping.noteMap.notes[i];
+        auto bentNote = synth->noteMap.notes[heldKeys[fingerId]];
+        auto bendDestination = synth->noteMap.notes[i];
         // synth->bendNote(bentNote, bendDestination);
         saveState->sensorMapping.emitEvent(
             synth, KEYBOARD_KEY, float(i) / float(NUM_KEY_BUTTONS - 1));

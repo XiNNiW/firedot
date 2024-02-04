@@ -180,13 +180,13 @@ getMomentaryInputsForInstrumentType(InstrumentMetaphorType instrumentType,
     break;
   }
 }
-static const size_t NUM_KEYBOARD_CONTINUOUS_INPUTS = 2;
+static const size_t NUM_KEYBOARD_CONTINUOUS_INPUTS = 1;
 static const ContinuousInputType
     KeyboardContinuousInputs[NUM_KEYBOARD_CONTINUOUS_INPUTS] = {
         KEYBOARD_KEY,
 };
 
-static const size_t NUM_SEQUENCER_CONTINUOUS_INPUTS = 2;
+static const size_t NUM_SEQUENCER_CONTINUOUS_INPUTS = 1;
 static const ContinuousInputType
     SequencerContinuousInputs[NUM_SEQUENCER_CONTINUOUS_INPUTS] = {
         SEQUENCER_STEP_LEVEL};
@@ -203,7 +203,7 @@ static const ContinuousInputType
 inline void
 getContinuousInputsForInstrumentType(InstrumentMetaphorType instrumentType,
                                      std::vector<ContinuousInputType> *list) {
-  list->clear();
+  // list->clear();
   switch (instrumentType) {
   case KEYBOARD:
     for (auto &type : KeyboardContinuousInputs) {
@@ -230,27 +230,11 @@ getContinuousInputsForInstrumentType(InstrumentMetaphorType instrumentType,
   }
 }
 
-struct NoteMap {
-  static constexpr size_t NUM_NOTES = 35;
-  float notes[NUM_NOTES] = {
-      36,         37,         38,         39,         40,         36 + 5,
-      37 + 5,     38 + 5,     39 + 5,     40 + 5,     36 + 2 * 5, 37 + 2 * 5,
-      38 + 2 * 5, 39 + 2 * 5, 40 + 2 * 5, 36 + 3 * 5, 37 + 3 * 5, 38 + 3 * 5,
-      39 + 3 * 5, 40 + 3 * 5, 36 + 4 * 5, 37 + 4 * 5, 38 + 4 * 5, 39 + 4 * 5,
-      40 + 4 * 5, 36 + 5 * 5, 37 + 5 * 5, 38 + 5 * 5, 39 + 5 * 5, 40 + 5 * 5,
-      36 + 6 * 5, 37 + 6 * 5, 38 + 6 * 5, 39 + 6 * 5, 40 + 6 * 5,
-  };
-  inline float getFrequency(const float value) {
-    return notes[static_cast<int>(floor(clip(value) * (NUM_NOTES - 1)))];
-  }
-};
-
 template <typename sample_t> struct InputMapping {
   std::map<ContinuousInputType, ContinuousParameterType> continuousMappings =
       std::map<ContinuousInputType, ContinuousParameterType>();
   std::map<MomentaryInputType, MomentaryParameterType> momentaryMappings =
       std::map<MomentaryInputType, MomentaryParameterType>();
-  NoteMap noteMap;
   inline void emitEvent(Synthesizer<sample_t> *synth, ContinuousInputType type,
                         sample_t value) {
 
@@ -259,13 +243,6 @@ template <typename sample_t> struct InputMapping {
       auto parameterEventType = pair.second;
 
       if (type == sensorType) {
-        switch (parameterEventType) {
-        case FREQUENCY:
-          value = mtof(noteMap.getFrequency(value));
-          break;
-        default:
-          break;
-        }
         synth->pushParameterChangeEvent(parameterEventType, value);
       }
     }

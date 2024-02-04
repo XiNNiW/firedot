@@ -78,11 +78,10 @@ struct MappingUI {
     float sideMargin = bodyShape.halfSize.x / 10;
     float topMargin = bodyShape.halfSize.y / 10;
     float buttonMargin = bodyShape.halfSize.y / 32;
-    auto buttonHalfSize =
-        vec2f_t{.x = bodyShape.halfSize.x / 3,
-                .y = (bodyShape.halfSize.y - pageLabelHeight / 2 -
-                      (buttonMargin * maxNumButtons)) /
-                     maxNumButtons};
+    vec2f_t buttonHalfSize = {.x = bodyShape.halfSize.x / 3,
+                              .y = (bodyShape.halfSize.y - pageLabelHeight / 2 -
+                                    (buttonMargin * maxNumButtons)) /
+                                   maxNumButtons};
     auto buttonSpace = buttonMargin + buttonHalfSize.y * 2;
 
     auto yPos = yOffset + 5;

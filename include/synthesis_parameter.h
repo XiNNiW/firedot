@@ -10,15 +10,17 @@ enum ContinuousParameterType {
   FILTER_CUTOFF,
   FILTER_QUALITY,
   ATTACK_TIME,
-  RELEASE_TIME
+  RELEASE_TIME,
+  REGISTER,
+  _SIZE_ContinuousParameterType
 };
 
-static const size_t NUM_PARAMETER_TYPES = 7;
-static_assert(RELEASE_TIME == NUM_PARAMETER_TYPES - 1,
+static const size_t NUM_PARAMETER_TYPES = _SIZE_ContinuousParameterType;
+static_assert(REGISTER == NUM_PARAMETER_TYPES - 1,
               "synth type table and enum must agree");
 static const ContinuousParameterType ParameterTypes[NUM_PARAMETER_TYPES] = {
     FREQUENCY,      GAIN,        SOUND_SOURCE, FILTER_CUTOFF,
-    FILTER_QUALITY, ATTACK_TIME, RELEASE_TIME};
+    FILTER_QUALITY, ATTACK_TIME, RELEASE_TIME, REGISTER};
 
 static const char *getDisplayName(ContinuousParameterType type) {
   switch (type) {
@@ -36,6 +38,11 @@ static const char *getDisplayName(ContinuousParameterType type) {
     return "attack time";
   case RELEASE_TIME:
     return "release time";
+    break;
+  case REGISTER:
+    return "register";
+    break;
+  case _SIZE_ContinuousParameterType:
     break;
   }
   return "";

@@ -2,10 +2,13 @@
 
 #include "SDL_render.h"
 #include "widget_button.h"
+#include "widget_state.h"
 #include <vector>
 
-inline void DrawRadioButtonSingle(Button *button, SDL_Renderer *renderer,
-                                  const Style &style) {
+inline void DrawRadioButtonSingle(
+    Button *button, SDL_Renderer *renderer, const Style &style,
+    HorizontalAlignment horizontalAlignment = HorizontalAlignment::CENTER,
+    VerticalAlignment verticalAlignment = VerticalAlignment::CENTER) {
 
   auto rect = SDL_Rect{.x = static_cast<int>(button->shape.position.x -
                                              button->shape.halfSize.x),
@@ -43,8 +46,8 @@ inline void DrawRadioButtonSingle(Button *button, SDL_Renderer *renderer,
       SDL_RenderFillRect(renderer, &rect);
     }
 
-    button->label.draw(style.hoverColor, backgroundColor, rect, renderer,
-                       style);
+    button->label.draw(style.hoverColor, backgroundColor, rect, renderer, style,
+                       horizontalAlignment, verticalAlignment);
   }
 }
 
@@ -93,22 +96,20 @@ struct RadioGroup {
 
 inline void DrawRadioGroup(RadioGroup *group, SDL_Renderer *renderer,
                            const Style &style) {
+  auto margin = group->shape.halfSize.x * 0.1;
   auto radiogroupBackgroundRect =
       SDL_Rect{.x = static_cast<int>(group->shape.position.x -
-                                     group->shape.halfSize.x - 5),
+                                     group->shape.halfSize.x - margin),
                .y = static_cast<int>(group->shape.position.y -
-                                     group->shape.halfSize.y - 5),
-               .w = static_cast<int>(group->shape.halfSize.x * 2 + 5),
-               .h = static_cast<int>(group->shape.halfSize.y * 2 + 10)};
-  //  SDL_SetRenderDrawColor(renderer, style.color2.r, style.color2.g,
-  //                         style.color2.b, style.color2.a);
-  //  SDL_RenderFillRect(renderer, &radiogroupBackgroundRect);
+                                     group->shape.halfSize.y - margin),
+               .w = static_cast<int>(group->shape.halfSize.x * 2 + margin),
+               .h = static_cast<int>(group->shape.halfSize.y * 2 + 2 * margin)};
   for (auto &button : group->options) {
-    // DrawButton(&button, renderer, style);
     DrawRadioButtonSingle(&button, renderer, style);
   }
 }
-inline const bool DoClickRadioGroup(RadioGroup *group, /* int *selectedIndex,*/
+
+inline const bool DoClickRadioGroup(RadioGroup *group,
                                     const vec2f_t &mousePosition) {
 
   bool selectionChanged = false;
@@ -117,14 +118,12 @@ inline const bool DoClickRadioGroup(RadioGroup *group, /* int *selectedIndex,*/
   for (auto &button : group->options) {
     if (DoButtonClick(&button, mousePosition)) {
       group->selectedIndex = selection;
-      //*selectedIndex = selection;
       selectionChanged = true;
     } else {
       button.state = INACTIVE;
     }
     ++selection;
   }
-  // group->options[*selectedIndex].state = ACTIVE;
   group->options[group->selectedIndex].state = ACTIVE;
   return selectionChanged;
 }

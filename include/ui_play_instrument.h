@@ -1,10 +1,12 @@
 #pragma once
 
 #include "SDL_render.h"
+#include "collider.h"
 #include "game.h"
 #include "metaphor.h"
 #include "save_state.h"
 #include "ui_game.h"
+#include "ui_instrument_metaphor_selection_popup.h"
 #include "ui_instrument_setup.h"
 #include "ui_keyboard.h"
 #include "ui_mapping.h"
@@ -35,6 +37,9 @@ struct PlayInstrumentUI {
   SoundEditUI soundEditUI;
   MappingUI mappingUI;
   SettingsMenu settingsMenu;
+  InstrumentMetaphorSelectionPopupUI instrumentPopup;
+  AxisAlignedBoundingBox shape;
+  AxisAlignedBoundingBox lowerShape;
   float topMargin = 15;
   float sideMargin = 15;
 
@@ -46,19 +51,21 @@ struct PlayInstrumentUI {
         soundEditUI(SoundEditUI(synth, &_saveState->sensorMapping, _saveState)),
         mappingUI(MappingUI(_saveState)),
         settingsMenu(SettingsMenu(_navigation, _saveState, synth)),
-        saveState(_saveState), navigation(_navigation) {}
-
-  void buildLayout(const AxisAlignedBoundingBox &shape) {
-    page = PLAY;
-    auto navGroupHeight = shape.halfSize.y / 6;
-    auto buttonWidth = shape.halfSize.x / 5;
-
+        saveState(_saveState), navigation(_navigation),
+        instrumentPopup(_saveState) {
     pageSelector =
         RadioGroup({"play", "edit sound", "edit sensors", "settings"}, page);
     pageSelector.options[PLAY].iconType = IconType::NOTES;
     pageSelector.options[EDIT_MAPPING].iconType = IconType::MAP;
     pageSelector.options[EDIT_SOUND].iconType = IconType::SLIDERS;
     pageSelector.options[SETTINGS].iconType = IconType::GEAR;
+  }
+
+  void buildLayout(const AxisAlignedBoundingBox &shape) {
+    this->shape = shape;
+    auto navGroupHeight = shape.halfSize.y / 6;
+    auto buttonWidth = shape.halfSize.x / 5;
+
     auto upperShape = AxisAlignedBoundingBox{
         .position = {.x = shape.position.x,
                      .y = static_cast<float>(navGroupHeight / 2.0)},
@@ -79,10 +86,15 @@ struct PlayInstrumentUI {
     soundEditUI.buildLayout(lowerShape);
     mappingUI.buildLayout(lowerShape);
     settingsMenu.buildLayout(lowerShape);
+    instrumentPopup.buildLayout(shape);
   };
+
+  void resetLayouts() { buildLayout(shape); }
 
   void handleFingerMove(const SDL_FingerID &fingerId, const vec2f_t &position,
                         const float pressure) {
+    if (instrumentPopup.isOpen())
+      return;
     switch (page) {
 
     case PLAY:
@@ -117,6 +129,8 @@ struct PlayInstrumentUI {
 
   void handleFingerDown(const SDL_FingerID &fingerId, const vec2f_t &position,
                         const float pressure) {
+    if (instrumentPopup.isOpen())
+      return;
     switch (page) {
 
     case PLAY:
@@ -149,6 +163,8 @@ struct PlayInstrumentUI {
 
   void handleFingerUp(const SDL_FingerID &fingerId, const vec2f_t &position,
                       const float pressure) {
+    if (instrumentPopup.isOpen())
+      return;
     switch (page) {
 
     case PLAY:
@@ -180,6 +196,8 @@ struct PlayInstrumentUI {
   };
 
   void handleMouseMove(const vec2f_t &mousePosition) {
+    if (instrumentPopup.isOpen())
+      return;
     switch (page) {
 
     case PLAY:
@@ -211,75 +229,89 @@ struct PlayInstrumentUI {
   };
 
   void handleMouseDown(const vec2f_t &mousePosition) {
-    switch (page) {
-    case PLAY:
-      switch (saveState->getInstrumentMetaphorType()) {
-      case InstrumentMetaphorType::KEYBOARD:
-        keyboardUI.handleMouseDown(mousePosition);
+    if (instrumentPopup.isOpen()) {
+      instrumentPopup.handleMouseDown(mousePosition);
+    } else {
+      switch (page) {
+      case PLAY:
+        switch (saveState->getInstrumentMetaphorType()) {
+        case InstrumentMetaphorType::KEYBOARD:
+          keyboardUI.handleMouseDown(mousePosition);
+          break;
+        case InstrumentMetaphorType::SEQUENCER:
+          sequencerUI.handleMouseDown(mousePosition);
+          break;
+        case InstrumentMetaphorType::TOUCH_PAD:
+          touchPadUI.handleMouseDown(mousePosition);
+          break;
+        case InstrumentMetaphorType::GAME:
+          gameUI.handleMouseDown(mousePosition);
+          break;
+        case InstrumentMetaphorType__SIZE:
+          break;
+        }
         break;
-      case InstrumentMetaphorType::SEQUENCER:
-        sequencerUI.handleMouseDown(mousePosition);
+      case EDIT_SOUND:
+        soundEditUI.handleMouseDown(mousePosition);
         break;
-      case InstrumentMetaphorType::TOUCH_PAD:
-        touchPadUI.handleMouseDown(mousePosition);
+      case SETTINGS:
+        settingsMenu.handleMouseDown(mousePosition);
         break;
-      case InstrumentMetaphorType::GAME:
-        gameUI.handleMouseDown(mousePosition);
-        break;
-      case InstrumentMetaphorType__SIZE:
+      case EDIT_MAPPING:
+        mappingUI.handleMouseDown(mousePosition);
         break;
       }
-      break;
-    case EDIT_SOUND:
-      soundEditUI.handleMouseDown(mousePosition);
-      break;
-    case SETTINGS:
-      settingsMenu.handleMouseDown(mousePosition);
-      break;
-    case EDIT_MAPPING:
-      mappingUI.handleMouseDown(mousePosition);
-      break;
-    }
-    int selectedIndex = 0;
-    if (DoClickRadioGroup(&pageSelector, mousePosition)) {
-      page = Pages[pageSelector.selectedIndex];
+      int selectedIndex = 0;
+      if (DoClickRadioGroup(&pageSelector, mousePosition)) {
+        auto selectedPage = Pages[pageSelector.selectedIndex];
+        if ((page == selectedPage) && (selectedPage == PLAY)) {
+          instrumentPopup.open();
+        }
+        resetLayouts();
+        page = Pages[pageSelector.selectedIndex];
+      }
     }
   };
 
   void handleMouseUp(const vec2f_t &mousePosition) {
-    switch (page) {
+    if (instrumentPopup.isOpen()) {
+      instrumentPopup.handleMouseUp(mousePosition);
+    } else {
+      switch (page) {
 
-    case PLAY:
-      switch (saveState->getInstrumentMetaphorType()) {
-      case InstrumentMetaphorType::KEYBOARD:
-        keyboardUI.handleMouseUp(mousePosition);
+      case PLAY:
+        switch (saveState->getInstrumentMetaphorType()) {
+        case InstrumentMetaphorType::KEYBOARD:
+          keyboardUI.handleMouseUp(mousePosition);
+          break;
+        case InstrumentMetaphorType::SEQUENCER:
+          sequencerUI.handleMouseUp(mousePosition);
+          break;
+        case InstrumentMetaphorType::TOUCH_PAD:
+          touchPadUI.handleMouseUp(mousePosition);
+          break;
+        case InstrumentMetaphorType::GAME:
+          gameUI.handleMouseUp(mousePosition);
+          break;
+        case InstrumentMetaphorType::InstrumentMetaphorType__SIZE:
+          break;
+        }
         break;
-      case InstrumentMetaphorType::SEQUENCER:
-        sequencerUI.handleMouseUp(mousePosition);
+      case EDIT_SOUND:
+        soundEditUI.handleMouseUp(mousePosition);
         break;
-      case InstrumentMetaphorType::TOUCH_PAD:
-        touchPadUI.handleMouseUp(mousePosition);
+      case SETTINGS:
+        settingsMenu.handleMouseUp(mousePosition);
         break;
-      case InstrumentMetaphorType::GAME:
-        gameUI.handleMouseUp(mousePosition);
-        break;
-      case InstrumentMetaphorType::InstrumentMetaphorType__SIZE:
+      case EDIT_MAPPING:
+        mappingUI.handleMouseUp(mousePosition);
         break;
       }
-      break;
-    case EDIT_SOUND:
-      soundEditUI.handleMouseUp(mousePosition);
-      break;
-    case SETTINGS:
-      settingsMenu.handleMouseUp(mousePosition);
-      break;
-    case EDIT_MAPPING:
-      mappingUI.handleMouseUp(mousePosition);
-      break;
     }
   };
 
   void draw(SDL_Renderer *renderer, const Style &style) {
+
     switch (page) {
 
     case PLAY:
@@ -309,7 +341,6 @@ struct PlayInstrumentUI {
       mappingUI.draw(renderer, style);
       break;
     }
-
     DrawRadioGroup(&pageSelector, renderer, style);
     DrawLine({.x = pageSelector.shape.position.x -
                    pageSelector.shape.halfSize.x + 15,
@@ -318,5 +349,8 @@ struct PlayInstrumentUI {
                    pageSelector.shape.halfSize.x - 15,
               .y = pageSelector.shape.halfSize.y * 2 + 10},
              renderer, style.hoverColor);
+    if (instrumentPopup.isOpen()) {
+      instrumentPopup.draw(renderer, style);
+    }
   };
 };

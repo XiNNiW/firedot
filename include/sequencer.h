@@ -3,11 +3,13 @@
 #include "save_state.h"
 #include "sensor.h"
 #include "synthesis.h"
+#include <algorithm>
 
 class Sequencer {
 private:
   float tempoBPM = 98;
   float stepIntervalSeconds = 1.0 / (16.0 * tempoBPM / SECONDS_PER_MINUTE);
+  int length = MAX_STEPS;
 
 public:
   constexpr static const float SECONDS_PER_MINUTE = 60.0;
@@ -15,6 +17,7 @@ public:
   constexpr static const float maxBPM = 300;
   Synthesizer<float> *synth = NULL;
   SaveState *saveState = NULL;
+  SDL_Thread *sequencerThread = NULL;
   static const size_t MAX_STEPS = 16;
   float stepValues[MAX_STEPS] = {0, 0, 0, 0, 0, 0, 0, 0,
                                  0, 0, 0, 0, 0, 0, 0, 0};
@@ -39,9 +42,19 @@ public:
     stepIntervalSeconds = 1.0 / (4.0 * tempoBPM / SECONDS_PER_MINUTE);
   }
 
-  inline const float getTempo() const { return tempoBPM; }
+  void setLength(int newLength) { length = std::clamp(newLength, 1, 16); }
+  const int &getLength() const { return length; }
+  void setLengthNormalized(float newLength) {
+    length = std::clamp(static_cast<float>(newLength * MAX_STEPS), float(1.0),
+                        float(16.0));
+  }
+  const float getLengthNormalized() const {
+    return float(length) / float(MAX_STEPS);
+  }
 
-  inline const float getTempoNormalized() const {
+  const float &getTempo() const { return tempoBPM; }
+
+  const float getTempoNormalized() const {
     return (tempoBPM - minBPM) / maxBPM;
   }
 
@@ -56,7 +69,7 @@ public:
           saveState->sensorMapping.emitEvent(
               synth, MomentaryInputType::SEQUENCER_GATE, true);
         }
-        currentStep = (currentStep + 1) % MAX_STEPS;
+        currentStep = (currentStep + 1) % length;
         timeSinceLastStep = 0;
         hadNoteOn = true;
       } else if (hadNoteOn &&

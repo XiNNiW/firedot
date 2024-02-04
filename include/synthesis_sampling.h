@@ -71,13 +71,6 @@ template <typename sample_t> struct SamplerVoice {
       for (size_t i = 0; i < sampleBank->size; ++i) {
         phases[i] = 0;
       }
-      sample_t sampleIndex =
-          soundSource * static_cast<sample_t>(sampleBank->size - 1);
-      int s1 = floor(sampleIndex);
-      int s2 = (s1 + 1) % sampleBank->size;
-      sample_t mantissa = sampleIndex - static_cast<sample_t>(s1);
-      SDL_Log("index: %f, s1: %d, s2: %d, mantissa: %f", sampleIndex, s1, s2,
-              mantissa);
     }
   }
 
