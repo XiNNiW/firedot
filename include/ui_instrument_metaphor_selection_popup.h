@@ -6,6 +6,7 @@
 #include "vector_math.h"
 #include "widget_button.h"
 #include "widget_radio_button.h"
+#include "widget_state.h"
 
 struct InstrumentMetaphorSelectionPopupUI {
   enum Mode { OPEN, CLOSED } mode = CLOSED;
@@ -20,6 +21,10 @@ struct InstrumentMetaphorSelectionPopupUI {
       if (InstrumentMetaphorTypes[i] ==
           saveState->getInstrumentMetaphorType()) {
         metaphorOptions.selectedIndex = i;
+        metaphorOptions.options[i].state = ACTIVE;
+
+      } else {
+        metaphorOptions.options[i].state = INACTIVE;
       }
     }
 
@@ -54,13 +59,16 @@ struct InstrumentMetaphorSelectionPopupUI {
     metaphorOptions.buildLayout(radioGroupShape);
   }
   void handleMouseDown(vec2f_t mousePosition) {
+    DoClickRadioGroup(&metaphorOptions, mousePosition);
+  }
+
+  void handleMouseUp(vec2f_t mousePosition) {
     if (DoClickRadioGroup(&metaphorOptions, mousePosition)) {
       saveState->setInstrumentMetaphor(
           InstrumentMetaphorTypes[metaphorOptions.selectedIndex]);
       mode = CLOSED;
     }
   }
-  void handleMouseUp(vec2f_t mousePosition) {}
   void draw(SDL_Renderer *renderer, const Style &style) {
     DrawFilledRect(modalBackground, renderer, {0, 0, 0, 128});
     DrawRadioGroup(&metaphorOptions, renderer, style);

@@ -67,12 +67,12 @@ struct RadioGroup {
           .label = Label(label),
       });
     }
+    selectedIndex = initialSelection;
   }
 
   inline void buildLayout(const AxisAlignedBoundingBox &bounds) {
     if (options.size() > 0) {
       shape = bounds;
-      const size_t initialSynthTypeSelection = 0;
       const float buttonWidth =
           (shape.halfSize.x * 2 - float(options.size() * buttonMargin)) /
           float(options.size());
@@ -92,6 +92,8 @@ struct RadioGroup {
       options[selectedIndex].state = WidgetState::ACTIVE;
     }
   }
+
+  inline void refreshLayout() { buildLayout(shape); }
 };
 
 inline void DrawRadioGroup(RadioGroup *group, SDL_Renderer *renderer,

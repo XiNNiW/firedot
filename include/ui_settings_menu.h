@@ -80,8 +80,8 @@ struct SettingsMenu {
         SaveState::SaveGame("game name", *synth, saveState);
       }
       if (DoButtonClick(&loadGameButton, mousePosition)) {
-        // SaveState::LoadGame("game name", synth, saveState);
-        filebrowser.open();
+        SaveState::LoadGame("game name", synth, saveState);
+        // filebrowser.open();
       }
 
       break;

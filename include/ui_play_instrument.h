@@ -266,9 +266,10 @@ struct PlayInstrumentUI {
         auto selectedPage = Pages[pageSelector.selectedIndex];
         if ((page == selectedPage) && (selectedPage == PLAY)) {
           instrumentPopup.open();
+        } else {
+          resetLayouts();
+          page = Pages[pageSelector.selectedIndex];
         }
-        resetLayouts();
-        page = Pages[pageSelector.selectedIndex];
       }
     }
   };
