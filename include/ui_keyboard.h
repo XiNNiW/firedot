@@ -1,5 +1,8 @@
 #pragma once
 
+#include "SDL_error.h"
+#include "SDL_pixels.h"
+#include "SDL_render.h"
 #include "collider.h"
 #include "metaphor.h"
 #include "save_state.h"
@@ -8,7 +11,9 @@
 #include "synthesis.h"
 #include "ui_navigation.h"
 #include "widget_state.h"
+#include "widget_utils.h"
 #include "widget_vslider.h"
+#include "window.h"
 #include <map>
 #include <string>
 
@@ -73,11 +78,16 @@ struct KeyboardUI {
   float titleBarHeight = 100;
   float buttonMargin = 5;
   float topMargin = 15;
+  AxisAlignedBoundingBox shape;
+
+  bool needsDraw = true;
+  SDL_Texture *cachedRender = NULL;
 
   KeyboardUI(Synthesizer<float> *_synth, SaveState *_saveState)
       : synth(_synth), saveState(_saveState) {}
 
   void buildLayout(const AxisAlignedBoundingBox &shape) {
+    this->shape = shape;
     auto pageMargin = 50;
     auto radiobuttonMargin = 10;
     auto width = shape.halfSize.x * 2;
@@ -109,6 +119,7 @@ struct KeyboardUI {
               .halfSize = vec2f_t{.x = static_cast<float>(keySize / 2),
                                   .y = static_cast<float>(keySize / 2)}}};
     }
+    needsDraw = true;
   }
 
   inline void handleFingerMove(const SDL_FingerID &fingerId,
@@ -131,6 +142,8 @@ struct KeyboardUI {
         }
       }
     }
+
+    needsDraw = true;
   }
 
   inline void handleFingerDown(const SDL_FingerID &fingerId,
@@ -153,6 +166,8 @@ struct KeyboardUI {
             synth, MomentaryInputType::KEYBOARD_GATE, 1);
       }
     }
+
+    needsDraw = true;
   }
 
   inline void handleFingerUp(const SDL_FingerID &fingerId,
@@ -179,6 +194,8 @@ struct KeyboardUI {
     }
 
     fingerPositions[fingerId] = -1;
+
+    needsDraw = true;
   }
 
   inline void handleMouseMove(const vec2f_t &mousePosition) {}
@@ -200,11 +217,29 @@ struct KeyboardUI {
         keyButtons[i].state = WidgetState::INACTIVE;
       }
     }
+    needsDraw = true;
   }
 
   inline void draw(SDL_Renderer *renderer, const Style &style) {
-    for (size_t i = 0; i < NUM_KEY_BUTTONS; i++) {
-      DrawButton(&keyButtons[i], renderer, style, SDL_Color{0, 0, 0, 0});
+    if (needsDraw) {
+      if (cachedRender == NULL) {
+        cachedRender = SDL_CreateTexture(
+            renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,
+            ActiveWindow::size.x, ActiveWindow::size.y);
+      }
+      auto err = SDL_SetRenderTarget(renderer, cachedRender);
+      if (err < 0) {
+        SDL_Log("%s", SDL_GetError());
+      }
+      for (size_t i = 0; i < NUM_KEY_BUTTONS; i++) {
+        DrawButton(&keyButtons[i], renderer, style, SDL_Color{0, 0, 0, 0});
+      }
+      SDL_SetRenderTarget(renderer, NULL);
+      needsDraw = false;
     }
+    SDL_Rect renderRect = ConvertAxisAlignedBoxToSDL_Rect(shape);
+    SDL_RenderCopy(renderer, cachedRender, NULL, NULL);
   }
+
+  ~KeyboardUI() { SDL_DestroyTexture(cachedRender); }
 };

@@ -27,6 +27,7 @@
 #include "include/synthesis_sampling.h"
 #include "include/ui.h"
 #include "include/vector_math.h"
+#include "include/window.h"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_opengl.h>
@@ -88,6 +89,8 @@ public:
       return false;
     }
     SDL_GetWindowSize(window, &width, &height);
+    ActiveWindow::size = vec2f_t{.x = static_cast<float>(width),
+                                 .y = static_cast<float>(height)};
     // SDL_GL_GetDrawableSize(window,&width, &height);
     ss << "adjusted size: " << width << ", " << height << "\n";
     // SDL_RenderSetLogicalSize(renderer, width, height);

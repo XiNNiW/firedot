@@ -1,18 +1,48 @@
 #pragma once
 
+#include "SDL_timer.h"
 #include "sequencer.h"
+#include "vector_math.h"
 #include "widget_button.h"
 #include "widget_hslider.h"
 #include "widget_state.h"
 #include "widget_style.h"
 #include "widget_vslider.h"
-
+#include <cstdint>
+#include <sstream>
+struct TempoDetector {
+  constexpr static const double MAX_INTERVAL_SECONDS = (1.0 / 24.0) * 60.0;
+  float tempo = 0;
+  double firstClickTimeSeconds = 0;
+  bool DoTapTempo(Button *button, double currentTimeSeconds,
+                  const vec2f_t &mousePosition) {
+    if (DoButtonClick(button, mousePosition)) {
+      auto intervalSeconds = currentTimeSeconds - firstClickTimeSeconds;
+      auto intervalMinutes = intervalSeconds / 60.0;
+      auto estimate = 1.0 / intervalMinutes;
+      if ((abs(tempo - estimate) < 10) && (tempo < 300) && (tempo > 15)) {
+        tempo = (tempo + estimate) / 2.0;
+        SDL_Log("go");
+        firstClickTimeSeconds = currentTimeSeconds;
+        return true;
+      } else {
+        tempo = estimate;
+        firstClickTimeSeconds = currentTimeSeconds;
+        SDL_Log("set");
+      }
+    }
+    return false;
+  }
+};
 struct SequencerUI {
   Sequencer *sequencer = NULL;
   HSlider stepButtons[Sequencer::MAX_STEPS];
   Button playButton;
   HSlider tempoSlider;
+  Button tapTempoButton;
   HSlider seqLengthSlider;
+
+  TempoDetector tempoDetector;
 
   int fingerPositions[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 
@@ -54,22 +84,35 @@ struct SequencerUI {
         .iconType = sequencer->running ? IconType::STOP : IconType::PLAY,
     };
 
+    auto tempoButtonHalfWidth = shape.halfSize.x / 8.0;
+    auto buttonMargin = shape.halfSize.x / 32.0;
     tempoSlider = HSlider{
         .label = Label("tempo"),
-        .shape = {.position = {.x = shape.position.x,
+        .shape = {.position = {.x = static_cast<float>(shape.position.x -
+                                                       tempoButtonHalfWidth),
                                .y = static_cast<float>(shape.position.y +
                                                        shape.halfSize.y -
                                                        2 * buttonHeight / 2.0 -
                                                        pageMargin / 2.0 - 15)},
                   .halfSize = {.x = static_cast<float>(shape.halfSize.x -
-                                                       pageMargin / 2.0),
+                                                       pageMargin / 2.0 -
+                                                       tempoButtonHalfWidth),
                                .y = static_cast<float>(buttonHeight / 6.0)}},
     };
 
-    seqLengthSlider = HSlider{
+    tapTempoButton = Button{
+        .label = Label("tap"),
+        .shape = {.position = {.x = static_cast<float>(
+                                   tempoSlider.shape.position.x +
+                                   tempoSlider.shape.halfSize.x +
+                                   buttonMargin / 2.0 + tempoButtonHalfWidth),
+                               .y = tempoSlider.shape.position.y},
+                  .halfSize = {.x = static_cast<float>(tempoButtonHalfWidth),
+                               .y = tempoSlider.shape.halfSize.y}}};
 
+    seqLengthSlider = HSlider{
         .label = Label("length"),
-        .shape = {.position = {.x = shape.position.x,
+        .shape = {.position = {.x = static_cast<float>(shape.position.x),
                                .y = static_cast<float>(shape.position.y +
                                                        shape.halfSize.y -
                                                        3 * buttonHeight / 2.0 -
@@ -82,7 +125,6 @@ struct SequencerUI {
 
   void handleFingerMove(const SDL_FingerID &fingerId, const vec2f_t &position,
                         const float pressure) {
-
     if (fingerPositions[fingerId] > -1) {
       DoHSliderDrag(&stepButtons[fingerPositions[fingerId]],
                     &sequencer->stepValues[fingerPositions[fingerId]],
@@ -92,11 +134,9 @@ struct SequencerUI {
 
   void handleFingerDown(const SDL_FingerID &fingerId, const vec2f_t &position,
                         const float pressure) {
-
     for (int i = 0; i < Sequencer::MAX_STEPS; i++) {
       if (DoHSliderClick(&stepButtons[i], &sequencer->stepValues[i],
                          position)) {
-
         fingerPositions[fingerId] = i;
       }
     }
@@ -104,7 +144,6 @@ struct SequencerUI {
 
   void handleFingerUp(const SDL_FingerID &fingerId, const vec2f_t &position,
                       const float pressure) {
-
     auto i = fingerPositions[fingerId];
     if (i > -1) {
       stepButtons[i].state = INACTIVE;
@@ -140,6 +179,15 @@ struct SequencerUI {
     if (DoHSliderClick(&tempoSlider, &tempoSliderValue, mousePosition)) {
       sequencer->setTempoNormalized(tempoSliderValue);
     };
+
+    if (tempoDetector.DoTapTempo(&tapTempoButton, SDL_GetTicks() / 1000.0,
+                                 mousePosition)) {
+      sequencer->setTempo(tempoDetector.tempo);
+      std::stringstream sstream;
+      sstream << "tempo: " << tempoDetector.tempo;
+      tempoSlider.label.setText(sstream.str());
+    };
+
     float lengthSliderValue = sequencer->getLengthNormalized();
     if (DoHSliderClick(&seqLengthSlider, &lengthSliderValue, mousePosition)) {
       sequencer->setLengthNormalized(lengthSliderValue);
@@ -162,6 +210,7 @@ struct SequencerUI {
       }
     }
     DrawButton(&playButton, renderer, style);
+    DrawButton(&tapTempoButton, renderer, style);
     auto tempoRange = (sequencer->maxBPM - sequencer->minBPM);
     DrawHSlider(&seqLengthSlider, sequencer->getLengthNormalized(), renderer,
                 style);

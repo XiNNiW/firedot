@@ -15,7 +15,7 @@ add_library(main SHARED)
 
 file(GLOB SOURCES "../../../../src/*.cpp")
 
-target_sources(main PRIVATE ${SOURCES} ../../../../main.cpp)
+target_sources(main PRIVATE ../../../../main.cpp ${SOURCES})
 
 
 target_link_libraries(main SDL2 SDL2_image algae
