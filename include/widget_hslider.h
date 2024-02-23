@@ -15,6 +15,19 @@ struct HSlider {
   AxisAlignedBoundingBox shape;
 };
 
+inline const HSlider MakeHSlider(const std::string &labelText,
+                                 AxisAlignedBoundingBox shape,
+                                 WidgetState state = INACTIVE) {
+  auto labelShape = shape;
+  labelShape.halfSize = labelShape.halfSize.scale(0.25);
+  labelShape.position.x -= shape.halfSize.x;
+  labelShape.position.x += labelShape.halfSize.x;
+  labelShape.position.y -= shape.halfSize.y;
+  labelShape.position.y += labelShape.halfSize.y;
+  return HSlider{
+      .state = state, .label = Label(labelShape, labelText), .shape = shape};
+}
+
 inline void SetHSliderValue(HSlider *slider, float *sliderValue,
                             const vec2f_t &mousePosition) {
   float width = slider->shape.halfSize.x * 2;
@@ -67,6 +80,5 @@ inline void DrawHSlider(HSlider *slider, const float &sliderValue,
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 
   slider->label.draw(style.getWidgetLabelColor(slider->state),
-                     style.getWidgetColor(slider->state), sliderBounds,
-                     renderer, style);
+                     style.getWidgetColor(slider->state), renderer, style);
 }

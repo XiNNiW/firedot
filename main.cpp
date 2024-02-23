@@ -16,11 +16,11 @@
 #include "include/game.h"
 #include "include/game_object.h"
 #include "include/load_sound_files.h"
+#include "include/mapping.h"
 #include "include/metaphor.h"
 #include "include/physics.h"
 #include "include/sample_load.h"
 #include "include/save_state.h"
-#include "include/sensor.h"
 #include "include/sequencer.h"
 #include "include/synthesis.h"
 #include "include/synthesis_parameter.h"
@@ -139,6 +139,7 @@ public:
     }
 
     style = new Style(renderer);
+    style->initializeSizes(ActiveWindow::size);
 
     if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0)
       SDL_LogError(0, "SDL_audio could not initialize! Error: %s\n",
@@ -321,11 +322,8 @@ public:
   void update(SDL_Event &event) {
     // frame rate sync
     double deltaTimeMilliseconds = SDL_GetTicks() - lastFrameTime;
-    //  auto timeToWait = FRAME_DELTA_MILLIS - deltaTimeMilliseconds;
     frameDeltaTimeSeconds = deltaTimeMilliseconds / 1000.0;
-    //  if ((timeToWait > 0) && (timeToWait < FRAME_DELTA_MILLIS)) {
-    //    SDL_Delay(timeToWait);
-    //  }
+
     lastFrameTime = SDL_GetTicks();
 
     switch (saveState.getInstrumentMetaphorType()) {
@@ -336,9 +334,15 @@ public:
       break;
     case TOUCH_PAD:
       break;
-    case GAME:
+    case GAME: {
+
+      auto timeToWait = FRAME_DELTA_MILLIS - deltaTimeMilliseconds;
+      if ((timeToWait > 0) && (timeToWait < FRAME_DELTA_MILLIS)) {
+        SDL_Delay(timeToWait);
+      }
       game.update(frameDeltaTimeSeconds);
       break;
+    }
     default:
       break;
     }
@@ -460,6 +464,9 @@ public:
                                   .y = event.sensor.data[1],
                                   .z = event.sensor.data[2]};
           saveState.sensorMapping.emitEvent(&synth,
+                                            ContinuousInputType::SPIN_VELOCITY,
+                                            clip<float>(velocity.y));
+          saveState.sensorMapping.emitEvent(&synth,
                                             ContinuousInputType::ACCELERATION,
                                             clip<float>(velocity.length()));
           break;
@@ -480,9 +487,6 @@ public:
     if (event.type == SDL_QUIT || (!renderIsOn))
       return;
     SDL_RenderClear(renderer);
-
-    for (auto object : gameObjects) {
-    }
 
     userInterface.draw(renderer, *style);
     SDL_RenderPresent(renderer);

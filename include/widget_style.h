@@ -3,6 +3,7 @@
 #include "SDL_image.h"
 #include "SDL_render.h"
 #include "SDL_ttf.h"
+#include "vector_math.h"
 #include "widget_state.h"
 #include <string>
 
@@ -73,11 +74,15 @@ static inline const bool LoadIconTexture(SDL_Renderer *renderer,
   }
 }
 
+enum class FontSize { SMALL, LARGE };
+
 class Style {
 private:
   SDL_Texture *iconTextures[NUM_ICONS];
   TTF_Font *font;
   SDL_Texture *particleTexture;
+  float smallFontHeight = 10;
+  float largeFontHeight = 24;
 
 public:
   Style(SDL_Renderer *renderer) {
@@ -110,6 +115,11 @@ public:
                    particleTexturePath, SDL_GetError());
     }
   }
+  void initializeSizes(const vec2f_t screenDimensions) {
+    // smallFontHeight = screenDimensions.y / 75.0;
+    smallFontHeight = screenDimensions.y / 50.0;
+    largeFontHeight = screenDimensions.y / 25.0;
+  }
   ~Style() {
     TTF_CloseFont(font);
     font = NULL;
@@ -137,6 +147,18 @@ public:
   }
 
   inline TTF_Font *getFont() const { return font; }
+
+  inline const float getFontHeight(FontSize size) const {
+    switch (size) {
+    case FontSize::SMALL:
+      return smallFontHeight;
+      break;
+    case FontSize::LARGE:
+      return largeFontHeight;
+      break;
+    }
+    return 1;
+  }
 
   inline const SDL_Color getWidgetColor(const WidgetState state) const {
 

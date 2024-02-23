@@ -2,9 +2,9 @@
 
 #include "SDL_render.h"
 #include "collider.h"
+#include "mapping.h"
 #include "metaphor.h"
 #include "save_state.h"
-#include "sensor.h"
 #include "synthesis.h"
 #include "synthesis_parameter.h"
 #include "ui_navigation.h"
@@ -257,13 +257,13 @@ struct MappingUI {
   inline void draw(SDL_Renderer *renderer, const Style &style) {
 
     for (auto &keyValuePair : saveState->sensorMapping.continuousMappings) {
-      auto &sensorButton = continuousInputButtons[keyValuePair.first];
-      auto &parameterButton = parameterButtons[keyValuePair.second];
+      auto &sensorButton = continuousInputButtons[keyValuePair.second];
+      auto &parameterButton = parameterButtons[keyValuePair.first];
       drawConnectionLine(renderer, sensorButton, parameterButton);
     }
     for (auto &keyValuePair : saveState->sensorMapping.momentaryMappings) {
-      auto &sensorButton = momentaryInputButtons[keyValuePair.first];
-      auto &parameterButton = momentaryParameterButtons[keyValuePair.second];
+      auto &sensorButton = momentaryInputButtons[keyValuePair.second];
+      auto &parameterButton = momentaryParameterButtons[keyValuePair.first];
       drawConnectionLine(renderer, sensorButton, parameterButton);
     }
     if (heldSensor > -1) {

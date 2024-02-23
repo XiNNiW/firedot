@@ -1,7 +1,7 @@
 #pragma once
 
+#include "mapping.h"
 #include "metaphor.h"
-#include "sensor.h"
 #include "synthesis.h"
 #include "synthesis_parameter.h"
 #include <fstream>
@@ -26,7 +26,7 @@ public:
   InputMapping<float> sensorMapping;
   SynthesizerSettings synthesizerSettings;
 
-  inline InstrumentMetaphorType getInstrumentMetaphorType() {
+  inline InstrumentMetaphorType getInstrumentMetaphorType() const {
     return instrumentMetaphor;
   }
   inline void setInstrumentMetaphor(InstrumentMetaphorType type) {
@@ -183,9 +183,9 @@ public:
 
             if (seglist.size() == 2) {
               state->sensorMapping
-                  .momentaryMappings[static_cast<MomentaryInputType>(
+                  .momentaryMappings[static_cast<MomentaryParameterType>(
                       std::stoi(seglist[0]))] =
-                  static_cast<MomentaryParameterType>(std::stoi(seglist[1]));
+                  static_cast<MomentaryInputType>(std::stoi(seglist[1]));
             }
           }
           break;
@@ -204,9 +204,9 @@ public:
 
             if (seglist.size() == 2) {
               state->sensorMapping
-                  .continuousMappings[static_cast<ContinuousInputType>(
+                  .continuousMappings[static_cast<ContinuousParameterType>(
                       std::stoi(seglist[0]))] =
-                  static_cast<ContinuousParameterType>(std::stoi(seglist[1]));
+                  static_cast<ContinuousInputType>(std::stoi(seglist[1]));
             }
           }
 

@@ -3,6 +3,7 @@
 #include "SDL_render.h"
 #include "collider.h"
 #include "game.h"
+#include "instrument_metaphor_selector.h"
 #include "metaphor.h"
 #include "save_state.h"
 #include "ui_game.h"
@@ -22,22 +23,20 @@
 struct PlayInstrumentUI {
   SaveState *saveState;
   Navigation *navigation;
-  enum Page { PLAY, EDIT_SOUND, EDIT_MAPPING, SETTINGS } page = PLAY;
-  static const int NUM_PAGES = 4;
+  enum Page { PLAY, EDIT_SOUND, SETTINGS } page = PLAY;
+  static const int NUM_PAGES = 3;
   static_assert((NUM_PAGES - 1) == SETTINGS,
                 "Navigation enum size does not match NavigationPages");
-  constexpr static const Page Pages[NUM_PAGES] = {PLAY, EDIT_SOUND,
-                                                  EDIT_MAPPING, SETTINGS};
+  constexpr static const Page Pages[NUM_PAGES] = {PLAY, EDIT_SOUND, SETTINGS};
 
   RadioGroup pageSelector;
+  InstrumentMetaphorSelectorUI instrumentSelector;
   KeyboardUI keyboardUI;
   SequencerUI sequencerUI;
   TouchPadUI touchPadUI;
   GameUI gameUI;
   SoundEditUI soundEditUI;
-  MappingUI mappingUI;
   SettingsMenu settingsMenu;
-  InstrumentMetaphorSelectionPopupUI instrumentPopup;
   AxisAlignedBoundingBox shape;
   AxisAlignedBoundingBox lowerShape;
   float topMargin = 15;
@@ -49,20 +48,19 @@ struct PlayInstrumentUI {
         sequencerUI(SequencerUI(sequencer)),
         touchPadUI(TouchPadUI(synth, _saveState)), gameUI(GameUI(game)),
         soundEditUI(SoundEditUI(synth, &_saveState->sensorMapping, _saveState)),
-        mappingUI(MappingUI(_saveState)),
         settingsMenu(SettingsMenu(_navigation, _saveState, synth)),
         saveState(_saveState), navigation(_navigation),
-        instrumentPopup(_saveState) {
-    pageSelector =
-        RadioGroup({"play", "edit sound", "edit sensors", "settings"}, page);
+        instrumentSelector(_saveState) {
+    pageSelector = RadioGroup({"play", "edit sound", "edit sensors"}, page);
     pageSelector.options[PLAY].iconType = IconType::NOTES;
-    pageSelector.options[EDIT_MAPPING].iconType = IconType::MAP;
     pageSelector.options[EDIT_SOUND].iconType = IconType::SLIDERS;
     pageSelector.options[SETTINGS].iconType = IconType::GEAR;
   }
 
   void buildLayout(const AxisAlignedBoundingBox &shape) {
     this->shape = shape;
+    auto pageMargin = shape.halfSize.x / 64;
+    auto rowMargin = shape.halfSize.y / 64;
     auto navGroupHeight = shape.halfSize.y / 6;
     auto buttonWidth = shape.halfSize.x / 5;
 
@@ -73,28 +71,46 @@ struct PlayInstrumentUI {
                      .y = static_cast<float>(navGroupHeight / 2.0)}};
     pageSelector.buildLayout(upperShape);
 
-    auto lowerShape = AxisAlignedBoundingBox{
+    auto lowerShapeHalfHeight = (shape.halfSize.y * 2 - navGroupHeight) / 2.0;
+    lowerShape = AxisAlignedBoundingBox{
         .position = {.x = shape.position.x,
-                     .y = navGroupHeight + topMargin + shape.position.y},
+                     .y = static_cast<float>(navGroupHeight + topMargin +
+                                             lowerShapeHalfHeight)},
         .halfSize = {.x = shape.halfSize.x,
+                     .y = static_cast<float>(lowerShapeHalfHeight)}};
+    auto instrumentSelectorHalfHeight = shape.halfSize.y / 12.0;
+    auto playAreaHalfHeight =
+        lowerShape.halfSize.y - instrumentSelectorHalfHeight - rowMargin;
+    auto instrumentSelectorShape = AxisAlignedBoundingBox{
+        .position = {.x = shape.position.x,
+                     .y = static_cast<float>(upperShape.position.y +
+                                             upperShape.halfSize.y + rowMargin +
+                                             instrumentSelectorHalfHeight)},
+        .halfSize = {.x = shape.halfSize.x - pageMargin,
+                     .y = static_cast<float>(instrumentSelectorHalfHeight)}};
+    auto playAreaShape = AxisAlignedBoundingBox{
+        .position = {.x = shape.position.x,
                      .y = static_cast<float>(
-                         (shape.halfSize.y * 2 - navGroupHeight) / 2.0)}};
-    keyboardUI.buildLayout(lowerShape);
-    sequencerUI.buildLayout(lowerShape);
-    touchPadUI.buildLayout(lowerShape);
-    gameUI.buildLayout(lowerShape);
+                         instrumentSelectorShape.position.y + rowMargin * 2 +
+                         instrumentSelectorHalfHeight + playAreaHalfHeight)},
+        .halfSize = {.x = shape.halfSize.x,
+                     .y = static_cast<float>(playAreaHalfHeight)}};
+
+    instrumentSelector.buildLayout(instrumentSelectorShape);
+
+    keyboardUI.buildLayout(playAreaShape);
+    sequencerUI.buildLayout(playAreaShape);
+    touchPadUI.buildLayout(playAreaShape);
+    gameUI.buildLayout(playAreaShape);
     soundEditUI.buildLayout(lowerShape);
-    mappingUI.buildLayout(lowerShape);
     settingsMenu.buildLayout(lowerShape);
-    instrumentPopup.buildLayout(shape);
   };
 
   void resetLayouts() { buildLayout(shape); }
 
   void handleFingerMove(const SDL_FingerID &fingerId, const vec2f_t &position,
                         const float pressure) {
-    if (instrumentPopup.isOpen())
-      return;
+
     switch (page) {
 
     case PLAY:
@@ -121,16 +137,12 @@ struct PlayInstrumentUI {
     case SETTINGS:
       settingsMenu.handleFingerMove(fingerId, position, pressure);
       break;
-    case EDIT_MAPPING:
-      mappingUI.handleFingerMove(fingerId, position, pressure);
-      break;
     }
   };
 
   void handleFingerDown(const SDL_FingerID &fingerId, const vec2f_t &position,
                         const float pressure) {
-    if (instrumentPopup.isOpen())
-      return;
+
     switch (page) {
 
     case PLAY:
@@ -155,16 +167,12 @@ struct PlayInstrumentUI {
     case SETTINGS:
       settingsMenu.handleFingerDown(fingerId, position, pressure);
       break;
-    case EDIT_MAPPING:
-      mappingUI.handleFingerDown(fingerId, position, pressure);
-      break;
     }
   };
 
   void handleFingerUp(const SDL_FingerID &fingerId, const vec2f_t &position,
                       const float pressure) {
-    if (instrumentPopup.isOpen())
-      return;
+
     switch (page) {
 
     case PLAY:
@@ -189,15 +197,11 @@ struct PlayInstrumentUI {
     case SETTINGS:
       settingsMenu.handleFingerUp(fingerId, position, pressure);
       break;
-    case EDIT_MAPPING:
-      mappingUI.handleFingerUp(fingerId, position, pressure);
-      break;
     }
   };
 
   void handleMouseMove(const vec2f_t &mousePosition) {
-    if (instrumentPopup.isOpen())
-      return;
+
     switch (page) {
 
     case PLAY:
@@ -222,92 +226,76 @@ struct PlayInstrumentUI {
     case SETTINGS:
       settingsMenu.handleMouseMove(mousePosition);
       break;
-    case EDIT_MAPPING:
-      mappingUI.handleMouseMove(mousePosition);
-      break;
     }
   };
 
   void handleMouseDown(const vec2f_t &mousePosition) {
-    if (instrumentPopup.isOpen()) {
-      instrumentPopup.handleMouseDown(mousePosition);
-    } else {
-      switch (page) {
-      case PLAY:
-        switch (saveState->getInstrumentMetaphorType()) {
-        case InstrumentMetaphorType::KEYBOARD:
-          keyboardUI.handleMouseDown(mousePosition);
-          break;
-        case InstrumentMetaphorType::SEQUENCER:
-          sequencerUI.handleMouseDown(mousePosition);
-          break;
-        case InstrumentMetaphorType::TOUCH_PAD:
-          touchPadUI.handleMouseDown(mousePosition);
-          break;
-        case InstrumentMetaphorType::GAME:
-          gameUI.handleMouseDown(mousePosition);
-          break;
-        case InstrumentMetaphorType__SIZE:
-          break;
-        }
+
+    switch (page) {
+    case PLAY:
+      instrumentSelector.handleMouseDown(mousePosition);
+      switch (saveState->getInstrumentMetaphorType()) {
+      case InstrumentMetaphorType::KEYBOARD:
+        keyboardUI.handleMouseDown(mousePosition);
         break;
-      case EDIT_SOUND:
-        soundEditUI.handleMouseDown(mousePosition);
+      case InstrumentMetaphorType::SEQUENCER:
+        sequencerUI.handleMouseDown(mousePosition);
         break;
-      case SETTINGS:
-        settingsMenu.handleMouseDown(mousePosition);
+      case InstrumentMetaphorType::TOUCH_PAD:
+        touchPadUI.handleMouseDown(mousePosition);
         break;
-      case EDIT_MAPPING:
-        mappingUI.handleMouseDown(mousePosition);
+      case InstrumentMetaphorType::GAME:
+        gameUI.handleMouseDown(mousePosition);
+        break;
+      case InstrumentMetaphorType__SIZE:
         break;
       }
-      int selectedIndex = 0;
-      if (DoClickRadioGroup(&pageSelector, mousePosition)) {
-        auto selectedPage = Pages[pageSelector.selectedIndex];
-        if ((page == selectedPage) && (selectedPage == PLAY)) {
-          instrumentPopup.open();
-        } else {
-          resetLayouts();
-          page = Pages[pageSelector.selectedIndex];
-        }
-      }
+      break;
+    case EDIT_SOUND:
+      soundEditUI.handleMouseDown(mousePosition);
+      break;
+    case SETTINGS:
+      settingsMenu.handleMouseDown(mousePosition);
+      break;
+    }
+    int selectedIndex = 0;
+    if (DoClickRadioGroup(&pageSelector, mousePosition)) {
+      auto selectedPage = Pages[pageSelector.selectedIndex];
+
+      resetLayouts();
+      page = Pages[pageSelector.selectedIndex];
     }
   };
 
   void handleMouseUp(const vec2f_t &mousePosition) {
-    if (instrumentPopup.isOpen()) {
-      instrumentPopup.handleMouseUp(mousePosition);
-    } else {
-      switch (page) {
 
-      case PLAY:
-        switch (saveState->getInstrumentMetaphorType()) {
-        case InstrumentMetaphorType::KEYBOARD:
-          keyboardUI.handleMouseUp(mousePosition);
-          break;
-        case InstrumentMetaphorType::SEQUENCER:
-          sequencerUI.handleMouseUp(mousePosition);
-          break;
-        case InstrumentMetaphorType::TOUCH_PAD:
-          touchPadUI.handleMouseUp(mousePosition);
-          break;
-        case InstrumentMetaphorType::GAME:
-          gameUI.handleMouseUp(mousePosition);
-          break;
-        case InstrumentMetaphorType::InstrumentMetaphorType__SIZE:
-          break;
-        }
+    switch (page) {
+
+    case PLAY:
+      instrumentSelector.handleMouseUp(mousePosition);
+      switch (saveState->getInstrumentMetaphorType()) {
+      case InstrumentMetaphorType::KEYBOARD:
+        keyboardUI.handleMouseUp(mousePosition);
         break;
-      case EDIT_SOUND:
-        soundEditUI.handleMouseUp(mousePosition);
+      case InstrumentMetaphorType::SEQUENCER:
+        sequencerUI.handleMouseUp(mousePosition);
         break;
-      case SETTINGS:
-        settingsMenu.handleMouseUp(mousePosition);
+      case InstrumentMetaphorType::TOUCH_PAD:
+        touchPadUI.handleMouseUp(mousePosition);
         break;
-      case EDIT_MAPPING:
-        mappingUI.handleMouseUp(mousePosition);
+      case InstrumentMetaphorType::GAME:
+        gameUI.handleMouseUp(mousePosition);
+        break;
+      case InstrumentMetaphorType::InstrumentMetaphorType__SIZE:
         break;
       }
+      break;
+    case EDIT_SOUND:
+      soundEditUI.handleMouseUp(mousePosition);
+      break;
+    case SETTINGS:
+      settingsMenu.handleMouseUp(mousePosition);
+      break;
     }
   };
 
@@ -331,15 +319,13 @@ struct PlayInstrumentUI {
       case InstrumentMetaphorType::InstrumentMetaphorType__SIZE:
         break;
       }
+      instrumentSelector.draw(renderer, style);
       break;
     case EDIT_SOUND:
       soundEditUI.draw(renderer, style);
       break;
     case SETTINGS:
       settingsMenu.draw(renderer, style);
-      break;
-    case EDIT_MAPPING:
-      mappingUI.draw(renderer, style);
       break;
     }
     DrawRadioGroup(&pageSelector, renderer, style);
@@ -350,8 +336,5 @@ struct PlayInstrumentUI {
                    pageSelector.shape.halfSize.x - 15,
               .y = pageSelector.shape.halfSize.y * 2 + 10},
              renderer, style.hoverColor);
-    if (instrumentPopup.isOpen()) {
-      instrumentPopup.draw(renderer, style);
-    }
   };
 };

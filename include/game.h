@@ -2,8 +2,8 @@
 
 #include "collider.h"
 #include "game_object.h"
+#include "mapping.h"
 #include "physics.h"
-#include "sensor.h"
 #include "synthesis.h"
 #include "vector_math.h"
 #include <algorithm>

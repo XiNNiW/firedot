@@ -103,7 +103,6 @@ template <typename sample_t> struct Synthesizer {
   float octaveRegister = 0;
 
   sample_t sampleRate = 48000;
-  // AudioSample *activeSample = NULL;
   SampleBank<sample_t> *sampleBank = NULL;
 
   SynthesizerType type;

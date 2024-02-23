@@ -1,7 +1,7 @@
 #pragma once
 
+#include "mapping.h"
 #include "save_state.h"
-#include "sensor.h"
 #include "synthesis.h"
 #include <algorithm>
 

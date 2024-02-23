@@ -40,13 +40,22 @@ inline void DrawBoxOutline(const AxisAlignedBoundingBox &shape,
 }
 
 struct Button {
-  // std::string labelText = "";
   Label label = Label();
   AxisAlignedBoundingBox shape =
       AxisAlignedBoundingBox{.position = {0, 0}, .halfSize = {100, 100}};
   WidgetState state = INACTIVE;
   IconType iconType = IconType::NONE;
 };
+
+inline Button MakeButton(const std::string &labelText,
+                         const AxisAlignedBoundingBox &shape,
+                         WidgetState state = INACTIVE) {
+  auto labelShape = shape;
+  labelShape.halfSize = labelShape.halfSize.scale(0.25);
+
+  return Button{
+      .label = Label(labelShape, labelText), .shape = shape, .state = state};
+}
 
 inline const bool DoButtonClick(Button *button, const vec2f_t mousePosition,
                                 const WidgetState newState) {
@@ -98,9 +107,8 @@ inline const void DrawButtonLabel(
 
   auto textColor = style.getWidgetLabelColor(button->state);
   auto color = style.getWidgetColor(button->state);
-  button->label.draw(textColor, color,
-                     ConvertAxisAlignedBoxToSDL_Rect(button->shape), renderer,
-                     style, horizontalAlignment, verticalAlignment);
+  button->label.draw(textColor, color, renderer, style, horizontalAlignment,
+                     verticalAlignment);
 }
 
 inline const void DrawButton(Button *button, SDL_Renderer *renderer,

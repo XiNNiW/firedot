@@ -25,27 +25,26 @@ struct SettingsMenu {
     auto buttonWidth = shape.halfSize.x / 2;
     auto buttonHeight = 100.0;
     auto buttonMargin = 50;
-    newGameButton = Button{
-        .label = Label("new game"),
-        .shape = {.position = {.x = shape.halfSize.x, .y = shape.halfSize.y},
-                  .halfSize = {.x = buttonWidth / 2,
-                               .y = static_cast<float>(buttonHeight / 2.0)}}};
-    saveGameButton = Button{
-        .label = Label("save game"),
-        .shape = {
-            .position = {.x = shape.halfSize.x,
-                         .y = static_cast<float>(buttonHeight + buttonMargin +
-                                                 shape.halfSize.y)},
-            .halfSize = {.x = buttonWidth / 2,
-                         .y = static_cast<float>(+buttonHeight / 2.0)}}};
-    loadGameButton = Button{
-        .label = Label("load game"),
-        .shape = {.position = {.x = shape.halfSize.x,
-                               .y = static_cast<float>(
-                                   (buttonHeight + buttonMargin) * 2 +
-                                   shape.halfSize.y)},
-                  .halfSize = {.x = buttonWidth / 2,
-                               .y = static_cast<float>(buttonHeight / 2.0)}}};
+    newGameButton =
+        MakeButton("new game",
+                   {.position = {.x = shape.halfSize.x, .y = shape.halfSize.y},
+                    .halfSize = {.x = buttonWidth / 2,
+                                 .y = static_cast<float>(buttonHeight / 2.0)}});
+    saveGameButton = MakeButton(
+        "save game",
+        {.position = {.x = shape.halfSize.x,
+                      .y = static_cast<float>(buttonHeight + buttonMargin +
+                                              shape.halfSize.y)},
+         .halfSize = {.x = buttonWidth / 2,
+                      .y = static_cast<float>(+buttonHeight / 2.0)}});
+    loadGameButton =
+        MakeButton("load game",
+                   {.position = {.x = shape.halfSize.x,
+                                 .y = static_cast<float>(
+                                     (buttonHeight + buttonMargin) * 2 +
+                                     shape.halfSize.y)},
+                    .halfSize = {.x = buttonWidth / 2,
+                                 .y = static_cast<float>(buttonHeight / 2.0)}});
   };
 
   virtual void handleFingerMove(const SDL_FingerID &fingerId,

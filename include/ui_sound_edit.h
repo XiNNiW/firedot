@@ -1,13 +1,14 @@
 #pragma once
 
 #include "collider.h"
+#include "mapping.h"
 #include "save_state.h"
-#include "sensor.h"
 #include "synthesis.h"
 #include "synthesis_parameter.h"
 #include "ui_navigation.h"
 #include "ui_option_popup.h"
 #include "widget_button.h"
+#include "widget_hslider.h"
 #include "widget_style.h"
 #include <vector>
 
@@ -56,6 +57,8 @@ struct SoundEditUI {
   ~SoundEditUI() { delete pageTitleLabel; }
 
   void buildLayout(const AxisAlignedBoundingBox &shape) {
+    pageMargin = shape.halfSize.x / 64;
+    auto rowMargin = shape.halfSize.y / 64;
     auto pageLabelHeight = shape.halfSize.y / 32;
     pageTitleLabelShape = AxisAlignedBoundingBox{
         .position = {.x = shape.position.x,
@@ -87,7 +90,7 @@ struct SoundEditUI {
     synthSelectWidth =
         (width - (2 * pageMargin) - (NUM_SYNTH_TYPES * radiobuttonMargin)) /
         float(NUM_SYNTH_TYPES);
-    synthSelectHeight = width / 8.0;
+    synthSelectHeight = height / 24.0;
 
     synthSelectRadioGroup.buildLayout(AxisAlignedBoundingBox{
 
@@ -101,7 +104,7 @@ struct SoundEditUI {
                           2 * synthSelectRadioGroup.shape.halfSize.y +
                           buttonMargin * 2;
     auto usefulWidth = width - pageMargin;
-    auto rowMargin = usefulWidth / 128;
+    // auto rowMargin = usefulWidth / 128;
     auto buttonWidth = (usefulWidth - rowMargin) / 4;
     auto sliderWidth = usefulWidth - rowMargin - buttonWidth;
     auto rowHeight = height / 12.0;
@@ -109,29 +112,28 @@ struct SoundEditUI {
       auto rowY =
           initialSliderY +
           sliderCounter++ * (static_cast<float>(height / 12.0) + buttonMargin);
-      parameterSliders[parameter] = HSlider{
-          .label = Label(getDisplayName(parameter)),
-          .shape =
-              AxisAlignedBoundingBox{
-                  .position =
-                      {
-                          .x = xOffset + pageMargin / 2 + sliderWidth / 2,
-                          .y = rowY,
-                      },
-                  .halfSize = {.x = sliderWidth / 2,
-                               .y = static_cast<float>(rowHeight / 2)}},
-      };
+      parameterSliders[parameter] = MakeHSlider(
+          getDisplayName(parameter),
+          AxisAlignedBoundingBox{
+              .position =
+                  {
+                      .x = xOffset + pageMargin / 2 + sliderWidth / 2,
+                      .y = rowY,
+                  },
+              .halfSize = {.x = sliderWidth / 2,
+                           .y = static_cast<float>(rowHeight / 2)}});
+
       ContinuousInputType mappedInput;
       bool foundMapping = mapping->getMapping(parameter, &mappedInput);
       auto buttonText = foundMapping ? getDisplayName(mappedInput) : "none";
-      mappingButtons[parameter] =
-          Button{.label = Label(buttonText),
-                 .shape = AxisAlignedBoundingBox{
-                     .position = {.x = xOffset + pageMargin / 2 + sliderWidth +
-                                       rowMargin + buttonWidth / 2,
-                                  .y = rowY},
-                     .halfSize = {.x = buttonWidth / 2,
-                                  .y = static_cast<float>(rowHeight / 2)}}};
+      mappingButtons[parameter] = MakeButton(
+          buttonText,
+          AxisAlignedBoundingBox{
+              .position = {.x = xOffset + pageMargin / 2 + sliderWidth +
+                                rowMargin + buttonWidth / 2,
+                           .y = rowY},
+              .halfSize = {.x = buttonWidth / 2,
+                           .y = static_cast<float>(rowHeight / 2)}});
     }
     mappingSelectionPopup.close();
   }
@@ -141,7 +143,7 @@ struct SoundEditUI {
       bool foundMapping = mapping->getMapping(parameter, &mappedInput);
       auto buttonText = foundMapping ? getDisplayName(mappedInput) : "none";
 
-      mappingButtons[parameter].label = Label(buttonText);
+      mappingButtons[parameter].label.setText(buttonText);
     }
   }
 
@@ -304,7 +306,7 @@ struct SoundEditUI {
                                style.hoverColor.b, style.hoverColor.a);
         SDL_RenderFillRect(renderer, &percentRect);
         parameterSliders[parameterType].label.draw(
-            style.hoverColor, style.unavailableColor, rect, renderer, style);
+            style.hoverColor, style.unavailableColor, renderer, style);
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
       } else {
         DrawHSlider(&parameterSliders[parameterType],

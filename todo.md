@@ -1,9 +1,10 @@
 # TODO
 
-- [x] - filebrowser for navigating and loading past saves
-- [ ] - sound source scrubs through samples in a bank
-- [ ] - loading sample sets with filebrowser
-- [ ] - alternate mapping workflow
-- [ ] - inline instrument change
+- [x] - mapping bugs
+- [x] - ui streamline
+- [x] - font scaling
 - [ ] - bugs in game mode
-- [ ] - contact with committe ... committe meeting 2/15-20 / presentation
+- [ ] - scale lock
+- [ ] - color options
+- [ ] - smoothing acc + gyro
+- [ ] - synth improvements (karplus too loud, karplus exciter shape, parameter names change when synth changes)

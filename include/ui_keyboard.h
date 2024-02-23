@@ -4,9 +4,9 @@
 #include "SDL_pixels.h"
 #include "SDL_render.h"
 #include "collider.h"
+#include "mapping.h"
 #include "metaphor.h"
 #include "save_state.h"
-#include "sensor.h"
 #include "sequencer.h"
 #include "synthesis.h"
 #include "ui_navigation.h"
@@ -105,19 +105,20 @@ struct KeyboardUI {
     float keysPerRow = 5;
 
     for (size_t i = 0; i < NUM_KEY_BUTTONS; ++i) {
-
-      keyButtons[i] = Button{
-          .label = Label(GetNoteName(synth->noteMap.notes[i])),
-          .shape = AxisAlignedBoundingBox{
-              .position =
-                  vec2f_t{
-                      .x = static_cast<float>(
-                          shape.position.x - (keysPerRow / 2.0) * keySize +
-                          keySize / 2 + (i % int(keysPerRow)) * keySize),
-                      .y = static_cast<float>(titleBarHeight + keySize / 2.0 +
-                                              floor(i / keysPerRow) * keySize)},
-              .halfSize = vec2f_t{.x = static_cast<float>(keySize / 2),
-                                  .y = static_cast<float>(keySize / 2)}}};
+      auto buttonPosition =
+          vec2f_t{.x = static_cast<float>(
+                      shape.position.x - (keysPerRow / 2.0) * keySize +
+                      keySize / 2 + (i % int(keysPerRow)) * keySize),
+                  .y = static_cast<float>(titleBarHeight + keySize / 2.0 +
+                                          floor(i / keysPerRow) * keySize)};
+      auto buttonHalfSize = vec2f_t{.x = static_cast<float>(keySize / 2),
+                                    .y = static_cast<float>(keySize / 2)};
+      keyButtons[i] =
+          Button{.label = Label({.position = buttonPosition,
+                                 .halfSize = buttonHalfSize.scale(0.35)},
+                                GetNoteName(synth->noteMap.notes[i])),
+                 .shape = AxisAlignedBoundingBox{.position = buttonPosition,
+                                                 .halfSize = buttonHalfSize}};
     }
     needsDraw = true;
   }

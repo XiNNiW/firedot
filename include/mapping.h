@@ -229,18 +229,31 @@ getContinuousInputsForInstrumentType(InstrumentMetaphorType instrumentType,
     break;
   }
 }
-
+// struct InputType {
+//   union uInputType {
+//     ContinuousInputType continuousInputType;
+//     MomentaryInputType momentaryInputType;
+//     uInputType(ContinuousInputType type) : continuousInputType(type) {}
+//     uInputType(MomentaryInputType type) : momentaryInputType(type) {}
+//   } object;
+//   enum Type { CONTINUOUS, MOMENTARY } type;
+//   InputType(ContinuousInputType continuousInputType)
+//       : object(continuousInputType), type(CONTINUOUS) {}
+//   InputType(MomentaryInputType momentaryInputType)
+//       : object(momentaryInputType), type(MOMENTARY) {}
+// };
+//  make this a map of parameter type to input type
 template <typename sample_t> struct InputMapping {
-  std::map<ContinuousInputType, ContinuousParameterType> continuousMappings =
-      std::map<ContinuousInputType, ContinuousParameterType>();
-  std::map<MomentaryInputType, MomentaryParameterType> momentaryMappings =
-      std::map<MomentaryInputType, MomentaryParameterType>();
+  std::map<ContinuousParameterType, ContinuousInputType> continuousMappings =
+      std::map<ContinuousParameterType, ContinuousInputType>();
+  std::map<MomentaryParameterType, MomentaryInputType> momentaryMappings =
+      std::map<MomentaryParameterType, MomentaryInputType>();
   inline void emitEvent(Synthesizer<sample_t> *synth, ContinuousInputType type,
                         sample_t value) {
 
     for (auto &pair : continuousMappings) {
-      auto sensorType = pair.first;
-      auto parameterEventType = pair.second;
+      auto sensorType = pair.second;
+      auto parameterEventType = pair.first;
 
       if (type == sensorType) {
         synth->pushParameterChangeEvent(parameterEventType, value);
@@ -251,8 +264,8 @@ template <typename sample_t> struct InputMapping {
   inline void emitEvent(Synthesizer<sample_t> *synth, MomentaryInputType type,
                         sample_t value) {
     for (auto &pair : momentaryMappings) {
-      auto sensorType = pair.first;
-      auto parameterEventType = pair.second;
+      auto sensorType = pair.second;
+      auto parameterEventType = pair.first;
 
       if (type == sensorType) {
         synth->pushGateEvent(parameterEventType, value);
@@ -262,27 +275,27 @@ template <typename sample_t> struct InputMapping {
 
   inline void addMapping(ContinuousInputType sensorType,
                          ContinuousParameterType paramType) {
-    continuousMappings[sensorType] = paramType;
+    continuousMappings[paramType] = sensorType;
   }
 
   inline void removeMapping(ContinuousInputType sensorType,
                             ContinuousParameterType paramType) {
-    continuousMappings.erase(sensorType);
+    continuousMappings.erase(paramType);
   }
 
   inline void addMapping(MomentaryInputType sensorType,
                          MomentaryParameterType paramType) {
-    momentaryMappings[sensorType] = paramType;
+    momentaryMappings[paramType] = sensorType;
   }
 
   inline void removeMapping(MomentaryInputType sensorType,
                             MomentaryParameterType paramType) {
-    momentaryMappings.erase(sensorType);
+    momentaryMappings.erase(paramType);
   }
 
   inline const bool isMapped(const ContinuousParameterType parameterType) {
     for (auto &pair : continuousMappings) {
-      if (pair.second == parameterType)
+      if (pair.first == parameterType)
         return true;
     }
     return false;
@@ -290,7 +303,7 @@ template <typename sample_t> struct InputMapping {
 
   inline const bool isMapped(const MomentaryParameterType parameterType) {
     for (auto &pair : momentaryMappings) {
-      if (pair.second == parameterType)
+      if (pair.first == parameterType)
         return true;
     }
     return false;
@@ -299,8 +312,8 @@ template <typename sample_t> struct InputMapping {
   inline const bool getMapping(const ContinuousParameterType parameterType,
                                ContinuousInputType *mappedType) {
     for (auto &pair : continuousMappings) {
-      if (pair.second == parameterType) {
-        *mappedType = pair.first;
+      if (pair.first == parameterType) {
+        *mappedType = pair.second;
         return true;
       }
     }
@@ -310,8 +323,8 @@ template <typename sample_t> struct InputMapping {
   inline const bool getMapping(const MomentaryParameterType parameterType,
                                MomentaryInputType *mappedType) {
     for (auto &pair : momentaryMappings) {
-      if (pair.second == parameterType) {
-        *mappedType = pair.first;
+      if (pair.first == parameterType) {
+        *mappedType = pair.second;
         return true;
       }
     }
@@ -323,9 +336,9 @@ template <typename sample_t> struct InputMapping {
     bool shouldRemove = false;
     ContinuousInputType sensorType;
     for (auto &keyValuePair : continuousMappings) {
-      if (keyValuePair.second == parameterType) {
+      if (keyValuePair.first == parameterType) {
         shouldRemove = true;
-        sensorType = keyValuePair.first;
+        sensorType = keyValuePair.second;
       }
     }
     if (shouldRemove) {
@@ -338,9 +351,9 @@ template <typename sample_t> struct InputMapping {
     bool shouldRemove = false;
     MomentaryInputType sensorType;
     for (auto &keyValuePair : momentaryMappings) {
-      if (keyValuePair.second == parameterType) {
+      if (keyValuePair.first == parameterType) {
         shouldRemove = true;
-        sensorType = keyValuePair.first;
+        sensorType = keyValuePair.second;
       }
     }
     if (shouldRemove) {
@@ -352,9 +365,9 @@ template <typename sample_t> struct InputMapping {
     bool shouldRemove = false;
     ContinuousParameterType parameterType;
     for (auto &keyValuePair : continuousMappings) {
-      if (keyValuePair.first == sensorType) {
+      if (keyValuePair.second == sensorType) {
         shouldRemove = true;
-        parameterType = keyValuePair.second;
+        parameterType = keyValuePair.first;
       }
     }
     if (shouldRemove) {
@@ -366,9 +379,9 @@ template <typename sample_t> struct InputMapping {
     bool shouldRemove = false;
     MomentaryParameterType parameterType;
     for (auto &keyValuePair : momentaryMappings) {
-      if (keyValuePair.first == sensorType) {
+      if (keyValuePair.second == sensorType) {
         shouldRemove = true;
-        parameterType = keyValuePair.second;
+        parameterType = keyValuePair.first;
       }
     }
     if (shouldRemove) {

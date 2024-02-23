@@ -18,7 +18,10 @@ private:
 
 public:
   AxisAlignedBoundingBox shape;
+  FontSize fontSize = FontSize::SMALL;
   Label() {}
+  Label(const AxisAlignedBoundingBox &_shape, const std::string &_text)
+      : shape(_shape), text(_text) {}
   Label(std::string _text) : text(_text) {}
   inline void setText(std::string text) {
     this->text = text;
@@ -73,14 +76,20 @@ public:
         const auto &textTexture = cachedTexture;
         const auto &textSrcRect = cachedSourceRect;
 
+        auto fontHeight = style.getFontHeight(fontSize);
+        auto heightRatio = float(fontHeight) / float(textSrcRect.h);
+
         auto textDestRect = textSrcRect;
+        textDestRect.h *= heightRatio;
+        textDestRect.w *= heightRatio;
         textDestRect.x = labelBox.x;
         textDestRect.y = labelBox.y;
         switch (horizontalAlignment) {
         case HorizontalAlignment::LEFT:
           break;
         case HorizontalAlignment::CENTER: {
-          textDestRect.x += labelBox.w / 2 - textSrcRect.w / 2;
+          textDestRect.x += static_cast<float>(labelBox.w) / 2 -
+                            textSrcRect.w * heightRatio / 2;
           break;
         }
         }
@@ -89,7 +98,8 @@ public:
         case VerticalAlignment::TOP:
           break;
         case VerticalAlignment::CENTER:
-          textDestRect.y += labelBox.h / 2 - textSrcRect.h / 2;
+          textDestRect.y += static_cast<float>(labelBox.h) / 2 -
+                            textSrcRect.h * heightRatio / 2;
           break;
         }
         SDL_RenderCopy(renderer, textTexture, &textSrcRect, &textDestRect);
