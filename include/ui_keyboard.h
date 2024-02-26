@@ -6,6 +6,7 @@
 #include "collider.h"
 #include "mapping.h"
 #include "metaphor.h"
+#include "pitch_collection.h"
 #include "save_state.h"
 #include "sequencer.h"
 #include "synthesis.h"
@@ -63,7 +64,7 @@ inline const std::string GetNoteName(int note) {
 struct KeyboardUI {
 
   static constexpr size_t SYNTH_SELECTED_RADIO_GROUP_SIZE = 3;
-  static constexpr size_t NUM_KEY_BUTTONS = NoteMap::NUM_NOTES;
+  static constexpr size_t NUM_KEY_BUTTONS = 35;
 
   Synthesizer<float> *synth = NULL;
   SaveState *saveState;
@@ -116,7 +117,10 @@ struct KeyboardUI {
       keyButtons[i] =
           Button{.label = Label({.position = buttonPosition,
                                  .halfSize = buttonHalfSize.scale(0.35)},
-                                GetNoteName(synth->noteMap.notes[i])),
+                                GetNoteName(ForceToScale(
+                                    i + saveState->sensorMapping.key,
+                                    Scales[static_cast<size_t>(
+                                        saveState->sensorMapping.scaleType)]))),
                  .shape = AxisAlignedBoundingBox{.position = buttonPosition,
                                                  .halfSize = buttonHalfSize}};
     }
@@ -127,11 +131,11 @@ struct KeyboardUI {
                                const vec2f_t &position, const float pressure) {
     for (size_t i = 0; i < NUM_KEY_BUTTONS; ++i) {
       if (DoButtonHover(&keyButtons[i], position)) {
-        auto bentNote = synth->noteMap.notes[heldKeys[fingerId]];
-        auto bendDestination = synth->noteMap.notes[i];
-        // synth->bendNote(bentNote, bendDestination);
-        saveState->sensorMapping.emitEvent(
-            synth, KEYBOARD_KEY, float(i) / float(NUM_KEY_BUTTONS - 1));
+        // auto bentNote = synth->noteMap.notes[heldKeys[fingerId]];
+        // auto bendDestination = synth->noteMap.notes[i];
+        //  synth->bendNote(bentNote, bendDestination);
+        saveState->sensorMapping.emitSteppedEvent(synth, KEYBOARD_KEY, float(i),
+                                                  NUM_KEY_BUTTONS);
         fingerPositions[fingerId] = i;
       }
     }
@@ -157,12 +161,13 @@ struct KeyboardUI {
         heldKeys[fingerId] = i;
         // saveState->sensorMapping.noteOn(synth, InputType::KEYBOARD_KEY,
         // mtof(note));
-        saveState->sensorMapping.emitEvent(
-            synth, ContinuousInputType::KEYBOARD_KEY,
-            float(i) / float(NUM_KEY_BUTTONS - 1));
-        // saveState->sensorMapping.emitEvent(synth,
-        // ContinuousInputType::KEYBOARD_KEY,
-        //                    mtof(note));
+        // saveState->sensorMapping.emitEvent(
+        //     synth, ContinuousInputType::KEYBOARD_KEY,
+        //     float(i) / float(NUM_KEY_BUTTONS - 1));
+
+        saveState->sensorMapping.emitSteppedEvent(
+            synth, ContinuousInputType::KEYBOARD_KEY, float(i),
+            NUM_KEY_BUTTONS);
         saveState->sensorMapping.emitEvent(
             synth, MomentaryInputType::KEYBOARD_GATE, 1);
       }

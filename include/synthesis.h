@@ -70,29 +70,31 @@ template <typename sample_t> struct SynthesizerEvent {
       : data(bend), type(PITCH_BEND) {}
 };
 
-struct NoteMap {
-  static constexpr size_t NUM_NOTES = 35;
-  const float maxNote = 40 + 6 * 5;
-  const float maxFrequency = mtof(maxNote);
-  const float minNote = 36;
-  const float minFrequency = mtof(minNote);
-  float notes[NUM_NOTES] = {
-      36,         37,         38,         39,         40,         36 + 5,
-      37 + 5,     38 + 5,     39 + 5,     40 + 5,     36 + 2 * 5, 37 + 2 * 5,
-      38 + 2 * 5, 39 + 2 * 5, 40 + 2 * 5, 36 + 3 * 5, 37 + 3 * 5, 38 + 3 * 5,
-      39 + 3 * 5, 40 + 3 * 5, 36 + 4 * 5, 37 + 4 * 5, 38 + 4 * 5, 39 + 4 * 5,
-      40 + 4 * 5, 36 + 5 * 5, 37 + 5 * 5, 38 + 5 * 5, 39 + 5 * 5, 40 + 5 * 5,
-      36 + 6 * 5, 37 + 6 * 5, 38 + 6 * 5, 39 + 6 * 5, 40 + 6 * 5,
-  };
-  inline const float getFrequency(const float value) const {
-    return notes[static_cast<int>(floor(clip(value) * (NUM_NOTES - 1)))];
-  }
-  inline const float getNormalizedValue(const float frequency) const {
-    return (frequency - minFrequency) / maxFrequency;
-  }
-};
+// struct NoteMap {
+//   static constexpr size_t NUM_NOTES = 35;
+//   const float maxNote = 40 + 6 * 5;
+//   const float maxFrequency = mtof(maxNote);
+//   const float minNote = 36;
+//   const float minFrequency = mtof(minNote);
+//   float notes[NUM_NOTES] = {
+//       36,         37,         38,         39,         40,         36 + 5,
+//       37 + 5,     38 + 5,     39 + 5,     40 + 5,     36 + 2 * 5, 37 + 2 * 5,
+//       38 + 2 * 5, 39 + 2 * 5, 40 + 2 * 5, 36 + 3 * 5, 37 + 3 * 5, 38 + 3 * 5,
+//       39 + 3 * 5, 40 + 3 * 5, 36 + 4 * 5, 37 + 4 * 5, 38 + 4 * 5, 39 + 4 * 5,
+//       40 + 4 * 5, 36 + 5 * 5, 37 + 5 * 5, 38 + 5 * 5, 39 + 5 * 5, 40 + 5 * 5,
+//       36 + 6 * 5, 37 + 6 * 5, 38 + 6 * 5, 39 + 6 * 5, 40 + 6 * 5,
+//   };
+//   inline const float getFrequency(const float value) const {
+//     return notes[static_cast<int>(floor(clip(value) * (NUM_NOTES - 1)))];
+//   }
+//   inline const float getNormalizedValue(const float frequency) const {
+//     return (frequency - minFrequency) / maxFrequency;
+//   }
+// };
 template <typename sample_t> struct Synthesizer {
-  NoteMap noteMap;
+  //  NoteMap noteMap;
+  const float MIN_FREQUENCY = mtof(35);
+  const float MAX_FREQUENCY = mtof(40 + 6 * 5);
   Parameter<sample_t> frequency = Parameter<sample_t>(440);
   Parameter<sample_t> gain = Parameter<sample_t>(1);
   Parameter<sample_t> filterCutoff = Parameter<sample_t>(1);
@@ -343,13 +345,13 @@ template <typename sample_t> struct Synthesizer {
 
   inline void pushParameterChangeEvent(ContinuousParameterType type,
                                        sample_t value) {
-    switch (type) {
-    case FREQUENCY:
-      value = mtof(noteMap.getFrequency(value));
-      break;
-    default:
-      break;
-    }
+    // switch (type) {
+    //   case FREQUENCY:
+    //     value = mtof(noteMap.getFrequency(value));
+    //     break;
+    //   default:
+    //     break;
+    //   }
     eventQueue.push(
         ParameterChangeEvent<sample_t>{.type = type, .value = value});
   }
@@ -410,7 +412,8 @@ template <typename sample_t> struct Synthesizer {
     // TODO this also needs threading consideration
     switch (parameterType) {
     case FREQUENCY:
-      return noteMap.getNormalizedValue(frequency.smoothedValue);
+      return (frequency.smoothedValue - MIN_FREQUENCY) /
+             MAX_FREQUENCY; // noteMap.getNormalizedValue(frequency.smoothedValue);
     case GAIN:
       return gain.smoothedValue;
     case SOUND_SOURCE:

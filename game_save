@@ -1,10 +1,13 @@
 [instrumentMetaphor]
 0
 [momentaryMappings]
-1,0
+0,1
 
 [continuousMappings]
-3,0
+0,3
 
 [soundSettings]
-4,0.999977,0.499989,0.999977,0.499989,0.000999968,0.999977
+0,0.999977,0.499989,0.999977,0.499989,0.000999968,0.999977
+[scaleType]
+0
+

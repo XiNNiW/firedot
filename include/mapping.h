@@ -1,6 +1,7 @@
 #pragma once
 
 #include "metaphor.h"
+#include "pitch_collection.h"
 #include "synthesis.h"
 #include "synthesis_parameter.h"
 #include <cstddef>
@@ -248,6 +249,8 @@ template <typename sample_t> struct InputMapping {
       std::map<ContinuousParameterType, ContinuousInputType>();
   std::map<MomentaryParameterType, MomentaryInputType> momentaryMappings =
       std::map<MomentaryParameterType, MomentaryInputType>();
+  int key = 0;
+  ScaleType scaleType = ScaleType::LYDIAN_PENT;
   inline void emitEvent(Synthesizer<sample_t> *synth, ContinuousInputType type,
                         sample_t value) {
 
@@ -256,6 +259,32 @@ template <typename sample_t> struct InputMapping {
       auto parameterEventType = pair.first;
 
       if (type == sensorType) {
+        if (parameterEventType == FREQUENCY) {
+          value = mtof(ForceToScale(value * 24.0 + 36 + key,
+                                    Scales[static_cast<size_t>(scaleType)]));
+        }
+
+        synth->pushParameterChangeEvent(parameterEventType, value);
+      }
+    }
+  }
+
+  inline void emitSteppedEvent(Synthesizer<sample_t> *synth,
+                               ContinuousInputType type, sample_t value,
+                               sample_t numSteps) {
+
+    for (auto &pair : continuousMappings) {
+      auto sensorType = pair.second;
+      auto parameterEventType = pair.first;
+
+      if (type == sensorType) {
+        if (parameterEventType == FREQUENCY) {
+          value = mtof(ForceToScale(value + key,
+                                    Scales[static_cast<size_t>(scaleType)]));
+        } else {
+          value /= numSteps;
+        }
+
         synth->pushParameterChangeEvent(parameterEventType, value);
       }
     }

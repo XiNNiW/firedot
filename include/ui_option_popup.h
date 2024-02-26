@@ -5,6 +5,7 @@
 #include "widget_button.h"
 #include "widget_radio_button.h"
 #include "widget_state.h"
+#include <cstddef>
 #include <vector>
 struct OptionPopupUI {
   enum Mode { OPEN, CLOSED } mode = CLOSED;
@@ -48,20 +49,20 @@ struct OptionPopupUI {
       buttonY += buttonHalfSize.y * 2 + margin;
     }
 
-    cancelButton = Button{
-        .label = Label("cancel"),
-        .shape = {.position = {.x = xOffset + shape.halfSize.x -
-                                    actionButtonHalfWidth - actionButtonMargin,
-                               .y = yOffset + height - actionButtonHalfHeight -
-                                    actionButtonMargin},
-                  .halfSize = {actionButtonHalfWidth, actionButtonHalfHeight}}};
-    selectButton = Button{
-        .label = Label("select"),
-        .shape = {.position = {.x = xOffset + shape.halfSize.x +
-                                    actionButtonHalfWidth + actionButtonMargin,
-                               .y = yOffset + height - actionButtonHalfHeight -
-                                    actionButtonMargin},
-                  .halfSize = {actionButtonHalfWidth, actionButtonHalfHeight}}};
+    cancelButton = MakeButton(
+        "cancel",
+        {.position = {.x = xOffset + shape.halfSize.x - actionButtonHalfWidth -
+                           actionButtonMargin,
+                      .y = yOffset + height - actionButtonHalfHeight -
+                           actionButtonMargin},
+         .halfSize = {actionButtonHalfWidth, actionButtonHalfHeight}});
+    selectButton = MakeButton(
+        "select",
+        {.position = {.x = xOffset + shape.halfSize.x + actionButtonHalfWidth +
+                           actionButtonMargin,
+                      .y = yOffset + height - actionButtonHalfHeight -
+                           actionButtonMargin},
+         .halfSize = {actionButtonHalfWidth, actionButtonHalfHeight}});
   }
 
   void open(const std::vector<std::string> &optionLabels,

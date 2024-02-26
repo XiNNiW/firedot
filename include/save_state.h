@@ -2,6 +2,7 @@
 
 #include "mapping.h"
 #include "metaphor.h"
+#include "pitch_collection.h"
 #include "synthesis.h"
 #include "synthesis_parameter.h"
 #include <fstream>
@@ -43,7 +44,6 @@ public:
     for (auto &momentaryType : currentMomentaryTypes) {
       sensorMapping.removeMappingForInputType(momentaryType);
     }
-    // sensorMapping.removeMappingForParameterType(GATE);
     instrumentMetaphor = type;
     switch (instrumentMetaphor) {
     case KEYBOARD:
@@ -104,6 +104,11 @@ public:
     save << state->synthesizerSettings.filterQuality << ",";
     save << state->synthesizerSettings.attack << ",";
     save << state->synthesizerSettings.release << "\n";
+    save << "[scaleType]"
+         << "\n";
+    save << static_cast<int>(state->sensorMapping.scaleType) << "\n";
+
+    save << "\n";
     save.close();
     auto failed = save.fail();
     if (failed) {
@@ -125,13 +130,15 @@ public:
       INSTRUMENT_METAPHOR,
       MOMENTARY_MAPPING,
       CONTINUOUS_MAPPING,
-      SYNTH_SETTINGS
+      SYNTH_SETTINGS,
+      SCALE_TYPE
     } fileHeading;
     std::map<std::string, FileHeading> headingMap;
     headingMap["[instrumentMetaphor]"] = FileHeading::INSTRUMENT_METAPHOR;
     headingMap["[momentaryMappings]"] = FileHeading::MOMENTARY_MAPPING;
     headingMap["[continuousMappings]"] = FileHeading::CONTINUOUS_MAPPING;
     headingMap["[soundSettings]"] = FileHeading::SYNTH_SETTINGS;
+    headingMap["[scaleType]"] = FileHeading::SCALE_TYPE;
 
     std::string lineText;
     while (getline(load, lineText)) {
@@ -153,6 +160,10 @@ public:
           readState = ReadState::READING;
         case FileHeading::SYNTH_SETTINGS:
           fileHeading = FileHeading::SYNTH_SETTINGS;
+          readState = ReadState::READING;
+          break;
+        case FileHeading::SCALE_TYPE:
+          fileHeading = FileHeading::SCALE_TYPE;
           readState = ReadState::READING;
           break;
         }
@@ -235,6 +246,13 @@ public:
               state->synthesizerSettings.release = std::stof(seglist[6]);
             }
           }
+
+          break;
+        }
+        case FileHeading::SCALE_TYPE: {
+          state->sensorMapping.scaleType =
+              static_cast<ScaleType>(std::stoi(lineText));
+          readState = ReadState::SEARCHING;
 
           break;
         }
