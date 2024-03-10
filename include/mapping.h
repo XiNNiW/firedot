@@ -244,23 +244,58 @@ getContinuousInputsForInstrumentType(InstrumentMetaphorType instrumentType,
 //       : object(momentaryInputType), type(MOMENTARY) {}
 // };
 //  make this a map of parameter type to input type
-template <typename sample_t> struct InputMapping {
+
+struct ModeSpecificMapping {
   std::map<ContinuousParameterType, ContinuousInputType> continuousMappings =
       std::map<ContinuousParameterType, ContinuousInputType>();
   std::map<MomentaryParameterType, MomentaryInputType> momentaryMappings =
       std::map<MomentaryParameterType, MomentaryInputType>();
-  int key = 0;
-  ScaleType scaleType = ScaleType::LYDIAN_PENT;
-  inline void emitEvent(Synthesizer<sample_t> *synth, ContinuousInputType type,
-                        sample_t value) {
+};
 
+template <typename sample_t> struct InputMapping {
+
+  std::map<InstrumentMetaphorType, ModeSpecificMapping>
+      instrumentModeSpecificMappings;
+
+  InputMapping<sample_t>() {
+    for (auto &mode : InstrumentMetaphorTypes) {
+      instrumentModeSpecificMappings[mode] = ModeSpecificMapping();
+      switch (mode) {
+      case KEYBOARD:
+        addMapping(mode, KEYBOARD_GATE, GATE);
+        addMapping(mode, KEYBOARD_KEY, FREQUENCY);
+        break;
+      case SEQUENCER:
+        addMapping(mode, SEQUENCER_GATE, GATE);
+        addMapping(mode, SEQUENCER_STEP_LEVEL, FREQUENCY);
+        break;
+      case TOUCH_PAD:
+        addMapping(mode, TOUCH_PAD_GATE, GATE);
+        break;
+      case GAME:
+        addMapping(mode, COLLISION, GATE);
+        break;
+      case InstrumentMetaphorType__SIZE:
+        break;
+      }
+    }
+  }
+  int key = 0;
+  ScaleType scaleType = ScaleType::IONIAN_PENT;
+  inline void emitEvent(Synthesizer<sample_t> *synth,
+                        InstrumentMetaphorType instrumentMode,
+                        ContinuousInputType type, sample_t value) {
+
+    auto &continuousMappings =
+        instrumentModeSpecificMappings[instrumentMode].continuousMappings;
     for (auto &pair : continuousMappings) {
       auto sensorType = pair.second;
       auto parameterEventType = pair.first;
 
       if (type == sensorType) {
         if (parameterEventType == FREQUENCY) {
-          value = mtof(ForceToScale(value * 24.0 + 36 + key,
+          value = mtof(key + 36 +
+                       ForceToScale(value * 24.0,
                                     Scales[static_cast<size_t>(scaleType)]));
         }
 
@@ -270,17 +305,21 @@ template <typename sample_t> struct InputMapping {
   }
 
   inline void emitSteppedEvent(Synthesizer<sample_t> *synth,
+                               InstrumentMetaphorType instrumentMode,
                                ContinuousInputType type, sample_t value,
                                sample_t numSteps) {
 
+    auto &continuousMappings =
+        instrumentModeSpecificMappings[instrumentMode].continuousMappings;
     for (auto &pair : continuousMappings) {
       auto sensorType = pair.second;
       auto parameterEventType = pair.first;
 
       if (type == sensorType) {
         if (parameterEventType == FREQUENCY) {
-          value = mtof(ForceToScale(value + key,
-                                    Scales[static_cast<size_t>(scaleType)]));
+          value =
+              mtof(key + 36 +
+                   ForceToScale(value, Scales[static_cast<size_t>(scaleType)]));
         } else {
           value /= numSteps;
         }
@@ -290,8 +329,12 @@ template <typename sample_t> struct InputMapping {
     }
   }
 
-  inline void emitEvent(Synthesizer<sample_t> *synth, MomentaryInputType type,
-                        sample_t value) {
+  inline void emitEvent(Synthesizer<sample_t> *synth,
+                        InstrumentMetaphorType instrumentMode,
+                        MomentaryInputType type, sample_t value) {
+
+    auto &momentaryMappings =
+        instrumentModeSpecificMappings[instrumentMode].momentaryMappings;
     for (auto &pair : momentaryMappings) {
       auto sensorType = pair.second;
       auto parameterEventType = pair.first;
@@ -302,27 +345,49 @@ template <typename sample_t> struct InputMapping {
     }
   }
 
-  inline void addMapping(ContinuousInputType sensorType,
+  inline void addMapping(InstrumentMetaphorType instrumentMode,
+                         ContinuousInputType sensorType,
+
                          ContinuousParameterType paramType) {
+
+    auto &continuousMappings =
+        instrumentModeSpecificMappings[instrumentMode].continuousMappings;
     continuousMappings[paramType] = sensorType;
   }
 
-  inline void removeMapping(ContinuousInputType sensorType,
+  inline void removeMapping(InstrumentMetaphorType instrumentMode,
+                            ContinuousInputType sensorType,
+
                             ContinuousParameterType paramType) {
+
+    auto &continuousMappings =
+        instrumentModeSpecificMappings[instrumentMode].continuousMappings;
     continuousMappings.erase(paramType);
   }
 
-  inline void addMapping(MomentaryInputType sensorType,
+  inline void addMapping(InstrumentMetaphorType instrumentMode,
+                         MomentaryInputType sensorType,
                          MomentaryParameterType paramType) {
+
+    auto &momentaryMappings =
+        instrumentModeSpecificMappings[instrumentMode].momentaryMappings;
     momentaryMappings[paramType] = sensorType;
   }
 
-  inline void removeMapping(MomentaryInputType sensorType,
+  inline void removeMapping(InstrumentMetaphorType instrumentMode,
+                            MomentaryInputType sensorType,
                             MomentaryParameterType paramType) {
+
+    auto &momentaryMappings =
+        instrumentModeSpecificMappings[instrumentMode].momentaryMappings;
     momentaryMappings.erase(paramType);
   }
 
-  inline const bool isMapped(const ContinuousParameterType parameterType) {
+  inline const bool isMapped(InstrumentMetaphorType instrumentMode,
+                             ContinuousParameterType parameterType) {
+
+    auto &continuousMappings =
+        instrumentModeSpecificMappings[instrumentMode].continuousMappings;
     for (auto &pair : continuousMappings) {
       if (pair.first == parameterType)
         return true;
@@ -330,7 +395,11 @@ template <typename sample_t> struct InputMapping {
     return false;
   }
 
-  inline const bool isMapped(const MomentaryParameterType parameterType) {
+  inline const bool isMapped(InstrumentMetaphorType instrumentMode,
+                             const MomentaryParameterType parameterType) {
+
+    auto &momentaryMappings =
+        instrumentModeSpecificMappings[instrumentMode].momentaryMappings;
     for (auto &pair : momentaryMappings) {
       if (pair.first == parameterType)
         return true;
@@ -338,8 +407,12 @@ template <typename sample_t> struct InputMapping {
     return false;
   }
 
-  inline const bool getMapping(const ContinuousParameterType parameterType,
+  inline const bool getMapping(InstrumentMetaphorType instrumentMode,
+                               const ContinuousParameterType parameterType,
                                ContinuousInputType *mappedType) {
+
+    auto &continuousMappings =
+        instrumentModeSpecificMappings[instrumentMode].continuousMappings;
     for (auto &pair : continuousMappings) {
       if (pair.first == parameterType) {
         *mappedType = pair.second;
@@ -349,8 +422,12 @@ template <typename sample_t> struct InputMapping {
     return false;
   }
 
-  inline const bool getMapping(const MomentaryParameterType parameterType,
+  inline const bool getMapping(InstrumentMetaphorType instrumentMode,
+                               const MomentaryParameterType parameterType,
                                MomentaryInputType *mappedType) {
+
+    auto &momentaryMappings =
+        instrumentModeSpecificMappings[instrumentMode].momentaryMappings;
     for (auto &pair : momentaryMappings) {
       if (pair.first == parameterType) {
         *mappedType = pair.second;
@@ -361,9 +438,13 @@ template <typename sample_t> struct InputMapping {
   }
 
   inline void
-  removeMappingForParameterType(ContinuousParameterType parameterType) {
+  removeMappingForParameterType(InstrumentMetaphorType instrumentMode,
+                                ContinuousParameterType parameterType) {
     bool shouldRemove = false;
     ContinuousInputType sensorType;
+
+    auto &continuousMappings =
+        instrumentModeSpecificMappings[instrumentMode].continuousMappings;
     for (auto &keyValuePair : continuousMappings) {
       if (keyValuePair.first == parameterType) {
         shouldRemove = true;
@@ -371,12 +452,16 @@ template <typename sample_t> struct InputMapping {
       }
     }
     if (shouldRemove) {
-      removeMapping(sensorType, parameterType);
+      removeMapping(instrumentMode, sensorType, parameterType);
     }
   }
 
   inline void
-  removeMappingForParameterType(MomentaryParameterType parameterType) {
+  removeMappingForParameterType(InstrumentMetaphorType instrumentMode,
+                                MomentaryParameterType parameterType) {
+
+    auto &momentaryMappings =
+        instrumentModeSpecificMappings[instrumentMode].momentaryMappings;
     bool shouldRemove = false;
     MomentaryInputType sensorType;
     for (auto &keyValuePair : momentaryMappings) {
@@ -386,11 +471,14 @@ template <typename sample_t> struct InputMapping {
       }
     }
     if (shouldRemove) {
-      removeMapping(sensorType, parameterType);
+      removeMapping(instrumentMode, sensorType, parameterType);
     }
   }
 
-  inline void removeMappingForInputType(ContinuousInputType sensorType) {
+  inline void removeMappingForInputType(InstrumentMetaphorType instrumentMode,
+                                        ContinuousInputType sensorType) {
+    auto &continuousMappings =
+        instrumentModeSpecificMappings[instrumentMode].continuousMappings;
     bool shouldRemove = false;
     ContinuousParameterType parameterType;
     for (auto &keyValuePair : continuousMappings) {
@@ -400,11 +488,14 @@ template <typename sample_t> struct InputMapping {
       }
     }
     if (shouldRemove) {
-      removeMapping(sensorType, parameterType);
+      removeMapping(instrumentMode, sensorType, parameterType);
     }
   }
 
-  inline void removeMappingForInputType(MomentaryInputType sensorType) {
+  inline void removeMappingForInputType(InstrumentMetaphorType instrumentMode,
+                                        MomentaryInputType sensorType) {
+    auto &momentaryMappings =
+        instrumentModeSpecificMappings[instrumentMode].momentaryMappings;
     bool shouldRemove = false;
     MomentaryParameterType parameterType;
     for (auto &keyValuePair : momentaryMappings) {
@@ -414,7 +505,7 @@ template <typename sample_t> struct InputMapping {
       }
     }
     if (shouldRemove) {
-      removeMapping(sensorType, parameterType);
+      removeMapping(instrumentMode, sensorType, parameterType);
     }
   }
 };

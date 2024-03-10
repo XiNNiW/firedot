@@ -93,26 +93,31 @@ struct GameUI {
       break;
     case Collider::ORIENTED_BOUNDING_BOX: {
       auto &collider = wall->collider.object.orientedBoundingBox;
-      auto &position = collider.position;
-      auto size = collider.halfSize.scale(2);
-      double rotation = collider.getAngle();
-      auto rect = SDL_Rect{.x = static_cast<int>(position.x),
-                           .y = static_cast<int>(position.y),
-                           .w = static_cast<int>(size.x),
-                           .h = static_cast<int>(size.y)};
-      auto *mTexture =
-          SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                            SDL_TEXTUREACCESS_TARGET, size.x, size.y);
-      SDL_SetRenderTarget(renderer, mTexture);
-      SDL_SetRenderDrawColor(renderer, style.color2.r, style.color2.g,
-                             style.color2.b, style.color2.a);
-      SDL_RenderDrawRect(renderer, &rect);
-      SDL_SetRenderTarget(renderer, NULL);
-      auto center = SDL_Point{.x = static_cast<int>(position.x),
-                              .y = static_cast<int>(position.y)};
-      SDL_RenderCopyEx(renderer, mTexture, &rect, &rect, rotation, &center,
-                       SDL_RendererFlip::SDL_FLIP_NONE);
-      SDL_DestroyTexture(mTexture);
+      auto fakeAABB = AxisAlignedBoundingBox();
+      fakeAABB.position = collider.position;
+      fakeAABB.halfSize = collider.halfSize;
+      DrawBoxOutline(fakeAABB, renderer, style.color2);
+      // auto &collider = wall->collider.object.orientedBoundingBox;
+      // auto &position = collider.position;
+      // auto size = collider.halfSize.scale(2);
+      // double rotation = collider.getAngle();
+      // auto rect = SDL_Rect{.x = static_cast<int>(position.x),
+      //                      .y = static_cast<int>(position.y),
+      //                      .w = static_cast<int>(size.x),
+      //                      .h = static_cast<int>(size.y)};
+      // auto *mTexture =
+      //     SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+      //                       SDL_TEXTUREACCESS_TARGET, size.x, size.y);
+      // SDL_SetRenderTarget(renderer, mTexture);
+      // SDL_SetRenderDrawColor(renderer, style.color2.r, style.color2.g,
+      //                        style.color2.b, style.color2.a);
+      // SDL_RenderDrawRect(renderer, &rect);
+      // SDL_SetRenderTarget(renderer, NULL);
+      // auto center = SDL_Point{.x = static_cast<int>(position.x),
+      //                         .y = static_cast<int>(position.y)};
+      // SDL_RenderCopyEx(renderer, mTexture, &rect, &rect, rotation, &center,
+      //                  SDL_RendererFlip::SDL_FLIP_NONE);
+      // SDL_DestroyTexture(mTexture);
     }
     case Collider::AXIS_ALIGNED_BOUNDING_BOX:
       DrawBoxOutline(wall->collider.object.axisAlignedBoundingBox, renderer,

@@ -6,9 +6,9 @@
 #include <array>
 #include <cstddef>
 #include <math.h>
+#include <string>
 #include <vector>
 enum class ScaleType {
-  LYDIAN_PENT,
   LYDIAN,
   IONIAN_PENT,
   IONIAN,
@@ -20,7 +20,6 @@ enum class ScaleType {
   AEOLIAN,
   PHRYGIAN_PENT,
   PHRYGIAN,
-  LOCRIAN_PENT,
   LOCRIAN,
   WHOLETONE,
   OCTATONIC_1,
@@ -28,27 +27,22 @@ enum class ScaleType {
   CHROMATIC,
   ScaleType__SIZE
 };
-static_assert(static_cast<size_t>(ScaleType::ScaleType__SIZE) == 18,
-              "there are 18 scales");
-static const ScaleType
-    ScaleTypes[static_cast<size_t>(ScaleType::ScaleType__SIZE)] = {
-        ScaleType::LYDIAN_PENT,     ScaleType::LYDIAN,
-        ScaleType::IONIAN_PENT,     ScaleType::IONIAN,
-        ScaleType::MIXOLYDIAN_PENT, ScaleType::MIXOLYDIAN,
-        ScaleType::DORIAN_PENT,     ScaleType::DORIAN,
-        ScaleType::AEOLIAN_PENT,    ScaleType::AEOLIAN,
-        ScaleType::PHRYGIAN_PENT,   ScaleType::PHRYGIAN,
-        ScaleType::LOCRIAN_PENT,    ScaleType::LOCRIAN,
-        ScaleType::WHOLETONE,       ScaleType::OCTATONIC_1,
-        ScaleType::OCTATONIC_2,     ScaleType::CHROMATIC,
+static const size_t NUM_SCALE_TYPES = 16;
+static_assert(static_cast<size_t>(ScaleType::ScaleType__SIZE) ==
+                  NUM_SCALE_TYPES,
+              "there are 16 scales");
+static const ScaleType ScaleTypes[NUM_SCALE_TYPES] = {
+    ScaleType::LYDIAN,          ScaleType::IONIAN_PENT,  ScaleType::IONIAN,
+    ScaleType::MIXOLYDIAN_PENT, ScaleType::MIXOLYDIAN,   ScaleType::DORIAN_PENT,
+    ScaleType::DORIAN,          ScaleType::AEOLIAN_PENT, ScaleType::AEOLIAN,
+    ScaleType::PHRYGIAN_PENT,   ScaleType::PHRYGIAN,     ScaleType::LOCRIAN,
+    ScaleType::WHOLETONE,       ScaleType::OCTATONIC_1,  ScaleType::OCTATONIC_2,
+    ScaleType::CHROMATIC,
 };
 
 static const char *getDisplayName(ScaleType scaleType) {
   switch (scaleType) {
 
-  case ScaleType::LYDIAN_PENT:
-    return "lydianPent";
-    break;
   case ScaleType::LYDIAN:
     return "lydian";
     break;
@@ -82,9 +76,7 @@ static const char *getDisplayName(ScaleType scaleType) {
   case ScaleType::PHRYGIAN:
     return "phrygian";
     break;
-  case ScaleType::LOCRIAN_PENT:
-    return "locrian pentatonic";
-    break;
+
   case ScaleType::LOCRIAN:
     return "locrian";
     break;
@@ -110,24 +102,21 @@ struct PitchCollection {
   static constexpr size_t SIZE = 12;
   float notes[SIZE] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 };
-static const PitchCollection
-    Scales[static_cast<size_t>(ScaleType::ScaleType__SIZE)] = {
-        PitchCollection{.notes = {0, 0, 0, 2, 2, 4, 4, 6, 6, 6, 7, 7}},
-        PitchCollection{.notes = {0, 0, 2, 4, 4, 6, 6, 7, 7, 9, 9, 11}},
-        PitchCollection{.notes = {0, 0, 0, 2, 2, 4, 4, 4, 7, 7, 9, 9}},
-        PitchCollection{.notes = {0, 0, 2, 2, 4, 4, 5, 5, 7, 7, 9, 11}},
-        PitchCollection{.notes = {0, 0, 0, 2, 2, 4, 4, 7, 7, 10, 10, 10}},
-        PitchCollection{.notes = {0, 0, 2, 4, 4, 5, 7, 7, 9, 9, 10, 10}},
-        PitchCollection{.notes = {0, 0, 0, 2, 2, 3, 3, 7, 7, 9, 9, 9}},
-        PitchCollection{.notes = {0, 0, 2, 3, 3, 5, 5, 7, 9, 9, 10, 10}},
-        PitchCollection{.notes = {0, 0, 0, 1, 1, 1, 3, 3, 7, 7, 10, 10}},
-        PitchCollection{.notes = {0, 0, 1, 1, 3, 3, 5, 5, 7, 7, 8, 10}},
-        PitchCollection{.notes = {0, 0, 0, 1, 1, 3, 3, 6, 6, 6, 10, 10}},
-        PitchCollection{.notes = {0, 0, 1, 3, 3, 6, 6, 8, 8, 10, 10}},
-        PitchCollection{.notes = {0, 2, 4, 6, 8, 10}},
-        PitchCollection{.notes = {0, 2, 3, 5, 6, 8, 9, 11}},
-        PitchCollection{.notes = {0, 1, 3, 4, 6, 7, 9, 10}},
-        PitchCollection{.notes = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}}};
+static const PitchCollection Scales[NUM_SCALE_TYPES] = {
+    PitchCollection{.notes = {0, 0, 2, 2, 4, 6, 6, 7, 7, 9, 9, 11}},
+    PitchCollection{.notes = {0, 0, 2, 2, 4, 4, 4, 7, 7, 9, 9, 9}},
+    PitchCollection{.notes = {0, 0, 2, 2, 4, 5, 5, 7, 7, 9, 9, 11}},
+    PitchCollection{.notes = {0, 0, 2, 2, 4, 4, 4, 7, 7, 10, 10, 10}},
+    PitchCollection{.notes = {0, 0, 2, 2, 4, 5, 7, 7, 9, 9, 10, 10}},
+    PitchCollection{.notes = {0, 0, 0, 2, 2, 3, 3, 7, 7, 9, 9, 9}},
+    PitchCollection{.notes = {0, 0, 2, 3, 3, 5, 5, 7, 9, 9, 10, 10}},
+    PitchCollection{.notes = {0, 0, 0, 1, 1, 1, 3, 3, 7, 7, 10, 10}},
+    PitchCollection{.notes = {0, 0, 1, 1, 3, 3, 5, 5, 7, 7, 8, 10}},
+    PitchCollection{.notes = {0, 0, 1, 3, 3, 6, 6, 8, 8, 10, 10}},
+    PitchCollection{.notes = {0, 2, 4, 6, 8, 10}},
+    PitchCollection{.notes = {0, 2, 3, 5, 6, 8, 9, 11}},
+    PitchCollection{.notes = {0, 1, 3, 4, 6, 7, 9, 10}},
+    PitchCollection{.notes = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}}};
 
 inline float ForceToScale(float pitch, const PitchCollection &pitchCollection) {
   int noteIndex = pitch;
@@ -135,4 +124,47 @@ inline float ForceToScale(float pitch, const PitchCollection &pitchCollection) {
   const int octave = 12;
   return pitchCollection.notes[noteIndex] +
          floor(pitch / PitchCollection::SIZE) * octave;
+}
+
+inline const std::string GetNoteName(int note) {
+  note = note % 12;
+  switch (note) {
+  case 0:
+    return "c";
+    break;
+  case 1:
+    return "c#";
+    break;
+  case 2:
+    return "d";
+    break;
+  case 3:
+    return "d#";
+    break;
+  case 4:
+    return "e";
+    break;
+  case 5:
+    return "f";
+    break;
+  case 6:
+    return "f#";
+    break;
+  case 7:
+    return "g";
+    break;
+  case 8:
+    return "g#";
+    break;
+  case 9:
+    return "a";
+    break;
+  case 10:
+    return "a#";
+    break;
+  case 11:
+    return "b";
+    break;
+  }
+  return "";
 }

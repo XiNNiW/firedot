@@ -6,29 +6,13 @@
 #include "synthesis_physical_modeling.h"
 #include "synthesis_sampling.h"
 #include "synthesis_subtractive.h"
+#include "synthesizer_settings.h"
 #include <algae.h>
 #include <atomic>
 #include <cstddef>
 #include <cstdlib>
 #include <new>
 #include <rigtorp/SPSCQueue.h>
-
-enum SynthesizerType {
-  SUBTRACTIVE_DRUM_SYNTH,
-  SUBTRACTIVE,
-  PHYSICAL_MODEL,
-  FREQUENCY_MODULATION,
-  SAMPLER
-};
-static const size_t NUM_SYNTH_TYPES = 5;
-static_assert(SAMPLER == NUM_SYNTH_TYPES - 1,
-              "synth type table and enum must agree");
-static const SynthesizerType SynthTypes[NUM_SYNTH_TYPES] = {
-    SynthesizerType::SUBTRACTIVE_DRUM_SYNTH, SynthesizerType::SUBTRACTIVE,
-    SynthesizerType::PHYSICAL_MODEL, SynthesizerType::FREQUENCY_MODULATION,
-    SynthesizerType::SAMPLER};
-static const char *SynthTypeDisplayNames[NUM_SYNTH_TYPES] = {
-    "drum", "subtractive", "physical model", "frequency modulation", "sampler"};
 
 template <typename sample_t> struct PitchBendEvent {
   sample_t note = 0;
@@ -93,7 +77,7 @@ template <typename sample_t> struct SynthesizerEvent {
 // };
 template <typename sample_t> struct Synthesizer {
   //  NoteMap noteMap;
-  const float MIN_FREQUENCY = mtof(35);
+  const float MIN_FREQUENCY = mtof(24);
   const float MAX_FREQUENCY = mtof(40 + 6 * 5);
   Parameter<sample_t> frequency = Parameter<sample_t>(440);
   Parameter<sample_t> gain = Parameter<sample_t>(1);
@@ -102,7 +86,7 @@ template <typename sample_t> struct Synthesizer {
   Parameter<sample_t> soundSource = Parameter<sample_t>(0);
   Parameter<sample_t> attackTime = Parameter<sample_t>(0);
   Parameter<sample_t> releaseTime = Parameter<sample_t>(1);
-  float octaveRegister = 0;
+  float octave = 0;
 
   sample_t sampleRate = 48000;
   SampleBank<sample_t> *sampleBank = NULL;
@@ -126,9 +110,18 @@ template <typename sample_t> struct Synthesizer {
   rigtorp::SPSCQueue<SynthesizerEvent<sample_t>> eventQueue =
       rigtorp::SPSCQueue<SynthesizerEvent<sample_t>>(20);
 
-  Synthesizer<sample_t>(SampleBank<sample_t> *bank)
+  Synthesizer<sample_t>(SampleBank<sample_t> *bank,
+                        const SynthesizerSettings &synthesizerSettings)
       : sampleBank(bank), object(SubtractiveDrumSynth<sample_t>()),
-        type(SUBTRACTIVE_DRUM_SYNTH) {}
+        type(synthesizerSettings.synthType) {
+    gain.value = synthesizerSettings.gain;
+    octave = synthesizerSettings.octave;
+    filterCutoff.value = synthesizerSettings.filterCutoff;
+    filterQuality.value = synthesizerSettings.filterQuality;
+    soundSource.value = synthesizerSettings.soundSource;
+    attackTime.value = synthesizerSettings.attack;
+    releaseTime.value = synthesizerSettings.release;
+  }
 
   inline const void process(sample_t *block, const size_t &blockSize) {
     consumeMessagesFromQueue();
@@ -150,9 +143,9 @@ template <typename sample_t> struct Synthesizer {
     auto nextSoundSource = soundSource.next();
     auto nextAttackTime = attackTime.next();
     auto nextReleaseTime = releaseTime.next();
-    auto registerMultiplier = octaveRegister > (2.0 / 3.0)   ? 2.0
-                              : octaveRegister > (1.0 / 3.0) ? 1.0
-                                                             : 0.5;
+    auto registerMultiplier = octave > (2.0 / 3.0)   ? 2.0
+                              : octave > (1.0 / 3.0) ? 1.0
+                                                     : 0.5;
     nextFrequency *= registerMultiplier;
     switch (type) {
 
@@ -303,7 +296,7 @@ template <typename sample_t> struct Synthesizer {
           break;
         }
         case REGISTER: {
-          octaveRegister = value;
+          octave = value;
           break;
         }
         }
@@ -367,41 +360,49 @@ template <typename sample_t> struct Synthesizer {
   inline SynthesizerType getSynthType() const { return type; }
 
   inline void setFrequency(sample_t value) {
+
     eventQueue.push(SynthesizerEvent<sample_t>(
         ParameterChangeEvent<sample_t>{.type = FREQUENCY, .value = value}));
   }
 
   inline void setSoundSource(sample_t value) {
+
     eventQueue.push(SynthesizerEvent<sample_t>(
         ParameterChangeEvent<sample_t>{.type = SOUND_SOURCE, .value = value}));
   }
 
   inline void setGain(sample_t value) {
+
     eventQueue.push(SynthesizerEvent<sample_t>(
         ParameterChangeEvent<sample_t>{.type = GAIN, .value = value}));
   }
 
   inline void setFilterCutoff(sample_t value) {
+
     eventQueue.push(SynthesizerEvent<sample_t>(
         ParameterChangeEvent<sample_t>{.type = FILTER_CUTOFF, .value = value}));
   }
 
   inline void setFilterQuality(sample_t value) {
+
     eventQueue.push(SynthesizerEvent<sample_t>(ParameterChangeEvent<sample_t>{
         .type = FILTER_QUALITY, .value = value}));
   }
 
   inline void setAttackTime(sample_t value) {
+
     eventQueue.push(SynthesizerEvent<sample_t>(
         ParameterChangeEvent<sample_t>{.type = ATTACK_TIME, .value = value}));
   }
 
   inline void setReleaseTime(sample_t value) {
+
     eventQueue.push(SynthesizerEvent<sample_t>(
         ParameterChangeEvent<sample_t>{.type = RELEASE_TIME, .value = value}));
   }
 
   inline void setRegister(sample_t value) {
+
     eventQueue.push(SynthesizerEvent<sample_t>(
         ParameterChangeEvent<sample_t>{.type = REGISTER, .value = value}));
   }
@@ -428,7 +429,7 @@ template <typename sample_t> struct Synthesizer {
       return releaseTime.smoothedValue;
       break;
     case REGISTER:
-      return octaveRegister;
+      return octave;
     case _SIZE_ContinuousParameterType:
       break;
     }

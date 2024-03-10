@@ -6,9 +6,7 @@
 #include "metaphor.h"
 #include "save_state.h"
 #include "sequencer.h"
-#include "ui_instrument_setup.h"
 #include "ui_keyboard.h"
-#include "ui_mapping.h"
 #include "ui_navigation.h"
 #include "ui_play_instrument.h"
 #include "ui_settings_menu.h"
@@ -18,23 +16,19 @@
 
 struct UserInterface {
   Navigation navigation;
-  InstrumentSetupUI instrumentSetupUI;
   PlayInstrumentUI playInstrumentUI;
   SettingsMenu settingsUI;
   AxisAlignedBoundingBox shape;
 
   UserInterface(Synthesizer<float> *synth, Sequencer *sequencer, Game *game,
                 SaveState *saveState)
-      : instrumentSetupUI(InstrumentSetupUI(synth, saveState, &navigation)),
-        playInstrumentUI(
+      : playInstrumentUI(
             PlayInstrumentUI(synth, sequencer, game, saveState, &navigation)),
         settingsUI(SettingsMenu(&navigation, saveState, synth)),
         navigation(this) {}
 
   inline void buildLayout(const AxisAlignedBoundingBox &shape) {
     this->shape = shape;
-
-    instrumentSetupUI.buildLayout(shape);
     playInstrumentUI.buildLayout(shape);
     settingsUI.buildLayout(shape);
   }
@@ -45,7 +39,6 @@ struct UserInterface {
                                const vec2f_t &position, const float pressure) {
     switch (navigation.getPage()) {
     case Navigation::NEW_GAME:
-      instrumentSetupUI.handleFingerMove(fingerId, position, pressure);
       break;
     case Navigation::INSTRUMENT:
       playInstrumentUI.handleFingerMove(fingerId, position, pressure);
@@ -60,7 +53,6 @@ struct UserInterface {
                                const vec2f_t &position, const float pressure) {
     switch (navigation.getPage()) {
     case Navigation::NEW_GAME:
-      instrumentSetupUI.handleFingerDown(fingerId, position, pressure);
       break;
     case Navigation::INSTRUMENT:
       playInstrumentUI.handleFingerDown(fingerId, position, pressure);
@@ -75,7 +67,6 @@ struct UserInterface {
                              const vec2f_t &position, const float pressure) {
     switch (navigation.getPage()) {
     case Navigation::NEW_GAME:
-      instrumentSetupUI.handleFingerUp(fingerId, position, pressure);
       break;
     case Navigation::INSTRUMENT:
       playInstrumentUI.handleFingerUp(fingerId, position, pressure);
@@ -89,7 +80,6 @@ struct UserInterface {
   inline void handleMouseMove(const vec2f_t &mousePosition) {
     switch (navigation.getPage()) {
     case Navigation::NEW_GAME:
-      instrumentSetupUI.handleMouseMove(mousePosition);
       break;
     case Navigation::INSTRUMENT:
       playInstrumentUI.handleMouseMove(mousePosition);
@@ -103,7 +93,6 @@ struct UserInterface {
   inline void handleMouseDown(const vec2f_t &mousePosition) {
     switch (navigation.getPage()) {
     case Navigation::NEW_GAME:
-      instrumentSetupUI.handleMouseDown(mousePosition);
       break;
     case Navigation::INSTRUMENT:
       playInstrumentUI.handleMouseDown(mousePosition);
@@ -117,7 +106,6 @@ struct UserInterface {
   inline void handleMouseUp(const vec2f_t &mousePosition) {
     switch (navigation.getPage()) {
     case Navigation::NEW_GAME:
-      instrumentSetupUI.handleMouseUp(mousePosition);
       break;
     case Navigation::INSTRUMENT:
       playInstrumentUI.handleMouseUp(mousePosition);
@@ -131,7 +119,6 @@ struct UserInterface {
   inline void draw(SDL_Renderer *renderer, const Style &style) {
     switch (navigation.getPage()) {
     case Navigation::NEW_GAME:
-      instrumentSetupUI.draw(renderer, style);
       break;
     case Navigation::INSTRUMENT:
       playInstrumentUI.draw(renderer, style);

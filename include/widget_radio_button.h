@@ -57,6 +57,7 @@ struct RadioGroup {
   float buttonHeight = 100;
   AxisAlignedBoundingBox shape;
   std::vector<Button> options;
+  WidgetState state = INACTIVE;
 
   RadioGroup() {}
 
@@ -79,11 +80,13 @@ struct RadioGroup {
       buttonHeight = shape.halfSize.y;
       for (size_t i = 0; i < options.size(); ++i) {
         options[i].shape = AxisAlignedBoundingBox{
-            .position =
-                vec2f_t{.x = static_cast<float>(
-                            shape.position.x - shape.halfSize.x +
-                            buttonWidth / 2 + i * (buttonWidth + buttonMargin)),
-                        .y = static_cast<float>(shape.position.y)},
+            .position = vec2f_t{.x = static_cast<float>(
+                                    shape.position.x -
+                                    (buttonWidth + buttonMargin) *
+                                        options.size() / 2.0 +
+                                    (buttonWidth + buttonMargin) / 2 +
+                                    i * (buttonWidth + buttonMargin)),
+                                .y = static_cast<float>(shape.position.y)},
             .halfSize = vec2f_t{.x = static_cast<float>(buttonWidth / 2),
                                 .y = static_cast<float>(shape.halfSize.y)}};
 
@@ -98,6 +101,7 @@ struct RadioGroup {
 
 inline void DrawRadioGroup(RadioGroup *group, SDL_Renderer *renderer,
                            const Style &style) {
+  // DrawFilledRect(group->shape, renderer, style.color2);
   auto margin = group->shape.halfSize.x * 0.1;
   auto radiogroupBackgroundRect =
       SDL_Rect{.x = static_cast<int>(group->shape.position.x -

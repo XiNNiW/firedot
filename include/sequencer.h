@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mapping.h"
+#include "metaphor.h"
 #include "save_state.h"
 #include "synthesis.h"
 #include <algorithm>
@@ -10,6 +11,7 @@ private:
   float tempoBPM = 98;
   float stepIntervalSeconds = 1.0 / (16.0 * tempoBPM / SECONDS_PER_MINUTE);
   int length = MAX_STEPS;
+  bool running = false;
 
 public:
   constexpr static const float SECONDS_PER_MINUTE = 60.0;
@@ -24,13 +26,30 @@ public:
 
   float timeSinceLastStep = 0;
   int currentStep = 0;
-  bool running = false;
   bool hadNoteOn = false;
 
   Sequencer(Synthesizer<float> *_synthesizer, SaveState *_saveState)
       : synth(_synthesizer), saveState(_saveState) {
     setTempo(tempoBPM);
   }
+
+  void start() { running = true; }
+
+  void stop() {
+    saveState->sensorMapping.emitEvent(
+        synth, SEQUENCER, MomentaryInputType::SEQUENCER_GATE, false);
+    running = false;
+  }
+
+  void toggleRunning() {
+    if (running) {
+      stop();
+    } else {
+      start();
+    }
+  }
+
+  const bool isRunning() const { return running; }
 
   void setTempoNormalized(float normalizedTempo) {
     auto tempoRange = maxBPM - minBPM;
@@ -64,10 +83,10 @@ public:
       if (timeSinceLastStep >= stepIntervalSeconds) {
         if (stepValues[currentStep] > 0.0) {
           saveState->sensorMapping.emitEvent(
-              synth, ContinuousInputType::SEQUENCER_STEP_LEVEL,
+              synth, SEQUENCER, ContinuousInputType::SEQUENCER_STEP_LEVEL,
               stepValues[currentStep]);
           saveState->sensorMapping.emitEvent(
-              synth, MomentaryInputType::SEQUENCER_GATE, true);
+              synth, SEQUENCER, MomentaryInputType::SEQUENCER_GATE, true);
         }
         currentStep = (currentStep + 1) % length;
         timeSinceLastStep = 0;
@@ -75,7 +94,7 @@ public:
       } else if (hadNoteOn &&
                  (timeSinceLastStep >= (stepIntervalSeconds / 2))) {
         saveState->sensorMapping.emitEvent(
-            synth, MomentaryInputType::SEQUENCER_GATE, false);
+            synth, SEQUENCER, MomentaryInputType::SEQUENCER_GATE, false);
       }
     }
   }

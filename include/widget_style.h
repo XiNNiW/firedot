@@ -178,6 +178,24 @@ public:
     return SDL_Color();
   }
 
+  inline const SDL_Color getActivityWidgetColor(const WidgetState state) const {
+
+    switch (state) {
+    case INACTIVE:
+      return inactiveColor;
+      break;
+    case HOVER:
+      return hoverColor;
+      break;
+    case ACTIVE:
+      return color0;
+      break;
+    case HIDDEN:
+      break;
+    }
+    return SDL_Color();
+  }
+
   inline const SDL_Color getWidgetIconColor(const WidgetState state) const {
 
     switch (state) {
@@ -206,7 +224,7 @@ public:
       return color1;
       break;
     case ACTIVE:
-      return inactiveColor;
+      return color2;
       break;
     case HIDDEN:
       break;

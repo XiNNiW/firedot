@@ -7,9 +7,11 @@
 #include "synthesis_parameter.h"
 #include "ui_navigation.h"
 #include "ui_option_popup.h"
+#include "vector_math.h"
 #include "widget_button.h"
 #include "widget_hslider.h"
 #include "widget_style.h"
+#include "window.h"
 #include <vector>
 
 struct SoundEditUI {
@@ -27,12 +29,16 @@ struct SoundEditUI {
   AxisAlignedBoundingBox pageTitleLabelShape;
   AxisAlignedBoundingBox bodyShape;
   ContinuousParameterType destination;
+  AxisAlignedBoundingBox shape;
 
   float synthSelectWidth = 50;
   float synthSelectHeight = 50;
   float buttonMargin = 5;
   float topMargin = 50;
   float pageMargin = 50;
+
+  bool needsDraw = true;
+  SDL_Texture *cachedRender = NULL;
 
   SoundEditUI(Synthesizer<float> *_synth, InputMapping<float> *_mapping,
               SaveState *_saveState)
@@ -44,7 +50,7 @@ struct SoundEditUI {
       synthOptionLabels.push_back(SynthTypeDisplayNames[synthType]);
     }
     synthSelectRadioGroup =
-        RadioGroup(synthOptionLabels, saveState->synthesizerSettings.synthType);
+        RadioGroup(synthOptionLabels, synth->getSynthType());
     synthSelectRadioGroup.options[SUBTRACTIVE_DRUM_SYNTH].iconType =
         IconType::DRUM;
     synthSelectRadioGroup.options[SUBTRACTIVE].iconType = IconType::SINE_WAVE;
@@ -54,9 +60,10 @@ struct SoundEditUI {
     synthSelectRadioGroup.options[SAMPLER].iconType = IconType::CASSETTE;
   }
 
-  ~SoundEditUI() { delete pageTitleLabel; }
+  ~SoundEditUI() { SDL_DestroyTexture(cachedRender); }
 
   void buildLayout(const AxisAlignedBoundingBox &shape) {
+    this->shape = shape;
     pageMargin = shape.halfSize.x / 64;
     auto rowMargin = shape.halfSize.y / 64;
     auto pageLabelHeight = shape.halfSize.y / 32;
@@ -70,7 +77,7 @@ struct SoundEditUI {
         .position = {.x = shape.position.x,
                      .y = shape.position.y + pageLabelHeight},
         .halfSize = {
-            .x = shape.halfSize.x,
+            .x = static_cast<float>(shape.halfSize.x * 0.9),
             .y = static_cast<float>(shape.halfSize.y - pageLabelHeight / 2.0)}};
 
     mappingSelectionPopup.buildLayout(
@@ -94,9 +101,9 @@ struct SoundEditUI {
 
     synthSelectRadioGroup.buildLayout(AxisAlignedBoundingBox{
 
-        .position = {.x = shape.halfSize.x + xOffset,
+        .position = {.x = bodyShape.position.x,
                      .y = static_cast<float>(height / 24.0 + yOffset)},
-        .halfSize = {.x = (width - 2 * pageMargin) / 2,
+        .halfSize = {.x = bodyShape.halfSize.x,
                      .y = static_cast<float>(height / 24.0)}});
 
     int sliderCounter = 0;
@@ -113,7 +120,7 @@ struct SoundEditUI {
           initialSliderY +
           sliderCounter++ * (static_cast<float>(height / 12.0) + buttonMargin);
       parameterSliders[parameter] = MakeHSlider(
-          getDisplayName(parameter),
+          getDisplayName(parameter, synth->getSynthType()),
           AxisAlignedBoundingBox{
               .position =
                   {
@@ -124,7 +131,8 @@ struct SoundEditUI {
                            .y = static_cast<float>(rowHeight / 2)}});
 
       ContinuousInputType mappedInput;
-      bool foundMapping = mapping->getMapping(parameter, &mappedInput);
+      bool foundMapping = mapping->getMapping(
+          saveState->getInstrumentMetaphorType(), parameter, &mappedInput);
       auto buttonText = foundMapping ? getDisplayName(mappedInput) : "none";
       mappingButtons[parameter] = MakeButton(
           buttonText,
@@ -136,11 +144,23 @@ struct SoundEditUI {
                            .y = static_cast<float>(rowHeight / 2)}});
     }
     mappingSelectionPopup.close();
+
+    needsDraw = true;
   }
-  inline void updateLabels() {
+
+  inline void updateParameterLabels(SynthesizerType synthType) {
+    for (auto &parameter : ParameterTypes) {
+      auto buttonText = getDisplayName(parameter, synthType);
+
+      parameterSliders[parameter].label.setText(buttonText);
+    }
+  }
+
+  inline void updateMappingButtonLabels() {
     for (auto &parameter : ParameterTypes) {
       ContinuousInputType mappedInput;
-      bool foundMapping = mapping->getMapping(parameter, &mappedInput);
+      bool foundMapping = mapping->getMapping(
+          saveState->getInstrumentMetaphorType(), parameter, &mappedInput);
       auto buttonText = foundMapping ? getDisplayName(mappedInput) : "none";
 
       mappingButtons[parameter].label.setText(buttonText);
@@ -157,8 +177,23 @@ struct SoundEditUI {
       float paramValue = synth->getParameter(parameterType);
       if (DoHSliderDrag(&parameterSliders[parameterType], &paramValue,
                         position)) {
-        synth->pushParameterChangeEvent(parameterType, paramValue);
+        setParameter(parameterType, paramValue);
       }
+    }
+
+    needsDraw = true;
+  }
+  void handleSynthSelectRadioButtonClick() {
+    synth->setSynthType(SynthTypes[synthSelectRadioGroup.selectedIndex]);
+    synth->pushGateEvent(MomentaryParameterType::GATE, 1);
+    updateParameterLabels(SynthTypes[synthSelectRadioGroup.selectedIndex]);
+  }
+
+  void setParameter(ContinuousParameterType parameterType, float value) {
+    if (parameterType == FREQUENCY) {
+      synth->setFrequency(lerp<float>(mtof(36), mtof(36 + 24), value));
+    } else {
+      synth->pushParameterChangeEvent(parameterType, value);
     }
   }
 
@@ -168,9 +203,8 @@ struct SoundEditUI {
       return;
 
     if (DoClickRadioGroup(&synthSelectRadioGroup, position) && (fingerId > 0)) {
-      synth->setSynthType(SynthTypes[synthSelectRadioGroup.selectedIndex]);
-      synth->pushGateEvent(MomentaryParameterType::GATE, 1);
-    };
+      handleSynthSelectRadioButtonClick();
+    }
 
     for (auto &parameterType : ParameterTypes) {
       if (parameterSliders.find(parameterType) == parameterSliders.end()) {
@@ -180,9 +214,12 @@ struct SoundEditUI {
       if (DoHSliderClick(&parameterSliders[parameterType], &paramValue,
                          position)) {
         fingerPositions[fingerId] = parameterType;
-        synth->pushParameterChangeEvent(parameterType, paramValue);
+
+        setParameter(parameterType, paramValue);
       }
     }
+
+    needsDraw = true;
   }
 
   inline void handleFingerUp(const SDL_FingerID &fingerId,
@@ -194,6 +231,8 @@ struct SoundEditUI {
           .state = INACTIVE;
     }
     fingerPositions[fingerId] = -1;
+
+    needsDraw = true;
   }
 
   inline void handleMouseMove(const vec2f_t &mousePosition) {
@@ -208,9 +247,12 @@ struct SoundEditUI {
       float paramValue = synth->getParameter(parameterType);
       if (DoHSliderDrag(&parameterSliders[parameterType], &paramValue,
                         mousePosition)) {
-        synth->pushParameterChangeEvent(parameterType, paramValue);
+
+        setParameter(parameterType, paramValue);
       }
     }
+
+    needsDraw = true;
   }
 
   inline std::vector<ContinuousInputType> getOptions() {
@@ -230,17 +272,19 @@ struct SoundEditUI {
       if (mappingSelectionPopup.doClick(mousePosition, &selection)) {
         auto options = getOptions();
         if (selection < options.size()) {
-          saveState->sensorMapping.addMapping(options[selection], destination);
+          saveState->sensorMapping.addMapping(
+              saveState->getInstrumentMetaphorType(), options[selection],
+              destination);
         } else {
-          saveState->sensorMapping.removeMappingForParameterType(destination);
+          saveState->sensorMapping.removeMappingForParameterType(
+              saveState->getInstrumentMetaphorType(), destination);
         }
-        updateLabels();
+        updateMappingButtonLabels();
       }
     } else {
 
       if (DoClickRadioGroup(&synthSelectRadioGroup, mousePosition)) {
-        synth->setSynthType(SynthTypes[synthSelectRadioGroup.selectedIndex]);
-        synth->pushGateEvent(MomentaryParameterType::GATE, 1);
+        handleSynthSelectRadioButtonClick();
       };
 
       for (auto &pair : mappingButtons) {
@@ -253,8 +297,9 @@ struct SoundEditUI {
           labels.push_back("none");
           int selection = options.size();
           ContinuousInputType preexistingMapping;
-          if (saveState->sensorMapping.getMapping(pair.first,
-                                                  &preexistingMapping)) {
+          if (saveState->sensorMapping.getMapping(
+                  saveState->getInstrumentMetaphorType(), pair.first,
+                  &preexistingMapping)) {
             for (int i = 0; i < options.size(); ++i) {
               if (options[i] == preexistingMapping) {
                 selection = i;
@@ -266,6 +311,7 @@ struct SoundEditUI {
         }
       }
     }
+    needsDraw = true;
   }
 
   inline void handleMouseUp(const vec2f_t &mousePosition) {
@@ -279,10 +325,10 @@ struct SoundEditUI {
       parameterSliders[parameterType].state = INACTIVE;
     }
     synth->pushGateEvent(MomentaryParameterType::GATE, 0);
+    needsDraw = true;
   }
 
-  void draw(SDL_Renderer *renderer, const Style &style) {
-
+  void _draw(SDL_Renderer *renderer, const Style &style) {
     auto pageLabelRect = ConvertAxisAlignedBoxToSDL_Rect(pageTitleLabelShape);
     pageTitleLabel->draw(
         style.hoverColor, style.unavailableColor, pageLabelRect, renderer,
@@ -293,7 +339,8 @@ struct SoundEditUI {
       if (parameterSliders.find(parameterType) == parameterSliders.end()) {
         continue;
       }
-      if (saveState->sensorMapping.isMapped(parameterType)) {
+      if (saveState->sensorMapping.isMapped(
+              saveState->getInstrumentMetaphorType(), parameterType)) {
         auto rect = ConvertAxisAlignedBoxToSDL_Rect(
             parameterSliders[parameterType].shape);
         SDL_SetRenderDrawColor(
@@ -317,5 +364,27 @@ struct SoundEditUI {
 
       mappingSelectionPopup.draw(renderer, style);
     }
+  }
+
+  void draw(SDL_Renderer *renderer, const Style &style) {
+
+    // if (needsDraw) {
+    //   if (cachedRender == NULL) {
+    //     cachedRender = SDL_CreateTexture(
+    //         renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,
+    //         ActiveWindow::size.x, ActiveWindow::size.y);
+    //   }
+    //   auto err = SDL_SetRenderTarget(renderer, cachedRender);
+    //   if (err < 0) {
+    //     SDL_Log("%s", SDL_GetError());
+    //   }
+    //   SDL_RenderClear(renderer);
+    _draw(renderer, style);
+    //   SDL_SetRenderTarget(renderer, NULL);
+    //   needsDraw = false;
+    // }
+
+    // SDL_Rect renderRect = ConvertAxisAlignedBoxToSDL_Rect(shape);
+    // SDL_RenderCopy(renderer, cachedRender, NULL, NULL);
   }
 };

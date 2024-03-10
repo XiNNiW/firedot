@@ -10,7 +10,7 @@
 #include <memory>
 
 struct Game {
-  const float MIN_COLLISION_VELOCITY = 0.1;
+  const float MIN_COLLISION_VELOCITY = 0.3;
   const float MAX_PARTICLE_SIZE = 100;
   Physics physics;
   std::vector<std::unique_ptr<GameObject>> gameObjects;
@@ -38,7 +38,7 @@ struct Game {
     for (size_t i = 0; i < activeGateTimes.size(); i++) {
       activeGateTimes[i] += secondsSinceLastUpdate;
       if (activeGateTimes[i] >= gateWidthSeconds) {
-        mapping->emitEvent(synth, MomentaryInputType::COLLISION, false);
+        mapping->emitEvent(synth, GAME, MomentaryInputType::COLLISION, false);
       }
     }
     activeGateTimes.erase(remove_if(activeGateTimes.begin(),
@@ -58,39 +58,41 @@ struct Game {
         case GameObject::PARTICLE: {
           auto p1 = obj1->object.particle;
           auto p2 = obj2->object.particle;
-          auto collisionVelocity = p2.velocity.subtract(p1.velocity).length() >
-                                   MIN_COLLISION_VELOCITY;
-          if (collisionVelocity) {
-            mapping->emitEvent(synth, ContinuousInputType::COLLISION_VELOCITY,
-                               collisionVelocity / 1000.0);
-            mapping->emitEvent(synth, ContinuousInputType::COLLISION_POSITION_X,
-                               p1.collider.getPosition().x /
-                                   float(bounds.halfSize.x * 2));
+          auto collisionVelocity = p2.velocity.subtract(p1.velocity).length();
+          if (collisionVelocity > MIN_COLLISION_VELOCITY) {
+            mapping->emitEvent(synth, GAME,
+                               ContinuousInputType::COLLISION_VELOCITY,
+                               collisionVelocity / 8.0);
+            mapping->emitEvent(
+                synth, GAME, ContinuousInputType::COLLISION_POSITION_X,
+                p1.collider.getPosition().x / float(bounds.halfSize.x * 2));
 
-            mapping->emitEvent(synth, ContinuousInputType::COLLISION_POSITION_Y,
-                               p1.collider.getPosition().y /
-                                   float(bounds.halfSize.y * 2));
-            mapping->emitEvent(synth, MomentaryInputType::COLLISION, true);
+            mapping->emitEvent(
+                synth, GAME, ContinuousInputType::COLLISION_POSITION_Y,
+                p1.collider.getPosition().y / float(bounds.halfSize.y * 2));
+            mapping->emitEvent(synth, GAME, MomentaryInputType::COLLISION,
+                               true);
             activeGateTimes.push_back(0);
           }
           break;
         }
         case GameObject::WALL: {
           auto p1 = obj1->object.particle;
-          auto collisionVelocity =
-              p1.velocity.length() > MIN_COLLISION_VELOCITY;
-          if (collisionVelocity) {
+          auto collisionVelocity = p1.velocity.length();
+          if (collisionVelocity > MIN_COLLISION_VELOCITY) {
 
-            mapping->emitEvent(synth, ContinuousInputType::COLLISION_VELOCITY,
-                               collisionVelocity / 1000.0);
-            mapping->emitEvent(synth, ContinuousInputType::COLLISION_POSITION_X,
-                               p1.collider.getPosition().x /
-                                   float(bounds.halfSize.x * 2));
+            mapping->emitEvent(synth, GAME,
+                               ContinuousInputType::COLLISION_VELOCITY,
+                               collisionVelocity / 8.0);
+            mapping->emitEvent(
+                synth, GAME, ContinuousInputType::COLLISION_POSITION_X,
+                p1.collider.getPosition().x / float(bounds.halfSize.x * 2));
 
-            mapping->emitEvent(synth, ContinuousInputType::COLLISION_POSITION_Y,
-                               p1.collider.getPosition().y /
-                                   float(bounds.halfSize.y * 2));
-            mapping->emitEvent(synth, MomentaryInputType::COLLISION, true);
+            mapping->emitEvent(
+                synth, GAME, ContinuousInputType::COLLISION_POSITION_Y,
+                p1.collider.getPosition().y / float(bounds.halfSize.y * 2));
+            mapping->emitEvent(synth, GAME, MomentaryInputType::COLLISION,
+                               true);
             activeGateTimes.push_back(0);
           }
 
@@ -117,18 +119,20 @@ struct Game {
 
   inline void addWalls() {
     destroyAllWalls();
-    auto bottomWall = new GameObject(Wall(AxisAlignedBoundingBox{
-        vec2f_t{.x = bounds.position.x,
-                .y = bounds.position.y + bounds.halfSize.y},
-        vec2f_t{.x = bounds.halfSize.x, .y = bounds.halfSize.y / 32}}));
+    auto bottomWall = new GameObject(Wall(OrientedBoundingBox(
+        {.x = bounds.position.x, .y = bounds.position.y + bounds.halfSize.y},
+        {1, 0}, {0, 1},
+        {.x = bounds.halfSize.x, .y = bounds.halfSize.y / 16})));
 
-    auto leftWall = new GameObject(Wall(AxisAlignedBoundingBox{
+    auto leftWall = new GameObject(Wall(OrientedBoundingBox(
         {.x = bounds.position.x - bounds.halfSize.x, .y = bounds.position.y},
-        {.x = bounds.halfSize.y / 32, .y = bounds.halfSize.y}}));
+        {1, 0}, {0, 1},
+        {.x = bounds.halfSize.y / 16, .y = bounds.halfSize.y})));
 
-    auto rightWall = new GameObject(Wall(AxisAlignedBoundingBox{
+    auto rightWall = new GameObject(Wall(OrientedBoundingBox(
         {.x = bounds.position.x + bounds.halfSize.x, .y = bounds.position.y},
-        {.x = bounds.halfSize.y / 32, .y = bounds.halfSize.y}}));
+        {1, 0}, {0, 1},
+        {.x = bounds.halfSize.y / 16, .y = bounds.halfSize.y})));
 
     gameObjects.push_back(std::unique_ptr<GameObject>(std::move(bottomWall)));
     gameObjects.push_back(std::unique_ptr<GameObject>(std::move(leftWall)));
@@ -137,6 +141,7 @@ struct Game {
 
   inline void addParticle(const vec2f_t &pos, const vec2f_t &velocity,
                           float size) {
+    size = fmin(size, MAX_PARTICLE_SIZE);
     auto gameObject = new GameObject(
         Particle(velocity, CircleCollider{.position = pos, .radius = size}));
     gameObjects.push_back(std::unique_ptr<GameObject>(std::move(gameObject)));

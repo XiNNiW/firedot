@@ -112,13 +112,13 @@ inline const void DrawButtonLabel(
 }
 
 inline const void DrawButton(Button *button, SDL_Renderer *renderer,
-                             const Style &style, SDL_Color borderColor) {
+                             const Style &style, SDL_Texture *texture,
+                             SDL_Color color, SDL_Color iconColor,
+                             SDL_Color borderColor) {
 
   if (button->state != HIDDEN) {
     auto rect = ConvertAxisAlignedBoxToSDL_Rect(button->shape);
     if (button->iconType != IconType::NONE) {
-      auto color = style.getWidgetIconColor(button->state);
-      auto texture = style.getIconTexture(button->iconType);
 
       if (texture != NULL) {
         SDL_SetTextureColorMod(texture, color.r, color.g, color.b);
@@ -127,7 +127,6 @@ inline const void DrawButton(Button *button, SDL_Renderer *renderer,
         SDL_RenderCopy(renderer, texture, NULL, &rect);
       }
     } else {
-      auto color = style.getWidgetColor(button->state);
       DrawFilledRect(rect, renderer, color);
       DrawBoxOutline(rect, renderer, borderColor);
       if (button->label.getText().size() > 0) {
@@ -138,7 +137,33 @@ inline const void DrawButton(Button *button, SDL_Renderer *renderer,
 }
 
 inline const void DrawButton(Button *button, SDL_Renderer *renderer,
+                             const Style &style, SDL_Color borderColor) {
+
+  DrawButton(button, renderer, style, style.getIconTexture(button->iconType),
+             style.getWidgetColor(button->state),
+             style.getWidgetIconColor(button->state), borderColor);
+}
+
+inline const void DrawButton(Button *button, SDL_Renderer *renderer,
+                             const Style &style, SDL_Color borderColor,
+                             SDL_Color mainColor) {
+
+  DrawButton(button, renderer, style, style.getIconTexture(button->iconType),
+             mainColor, mainColor, borderColor);
+}
+
+inline const void DrawButton(Button *button, SDL_Renderer *renderer,
                              const Style &style) {
 
-  DrawButton(button, renderer, style, style.inactiveColor);
+  DrawButton(button, renderer, style, style.getIconTexture(button->iconType),
+             style.getWidgetColor(button->state),
+             style.getWidgetIconColor(button->state), style.inactiveColor);
+}
+
+inline const void DrawActivityButton(Button *button, SDL_Renderer *renderer,
+                                     const Style &style) {
+
+  DrawButton(button, renderer, style, style.getIconTexture(button->iconType),
+             style.getActivityWidgetColor(button->state),
+             style.getWidgetIconColor(button->state), style.color2);
 }

@@ -4,6 +4,7 @@
 #include "SDL_touch.h"
 #include "collider.h"
 #include "mapping.h"
+#include "metaphor.h"
 #include "save_state.h"
 #include "synthesis.h"
 #include "vector_math.h"
@@ -13,10 +14,8 @@
 #include "widget_utils.h"
 
 struct TouchPadUI {
-  static constexpr int NUM_FINGERS = 10;
-  vec2f_t fingerPositions[NUM_FINGERS] = {};
-  bool fingerActivity[NUM_FINGERS] = {false, false, false, false, false,
-                                      false, false, false, false, false};
+  vec2f_t fingerPosition = {0, 0};
+  bool fingerActivity = false;
   Synthesizer<float> *synth;
   SaveState *saveState;
   AxisAlignedBoundingBox shape;
@@ -27,70 +26,70 @@ struct TouchPadUI {
   };
 
   inline void handleFingerMove(const SDL_FingerID &fingerId,
-                               const vec2f_t &position, const float pressure) {
-    fingerPositions[fingerId] = position;
-    saveState->sensorMapping.emitEvent(synth,
-                                       ContinuousInputType::TOUCH_X_POSITION,
-                                       position.x / (shape.halfSize.x * 2.0));
-    saveState->sensorMapping.emitEvent(synth,
-                                       ContinuousInputType::TOUCH_Y_POSITION,
-                                       position.y / (shape.halfSize.y * 2.0));
-    // send messages to update synth parameters
+                               const vec2f_t &position, const float pressure){
+      // send messages to update synth parameters
   };
 
   inline void handleFingerDown(const SDL_FingerID &fingerId,
-                               const vec2f_t &position, const float pressure) {
-    fingerPositions[fingerId] = position;
-    fingerActivity[fingerId] = true;
+                               const vec2f_t &position, const float pressure){};
+
+  inline void handleFingerUp(const SDL_FingerID &fingerId,
+                             const vec2f_t &position, const float pressure){
+
+  };
+
+  inline void handleMouseMove(const vec2f_t &mousePosition) {
+    fingerPosition = mousePosition;
+    saveState->sensorMapping.emitEvent(
+        synth, TOUCH_PAD, ContinuousInputType::TOUCH_X_POSITION,
+        mousePosition.x / (shape.halfSize.x * 2.0));
+    saveState->sensorMapping.emitEvent(
+        synth, TOUCH_PAD, ContinuousInputType::TOUCH_Y_POSITION,
+        mousePosition.y / (shape.halfSize.y * 2.0));
+  };
+
+  inline void handleMouseDown(const vec2f_t &mousePosition) {
+    fingerPosition = mousePosition;
+    fingerActivity = true;
     // send triggers
-    saveState->sensorMapping.emitEvent(synth,
-                                       ContinuousInputType::TOUCH_X_POSITION,
-                                       position.x / (shape.halfSize.x * 2.0));
-    saveState->sensorMapping.emitEvent(synth,
-                                       ContinuousInputType::TOUCH_Y_POSITION,
-                                       position.y / (shape.halfSize.y * 2.0));
-    saveState->sensorMapping.emitEvent(synth,
+    saveState->sensorMapping.emitEvent(
+        synth, TOUCH_PAD, ContinuousInputType::TOUCH_X_POSITION,
+        fingerPosition.x / (shape.halfSize.x * 2.0));
+    saveState->sensorMapping.emitEvent(
+        synth, TOUCH_PAD, ContinuousInputType::TOUCH_Y_POSITION,
+        fingerPosition.y / (shape.halfSize.y * 2.0));
+    saveState->sensorMapping.emitEvent(synth, TOUCH_PAD,
                                        MomentaryInputType::TOUCH_PAD_GATE, 1);
   };
 
-  inline void handleFingerUp(const SDL_FingerID &fingerId,
-                             const vec2f_t &position, const float pressure) {
-    fingerActivity[fingerId] = false;
+  inline void handleMouseUp(const vec2f_t &mousePosition) {
+    fingerActivity = false;
     saveState->sensorMapping.emitEvent(
-        synth, ContinuousInputType::TOUCH_X_POSITION,
-        fingerPositions[fingerId].x / (shape.halfSize.x * 2.0));
+        synth, TOUCH_PAD, ContinuousInputType::TOUCH_X_POSITION,
+        fingerPosition.x / (shape.halfSize.x * 2.0));
     saveState->sensorMapping.emitEvent(
-        synth, ContinuousInputType::TOUCH_Y_POSITION,
-        fingerPositions[fingerId].y / (shape.halfSize.y * 2.0));
-    saveState->sensorMapping.emitEvent(synth,
+        synth, TOUCH_PAD, ContinuousInputType::TOUCH_Y_POSITION,
+        fingerPosition.y / (shape.halfSize.y * 2.0));
+    saveState->sensorMapping.emitEvent(synth, TOUCH_PAD,
                                        MomentaryInputType::TOUCH_PAD_GATE, 0);
   };
 
-  inline void handleMouseMove(const vec2f_t &mousePosition){};
-
-  inline void handleMouseDown(const vec2f_t &mousePosition){};
-
-  inline void handleMouseUp(const vec2f_t &mousePosition){};
-
   inline void draw(SDL_Renderer *renderer, const Style &style) {
 
-    for (int i = 0; i < NUM_FINGERS; ++i) {
-      if (fingerActivity[i]) {
-        auto position = fingerPositions[i];
-        auto size = 200;
-        auto fingerRect =
-            SDL_Rect{.x = static_cast<int>(position.x - size / 2.0),
-                     .y = static_cast<int>(position.y - size / 2.0),
-                     .w = size,
-                     .h = size};
-        DrawBoxOutline(fingerRect, renderer, style.color0);
-        DrawLine({.x = shape.position.x - shape.halfSize.x, .y = position.y},
-                 {.x = shape.position.x + shape.halfSize.x, .y = position.y},
-                 renderer, style.color0);
-        DrawLine({.x = position.x, .y = shape.position.y - shape.halfSize.y},
-                 {.x = position.x, .y = shape.position.y + shape.halfSize.y},
-                 renderer, style.color0);
-      }
+    if (fingerActivity) {
+      auto position = fingerPosition;
+      auto size = 200;
+      auto fingerRect = SDL_Rect{.x = static_cast<int>(position.x - size / 2.0),
+                                 .y = static_cast<int>(position.y - size / 2.0),
+                                 .w = size,
+                                 .h = size};
+      DrawBoxOutline(fingerRect, renderer, style.color0);
+      DrawLine({.x = shape.position.x - shape.halfSize.x, .y = position.y},
+               {.x = shape.position.x + shape.halfSize.x, .y = position.y},
+               renderer, style.color0);
+      DrawLine({.x = position.x, .y = shape.position.y - shape.halfSize.y},
+               {.x = position.x, .y = shape.position.y + shape.halfSize.y},
+               renderer, style.color0);
     }
 
     //   DrawBoxOutline(

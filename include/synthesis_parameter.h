@@ -1,5 +1,6 @@
 #pragma once
 
+#include "synthesis_type.h"
 #include <algae.h>
 #include <atomic>
 #include <cstddef>
@@ -22,14 +23,15 @@ static const ContinuousParameterType ParameterTypes[NUM_PARAMETER_TYPES] = {
     FREQUENCY,      GAIN,        SOUND_SOURCE, FILTER_CUTOFF,
     FILTER_QUALITY, ATTACK_TIME, RELEASE_TIME, REGISTER};
 
-static const char *getDisplayName(ContinuousParameterType type) {
-  switch (type) {
+static const char *getDisplayNameForSubtractiveDrumParameter(
+    ContinuousParameterType parameterType) {
+  switch (parameterType) {
   case FREQUENCY:
     return "frequency";
   case GAIN:
     return "gain";
   case SOUND_SOURCE:
-    return "sound source";
+    return "drum type";
   case FILTER_CUTOFF:
     return "filter cutoff";
   case FILTER_QUALITY:
@@ -43,6 +45,134 @@ static const char *getDisplayName(ContinuousParameterType type) {
     return "register";
     break;
   case _SIZE_ContinuousParameterType:
+    break;
+  }
+  return "";
+}
+static const char *
+getDisplayNameForSubtractiveParameter(ContinuousParameterType parameterType) {
+  switch (parameterType) {
+  case FREQUENCY:
+    return "frequency";
+  case GAIN:
+    return "gain";
+  case SOUND_SOURCE:
+    return "waveform";
+  case FILTER_CUTOFF:
+    return "filter cutoff";
+  case FILTER_QUALITY:
+    return "filter quality";
+  case ATTACK_TIME:
+    return "attack time";
+  case RELEASE_TIME:
+    return "release time";
+    break;
+  case REGISTER:
+    return "register";
+    break;
+  case _SIZE_ContinuousParameterType:
+    break;
+  }
+  return "";
+}
+static const char *
+getDisplayNameForPhysicalModelParameter(ContinuousParameterType parameterType) {
+  switch (parameterType) {
+  case FREQUENCY:
+    return "frequency";
+  case GAIN:
+    return "gain";
+  case SOUND_SOURCE:
+    return "exciter shape";
+  case FILTER_CUTOFF:
+    return "harmonics";
+  case FILTER_QUALITY:
+    return "stiffness";
+  case ATTACK_TIME:
+    return "attack time";
+  case RELEASE_TIME:
+    return "release time";
+    break;
+  case REGISTER:
+    return "register";
+    break;
+  case _SIZE_ContinuousParameterType:
+    break;
+  }
+  return "";
+}
+static const char *getDisplayNameForFrequencyModulationParameter(
+    ContinuousParameterType parameterType) {
+  switch (parameterType) {
+  case FREQUENCY:
+    return "frequency";
+  case GAIN:
+    return "gain";
+  case SOUND_SOURCE:
+    return "mod. algorithm";
+  case FILTER_CUTOFF:
+    return "mod. index";
+  case FILTER_QUALITY:
+    return "freq. ratios";
+  case ATTACK_TIME:
+    return "attack time";
+  case RELEASE_TIME:
+    return "release time";
+    break;
+  case REGISTER:
+    return "register";
+    break;
+  case _SIZE_ContinuousParameterType:
+    break;
+  }
+  return "";
+}
+
+static const char *
+getDisplayNameForSamplerParameter(ContinuousParameterType parameterType) {
+  switch (parameterType) {
+  case FREQUENCY:
+    return "frequency";
+  case GAIN:
+    return "gain";
+  case SOUND_SOURCE:
+    return "sample";
+  case FILTER_CUTOFF:
+    return "filter cutoff";
+  case FILTER_QUALITY:
+    return "filter quality";
+  case ATTACK_TIME:
+    return "attack time";
+  case RELEASE_TIME:
+    return "release time";
+    break;
+  case REGISTER:
+    return "register";
+    break;
+  case _SIZE_ContinuousParameterType:
+    break;
+  }
+  return "";
+}
+static const char *getDisplayName(ContinuousParameterType parameterType,
+                                  SynthesizerType synthType) {
+  switch (synthType) {
+
+  case SUBTRACTIVE_DRUM_SYNTH:
+    return getDisplayNameForSubtractiveDrumParameter(parameterType);
+    break;
+  case SUBTRACTIVE:
+    return getDisplayNameForSubtractiveParameter(parameterType);
+    break;
+  case PHYSICAL_MODEL:
+    return getDisplayNameForPhysicalModelParameter(parameterType);
+    break;
+  case FREQUENCY_MODULATION:
+    return getDisplayNameForFrequencyModulationParameter(parameterType);
+    break;
+  case SAMPLER:
+    return getDisplayNameForSamplerParameter(parameterType);
+    break;
     break;
   }
   return "";

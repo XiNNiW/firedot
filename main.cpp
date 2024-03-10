@@ -335,11 +335,10 @@ public:
     case TOUCH_PAD:
       break;
     case GAME: {
-
-      auto timeToWait = FRAME_DELTA_MILLIS - deltaTimeMilliseconds;
-      if ((timeToWait > 0) && (timeToWait < FRAME_DELTA_MILLIS)) {
-        SDL_Delay(timeToWait);
-      }
+      // auto timeToWait = FRAME_DELTA_MILLIS - deltaTimeMilliseconds;
+      // if ((timeToWait > 0) && (timeToWait < FRAME_DELTA_MILLIS)) {
+      //   SDL_Delay(timeToWait);
+      // }
       game.update(frameDeltaTimeSeconds);
       break;
     }
@@ -452,8 +451,9 @@ public:
 
           auto accVector = vec2f_t{.x = acc3.x, .y = acc3.y};
 
-          saveState.sensorMapping.emitEvent(&synth, ContinuousInputType::TILT,
-                                            accVector.length());
+          saveState.sensorMapping.emitEvent(
+              &synth, saveState.getInstrumentMetaphorType(),
+              ContinuousInputType::TILT, accVector.length());
 
           break;
         }
@@ -463,12 +463,13 @@ public:
           auto velocity = vec3f_t{.x = event.sensor.data[0],
                                   .y = event.sensor.data[1],
                                   .z = event.sensor.data[2]};
-          saveState.sensorMapping.emitEvent(&synth,
-                                            ContinuousInputType::SPIN_VELOCITY,
-                                            clip<float>(velocity.y));
-          saveState.sensorMapping.emitEvent(&synth,
-                                            ContinuousInputType::ACCELERATION,
-                                            clip<float>(velocity.length()));
+          saveState.sensorMapping.emitEvent(
+              &synth, saveState.getInstrumentMetaphorType(),
+              ContinuousInputType::SPIN_VELOCITY, clip<float>(velocity.y));
+          saveState.sensorMapping.emitEvent(
+              &synth, saveState.getInstrumentMetaphorType(),
+              ContinuousInputType::ACCELERATION,
+              clip<float>(velocity.length()));
           break;
         }
         default:
@@ -520,9 +521,10 @@ private:
   SDL_Texture *synthSelectIcon = NULL;
 
   // Model objects
-  Synthesizer<float> synth = Synthesizer<float>(&sampleBank);
-
   SaveState saveState;
+  Synthesizer<float> synth =
+      Synthesizer<float>(&sampleBank, saveState.getSynthesizerSettings());
+
   Sequencer sequencer = Sequencer(&synth, &saveState);
   Game game = Game(&saveState.sensorMapping, &synth);
 

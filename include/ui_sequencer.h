@@ -22,13 +22,11 @@ struct TempoDetector {
       auto estimate = 1.0 / intervalMinutes;
       if ((abs(tempo - estimate) < 10) && (tempo < 300) && (tempo > 15)) {
         tempo = (tempo + estimate) / 2.0;
-        SDL_Log("go");
         firstClickTimeSeconds = currentTimeSeconds;
         return true;
       } else {
         tempo = estimate;
         firstClickTimeSeconds = currentTimeSeconds;
-        SDL_Log("set");
       }
     }
     return false;
@@ -55,71 +53,78 @@ struct SequencerUI {
     auto xOffset = shape.position.x - shape.halfSize.x;
     auto yOffset = shape.position.y - shape.halfSize.y;
     const int numButtonsPerRow = 4;
-    auto buttonWidth = (width - pageMargin) / numButtonsPerRow;
-    auto buttonHeight = buttonWidth;
+    auto sequencerAreaHeight = height * (2.0 / 3.0);
+    auto buttonHeight = fmin(sequencerAreaHeight / 4.0,
+                             (width - pageMargin) / numButtonsPerRow);
+    auto buttonWidth = buttonHeight;
     auto sliderHeight = buttonHeight;
-    auto yPos = yOffset + pageMargin;
+
+    auto yPos = yOffset;
     for (int i = 0; i < Sequencer::MAX_STEPS; i++) {
+      auto x = shape.position.x - 1.5 * buttonWidth +
+               (i % numButtonsPerRow) * buttonWidth;
       stepButtons[i] = HSlider{
           .shape = {
-              .position = {.x = static_cast<float>(
-                               buttonWidth * (i % numButtonsPerRow) +
-                               buttonWidth / 2.0 + xOffset + pageMargin / 2.0),
+              .position = {.x = static_cast<float>(x),
                            .y = static_cast<float>(
                                buttonHeight * floor(i / numButtonsPerRow) +
                                buttonHeight / 2.0 + yPos)},
               .halfSize = {.x = static_cast<float>(buttonWidth / 2.0 - 10),
                            .y = static_cast<float>(buttonHeight / 2.0 - 10)}}};
     }
-    yPos += buttonHeight * 4 + buttonHeight / 2.0;
+    yPos += buttonHeight * floor(Sequencer::MAX_STEPS / numButtonsPerRow);
 
-    playButton = Button{
-        .label = Label("play"),
-        .shape = {.position = {.x = shape.position.x,
-                               .y = static_cast<float>(
-                                   shape.position.y + shape.halfSize.y -
-                                   buttonHeight / 2.0 - pageMargin / 2.0)},
-                  .halfSize = {.x = static_cast<float>(buttonWidth / 2.0),
-                               .y = static_cast<float>(buttonHeight / 4.0)}},
-        .iconType = sequencer->running ? IconType::STOP : IconType::PLAY,
-    };
+    auto remainingYSpace = height / 3.0;
+    auto elementHalfHeight = (remainingYSpace / 4.0) / 2.0;
 
-    auto tempoButtonHalfWidth = shape.halfSize.x / 8.0;
+    auto tempoButtonHalfWidth = shape.halfSize.x / 5.0;
     auto buttonMargin = shape.halfSize.x / 32.0;
+    auto tempoSliderShape = AxisAlignedBoundingBox{
+        .position = {.x = static_cast<float>(shape.position.x -
+                                             tempoButtonHalfWidth),
+                     .y = static_cast<float>(yPos + elementHalfHeight +
+                                             pageMargin / 2.0 - 15)},
+        .halfSize = {.x = static_cast<float>(shape.halfSize.x -
+                                             pageMargin / 2.0 -
+                                             tempoButtonHalfWidth),
+                     .y = static_cast<float>(elementHalfHeight)}};
+    std::stringstream sstream;
+    sstream << "tempo: " << sequencer->getTempo();
     tempoSlider = HSlider{
-        .label = Label("tempo"),
-        .shape = {.position = {.x = static_cast<float>(shape.position.x -
-                                                       tempoButtonHalfWidth),
-                               .y = static_cast<float>(shape.position.y +
-                                                       shape.halfSize.y -
-                                                       2 * buttonHeight / 2.0 -
-                                                       pageMargin / 2.0 - 15)},
-                  .halfSize = {.x = static_cast<float>(shape.halfSize.x -
-                                                       pageMargin / 2.0 -
-                                                       tempoButtonHalfWidth),
-                               .y = static_cast<float>(buttonHeight / 6.0)}},
+        .label = Label(tempoSliderShape, sstream.str()),
+        .shape = tempoSliderShape,
     };
-
-    tapTempoButton = Button{
-        .label = Label("tap"),
-        .shape = {.position = {.x = static_cast<float>(
-                                   tempoSlider.shape.position.x +
-                                   tempoSlider.shape.halfSize.x +
-                                   buttonMargin / 2.0 + tempoButtonHalfWidth),
-                               .y = tempoSlider.shape.position.y},
-                  .halfSize = {.x = static_cast<float>(tempoButtonHalfWidth),
-                               .y = tempoSlider.shape.halfSize.y}}};
-
-    seqLengthSlider = HSlider{
-        .label = Label("length"),
-        .shape = {.position = {.x = static_cast<float>(shape.position.x),
-                               .y = static_cast<float>(shape.position.y +
-                                                       shape.halfSize.y -
-                                                       3 * buttonHeight / 2.0 -
-                                                       pageMargin / 2.0 - 15)},
-                  .halfSize = {.x = static_cast<float>(shape.halfSize.x -
-                                                       pageMargin / 2.0),
-                               .y = static_cast<float>(buttonHeight / 6.0)}},
+    auto tapTempoButtonShape = AxisAlignedBoundingBox{
+        .position = {.x = static_cast<float>(tempoSlider.shape.position.x +
+                                             tempoSlider.shape.halfSize.x +
+                                             buttonMargin / 2.0 +
+                                             tempoButtonHalfWidth),
+                     .y = tempoSlider.shape.position.y},
+        .halfSize = {.x = static_cast<float>(tempoButtonHalfWidth),
+                     .y = static_cast<float>(elementHalfHeight)}};
+    tapTempoButton = Button{.label = Label(tapTempoButtonShape, "tap"),
+                            .shape = tapTempoButtonShape};
+    auto seqLengthShape = AxisAlignedBoundingBox{
+        .position = {.x = static_cast<float>(shape.position.x),
+                     .y = static_cast<float>(tempoSliderShape.position.y +
+                                             elementHalfHeight * 2 +
+                                             pageMargin / 2.0)},
+        .halfSize = {
+            .x = static_cast<float>(shape.halfSize.x - pageMargin / 2.0),
+            .y = static_cast<float>(elementHalfHeight)}};
+    seqLengthSlider = HSlider{.label = Label(seqLengthShape, "length"),
+                              .shape = seqLengthShape};
+    auto playButtonShape = AxisAlignedBoundingBox{
+        .position = {.x = shape.position.x,
+                     .y = static_cast<float>(
+                         shape.position.y + shape.halfSize.y -
+                         buttonHeight / 2.0 - pageMargin / 2.0)},
+        .halfSize = {.x = static_cast<float>(elementHalfHeight),
+                     .y = static_cast<float>(elementHalfHeight)}};
+    playButton = Button{
+        .label = Label(playButtonShape, "play"),
+        .shape = playButtonShape,
+        .iconType = sequencer->isRunning() ? IconType::STOP : IconType::PLAY,
     };
   };
 
@@ -156,6 +161,9 @@ struct SequencerUI {
     float sliderValue = sequencer->getTempoNormalized();
     if (DoHSliderDrag(&tempoSlider, &sliderValue, mousePosition)) {
       sequencer->setTempoNormalized(sliderValue);
+      std::stringstream sstream;
+      sstream << "tempo: " << tempoDetector.tempo;
+      tempoSlider.label.setText(sstream.str());
     };
     float lengthSliderValue = sequencer->getLengthNormalized();
     if (DoHSliderDrag(&seqLengthSlider, &lengthSliderValue, mousePosition)) {
@@ -165,9 +173,9 @@ struct SequencerUI {
 
   void handleMouseDown(const vec2f_t &mousePosition) {
     if (DoButtonClick(&playButton, mousePosition)) {
-      sequencer->running = !sequencer->running;
-
-      if (sequencer->running) {
+      // sequencer->running = !sequencer->running;
+      sequencer->toggleRunning();
+      if (sequencer->isRunning()) {
         playButton.label.setText("stop");
         playButton.iconType = IconType::STOP;
       } else {
@@ -178,13 +186,16 @@ struct SequencerUI {
     float tempoSliderValue = sequencer->getTempoNormalized();
     if (DoHSliderClick(&tempoSlider, &tempoSliderValue, mousePosition)) {
       sequencer->setTempoNormalized(tempoSliderValue);
+      std::stringstream sstream;
+      sstream << "tempo: " << sequencer->getTempo();
+      tempoSlider.label.setText(sstream.str());
     };
 
     if (tempoDetector.DoTapTempo(&tapTempoButton, SDL_GetTicks() / 1000.0,
                                  mousePosition)) {
       sequencer->setTempo(tempoDetector.tempo);
       std::stringstream sstream;
-      sstream << "tempo: " << tempoDetector.tempo;
+      sstream << "tempo: " << sequencer->getTempo();
       tempoSlider.label.setText(sstream.str());
     };
 
@@ -201,7 +212,6 @@ struct SequencerUI {
 
   void draw(SDL_Renderer *renderer, const Style &style) {
     for (int i = 0; i < Sequencer::MAX_STEPS; i++) {
-
       if (i >= sequencer->getLength())
         break;
       DrawHSlider(&stepButtons[i], sequencer->stepValues[i], renderer, style);
@@ -209,7 +219,7 @@ struct SequencerUI {
         DrawBoxOutline(stepButtons[i].shape, renderer, style.hoverColor);
       }
     }
-    DrawButton(&playButton, renderer, style);
+    DrawButton(&playButton, renderer, style, style.color2, style.color2);
     DrawButton(&tapTempoButton, renderer, style);
     auto tempoRange = (sequencer->maxBPM - sequencer->minBPM);
     DrawHSlider(&seqLengthSlider, sequencer->getLengthNormalized(), renderer,

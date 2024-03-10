@@ -11,8 +11,8 @@ struct OptionPopupUI {
   enum Mode { OPEN, CLOSED } mode = CLOSED;
   Label title = Label("");
   std::vector<Button> options = {};
-  Button cancelButton;
-  Button selectButton;
+  //  Button cancelButton;
+  //  Button selectButton;
   AxisAlignedBoundingBox shape;
   AxisAlignedBoundingBox modalBackgroundShape;
   void buildLayout(AxisAlignedBoundingBox shape) {
@@ -49,20 +49,22 @@ struct OptionPopupUI {
       buttonY += buttonHalfSize.y * 2 + margin;
     }
 
-    cancelButton = MakeButton(
-        "cancel",
-        {.position = {.x = xOffset + shape.halfSize.x - actionButtonHalfWidth -
-                           actionButtonMargin,
-                      .y = yOffset + height - actionButtonHalfHeight -
-                           actionButtonMargin},
-         .halfSize = {actionButtonHalfWidth, actionButtonHalfHeight}});
-    selectButton = MakeButton(
-        "select",
-        {.position = {.x = xOffset + shape.halfSize.x + actionButtonHalfWidth +
-                           actionButtonMargin,
-                      .y = yOffset + height - actionButtonHalfHeight -
-                           actionButtonMargin},
-         .halfSize = {actionButtonHalfWidth, actionButtonHalfHeight}});
+    //  cancelButton = MakeButton(
+    //      "cancel",
+    //      {.position = {.x = xOffset + shape.halfSize.x -
+    //      actionButtonHalfWidth -
+    //                         actionButtonMargin,
+    //                    .y = yOffset + height - actionButtonHalfHeight -
+    //                         actionButtonMargin},
+    //       .halfSize = {actionButtonHalfWidth, actionButtonHalfHeight}});
+    //  selectButton = MakeButton(
+    //      "select",
+    //      {.position = {.x = xOffset + shape.halfSize.x +
+    //      actionButtonHalfWidth +
+    //                         actionButtonMargin,
+    //                    .y = yOffset + height - actionButtonHalfHeight -
+    //                         actionButtonMargin},
+    //       .halfSize = {actionButtonHalfWidth, actionButtonHalfHeight}});
   }
 
   void open(const std::vector<std::string> &optionLabels,
@@ -85,22 +87,25 @@ struct OptionPopupUI {
       int selected = 0;
       for (int i = 0; i < options.size(); ++i) {
         if (DoButtonClick(&options[i], mousePosition)) {
-          selectionChanged = true;
-          selected = i;
+          // selectionChanged = true;
+          // selected = i;
+          *selection = i;
+          close();
+          return true;
         }
       }
       if (selectionChanged)
         updateSelection(selected);
 
-      if (DoButtonClick(&cancelButton, mousePosition)) {
-        close();
-        return false;
-      }
-      if (DoButtonClick(&selectButton, mousePosition)) {
-        close();
-        *selection = getCurrentSelection();
-        return true;
-      }
+      //  if (DoButtonClick(&cancelButton, mousePosition)) {
+      //    close();
+      //    return false;
+      //  }
+      //  if (DoButtonClick(&selectButton, mousePosition)) {
+      //    close();
+      //    *selection = getCurrentSelection();
+      //    return true;
+      //  }
     }
     return false;
   }
@@ -144,8 +149,8 @@ struct OptionPopupUI {
                               HorizontalAlignment::CENTER);
       }
 
-      DrawButton(&cancelButton, renderer, style);
-      DrawButton(&selectButton, renderer, style);
+      // DrawActivityButton(&cancelButton, renderer, style);
+      // DrawActivityButton(&selectButton, renderer, style);
     }
   }
 };

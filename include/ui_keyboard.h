@@ -18,49 +18,6 @@
 #include <map>
 #include <string>
 
-inline const std::string GetNoteName(int note) {
-  note = note % 12;
-  switch (note) {
-  case 0:
-    return "c";
-    break;
-  case 1:
-    return "c#";
-    break;
-  case 2:
-    return "d";
-    break;
-  case 3:
-    return "d#";
-    break;
-  case 4:
-    return "e";
-    break;
-  case 5:
-    return "f";
-    break;
-  case 6:
-    return "f#";
-    break;
-  case 7:
-    return "g";
-    break;
-  case 8:
-    return "g#";
-    break;
-  case 9:
-    return "a";
-    break;
-  case 10:
-    return "a#";
-    break;
-  case 11:
-    return "b";
-    break;
-  }
-  return "";
-}
-
 struct KeyboardUI {
 
   static constexpr size_t SYNTH_SELECTED_RADIO_GROUP_SIZE = 3;
@@ -114,15 +71,16 @@ struct KeyboardUI {
                                           floor(i / keysPerRow) * keySize)};
       auto buttonHalfSize = vec2f_t{.x = static_cast<float>(keySize / 2),
                                     .y = static_cast<float>(keySize / 2)};
-      keyButtons[i] =
-          Button{.label = Label({.position = buttonPosition,
-                                 .halfSize = buttonHalfSize.scale(0.35)},
-                                GetNoteName(ForceToScale(
-                                    i + saveState->sensorMapping.key,
-                                    Scales[static_cast<size_t>(
-                                        saveState->sensorMapping.scaleType)]))),
-                 .shape = AxisAlignedBoundingBox{.position = buttonPosition,
-                                                 .halfSize = buttonHalfSize}};
+      keyButtons[i] = Button{
+          .label = Label(
+              {.position = buttonPosition,
+               .halfSize = buttonHalfSize.scale(0.35)},
+              GetNoteName(
+                  saveState->sensorMapping.key +
+                  ForceToScale(i, Scales[static_cast<size_t>(
+                                      saveState->sensorMapping.scaleType)]))),
+          .shape = AxisAlignedBoundingBox{.position = buttonPosition,
+                                          .halfSize = buttonHalfSize}};
     }
     needsDraw = true;
   }
@@ -134,8 +92,8 @@ struct KeyboardUI {
         // auto bentNote = synth->noteMap.notes[heldKeys[fingerId]];
         // auto bendDestination = synth->noteMap.notes[i];
         //  synth->bendNote(bentNote, bendDestination);
-        saveState->sensorMapping.emitSteppedEvent(synth, KEYBOARD_KEY, float(i),
-                                                  NUM_KEY_BUTTONS);
+        saveState->sensorMapping.emitSteppedEvent(synth, KEYBOARD, KEYBOARD_KEY,
+                                                  float(i), NUM_KEY_BUTTONS);
         fingerPositions[fingerId] = i;
       }
     }
@@ -166,13 +124,12 @@ struct KeyboardUI {
         //     float(i) / float(NUM_KEY_BUTTONS - 1));
 
         saveState->sensorMapping.emitSteppedEvent(
-            synth, ContinuousInputType::KEYBOARD_KEY, float(i),
+            synth, KEYBOARD, ContinuousInputType::KEYBOARD_KEY, float(i),
             NUM_KEY_BUTTONS);
         saveState->sensorMapping.emitEvent(
-            synth, MomentaryInputType::KEYBOARD_GATE, 1);
+            synth, KEYBOARD, MomentaryInputType::KEYBOARD_GATE, 1);
       }
     }
-
     needsDraw = true;
   }
 
@@ -181,10 +138,10 @@ struct KeyboardUI {
 
     if (auto buttonIdx = heldKeys[fingerId]) {
       keyButtons[buttonIdx].state = WidgetState::INACTIVE;
-      saveState->sensorMapping.emitEvent(
-          synth, ContinuousInputType::KEYBOARD_KEY,
-          float(buttonIdx) / float(NUM_KEY_BUTTONS - 1));
-      saveState->sensorMapping.emitEvent(synth,
+      saveState->sensorMapping.emitSteppedEvent(
+          synth, KEYBOARD, ContinuousInputType::KEYBOARD_KEY, float(buttonIdx),
+          NUM_KEY_BUTTONS);
+      saveState->sensorMapping.emitEvent(synth, KEYBOARD,
                                          MomentaryInputType::KEYBOARD_GATE, 0);
       heldKeys.erase(fingerId);
     }
@@ -213,11 +170,9 @@ struct KeyboardUI {
     for (size_t i = 0; i < NUM_KEY_BUTTONS; ++i) {
       if (keyButtons[i].state == WidgetState::ACTIVE) {
         keyButtons[i].state = WidgetState::INACTIVE;
+
         saveState->sensorMapping.emitEvent(
-            synth, ContinuousInputType::KEYBOARD_KEY,
-            float(i) / float(NUM_KEY_BUTTONS - 1));
-        saveState->sensorMapping.emitEvent(
-            synth, MomentaryInputType::KEYBOARD_GATE, 0);
+            synth, KEYBOARD, MomentaryInputType::KEYBOARD_GATE, 0);
         heldKeys.clear();
       } else if (keyButtons[i].state == WidgetState::HOVER) {
         keyButtons[i].state = WidgetState::INACTIVE;
@@ -225,26 +180,30 @@ struct KeyboardUI {
     }
     needsDraw = true;
   }
+  inline void _draw(SDL_Renderer *renderer, const Style &style) {
+
+    for (size_t i = 0; i < NUM_KEY_BUTTONS; i++) {
+      DrawButton(&keyButtons[i], renderer, style, SDL_Color{0, 0, 0, 0});
+    }
+  }
 
   inline void draw(SDL_Renderer *renderer, const Style &style) {
-    if (needsDraw) {
-      if (cachedRender == NULL) {
-        cachedRender = SDL_CreateTexture(
-            renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,
-            ActiveWindow::size.x, ActiveWindow::size.y);
-      }
-      auto err = SDL_SetRenderTarget(renderer, cachedRender);
-      if (err < 0) {
-        SDL_Log("%s", SDL_GetError());
-      }
-      for (size_t i = 0; i < NUM_KEY_BUTTONS; i++) {
-        DrawButton(&keyButtons[i], renderer, style, SDL_Color{0, 0, 0, 0});
-      }
-      SDL_SetRenderTarget(renderer, NULL);
-      needsDraw = false;
-    }
-    SDL_Rect renderRect = ConvertAxisAlignedBoxToSDL_Rect(shape);
-    SDL_RenderCopy(renderer, cachedRender, NULL, NULL);
+    // if (needsDraw) {
+    //   if (cachedRender == NULL) {
+    //     cachedRender = SDL_CreateTexture(
+    //         renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,
+    //         ActiveWindow::size.x, ActiveWindow::size.y);
+    //   }
+    //   auto err = SDL_SetRenderTarget(renderer, cachedRender);
+    //   if (err < 0) {
+    //     SDL_Log("%s", SDL_GetError());
+    //   }
+    _draw(renderer, style);
+    //     SDL_SetRenderTarget(renderer, NULL);
+    //     needsDraw = false;
+    //   }
+    //   SDL_Rect renderRect = ConvertAxisAlignedBoxToSDL_Rect(shape);
+    //   SDL_RenderCopy(renderer, cachedRender, NULL, NULL);
   }
 
   ~KeyboardUI() { SDL_DestroyTexture(cachedRender); }

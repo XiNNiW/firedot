@@ -3,14 +3,13 @@
 #include "SDL_render.h"
 #include "collider.h"
 #include "game.h"
-#include "instrument_metaphor_selector.h"
 #include "metaphor.h"
 #include "save_state.h"
+#include "ui_abstract_cached_render_ui.h"
 #include "ui_game.h"
 #include "ui_instrument_metaphor_selection_popup.h"
-#include "ui_instrument_setup.h"
+#include "ui_instrument_metaphor_selector.h"
 #include "ui_keyboard.h"
-#include "ui_mapping.h"
 #include "ui_navigation.h"
 #include "ui_sequencer.h"
 #include "ui_settings_menu.h"
@@ -335,6 +334,6 @@ struct PlayInstrumentUI {
              {.x = pageSelector.shape.position.x +
                    pageSelector.shape.halfSize.x - 15,
               .y = pageSelector.shape.halfSize.y * 2 + 10},
-             renderer, style.hoverColor);
+             renderer, style.inactiveColor);
   };
 };

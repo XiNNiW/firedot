@@ -5,64 +5,70 @@
 #include "pitch_collection.h"
 #include "synthesis.h"
 #include "synthesis_parameter.h"
+#include "synthesizer_settings.h"
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <vector>
-struct SynthesizerSettings {
-  SynthesizerType synthType = SynthesizerType::SUBTRACTIVE;
-  float gain = 1;
-  float soundSource = 0;
-  float filterCutoff = 1;
-  float filterQuality = 0;
-  float attack = 0;
-  float release = 1;
-};
 
 class SaveState {
 private:
   InstrumentMetaphorType instrumentMetaphor = KEYBOARD;
+  SynthesizerSettings synthesizerSettings;
 
 public:
   InputMapping<float> sensorMapping;
-  SynthesizerSettings synthesizerSettings;
 
   inline InstrumentMetaphorType getInstrumentMetaphorType() const {
     return instrumentMetaphor;
   }
+  inline const SynthesizerSettings &getSynthesizerSettings() const {
+    return synthesizerSettings;
+  }
   inline void setInstrumentMetaphor(InstrumentMetaphorType type) {
-    std::vector<MomentaryInputType> currentMomentaryTypes;
-    std::vector<ContinuousInputType> currentContinousTypes;
-    getMomentaryInputsForInstrumentType(instrumentMetaphor,
-                                        &currentMomentaryTypes);
-    getContinuousInputsForInstrumentType(instrumentMetaphor,
-                                         &currentContinousTypes);
+    //  std::vector<MomentaryInputType> currentMomentaryTypes;
+    //  std::vector<ContinuousInputType> currentContinousTypes;
+    //  std::vector<ContinuousInputType> nextContinousTypes;
+    //  getMomentaryInputsForInstrumentType(instrumentMetaphor,
+    //                                      &currentMomentaryTypes);
+    //  getContinuousInputsForInstrumentType(instrumentMetaphor,
+    //                                       &currentContinousTypes);
+    //  getContinuousInputsForInstrumentType(type, &nextContinousTypes);
+    //  for (auto &currentContinousType : currentContinousTypes) {
+    //    bool found = false;
+    //    for (auto &nextContinousType : nextContinousTypes) {
+    //      if (nextContinousType == currentContinousType) {
+    //        found = true;
+    //        break;
+    //      }
+    //    }
+    //    if (!found) {
 
-    for (auto &continousType : currentContinousTypes) {
-      sensorMapping.removeMappingForInputType(continousType);
-    }
-    for (auto &momentaryType : currentMomentaryTypes) {
-      sensorMapping.removeMappingForInputType(momentaryType);
-    }
+    //      sensorMapping.removeMappingForInputType(currentContinousType);
+    //    }
+    //  }
+    //  for (auto &momentaryType : currentMomentaryTypes) {
+    //    sensorMapping.removeMappingForInputType(momentaryType);
+    //  }
     instrumentMetaphor = type;
-    switch (instrumentMetaphor) {
-    case KEYBOARD:
-      sensorMapping.addMapping(KEYBOARD_GATE, GATE);
-      sensorMapping.addMapping(KEYBOARD_KEY, FREQUENCY);
-      break;
-    case SEQUENCER:
-      sensorMapping.addMapping(SEQUENCER_GATE, GATE);
-      sensorMapping.addMapping(SEQUENCER_STEP_LEVEL, FREQUENCY);
-      break;
-    case TOUCH_PAD:
-      sensorMapping.addMapping(TOUCH_PAD_GATE, GATE);
-      break;
-    case GAME:
-      sensorMapping.addMapping(COLLISION, GATE);
-      break;
-    case InstrumentMetaphorType__SIZE:
-      break;
-    }
+    //   switch (instrumentMetaphor) {
+    //   case KEYBOARD:
+    //     sensorMapping.addMapping(KEYBOARD_GATE, GATE);
+    //     sensorMapping.addMapping(KEYBOARD_KEY, FREQUENCY);
+    //     break;
+    //   case SEQUENCER:
+    //     sensorMapping.addMapping(SEQUENCER_GATE, GATE);
+    //     sensorMapping.addMapping(SEQUENCER_STEP_LEVEL, FREQUENCY);
+    //     break;
+    //   case TOUCH_PAD:
+    //     sensorMapping.addMapping(TOUCH_PAD_GATE, GATE);
+    //     break;
+    //   case GAME:
+    //     sensorMapping.addMapping(COLLISION, GATE);
+    //     break;
+    //   case InstrumentMetaphorType__SIZE:
+    //     break;
+    //   }
   }
 
   inline static bool SaveGame(const std::string &filename,
@@ -83,16 +89,23 @@ public:
     save << std::to_string(state->instrumentMetaphor) << "\n";
     save << "[momentaryMappings]"
          << "\n";
-    for (auto &pair : state->sensorMapping.momentaryMappings) {
-      save << std::to_string(pair.first) << "," << std::to_string(pair.second)
-           << "\n";
+    for (auto &modePair : state->sensorMapping.instrumentModeSpecificMappings) {
+      for (auto &paramInputPair : modePair.second.momentaryMappings) {
+        save << std::to_string(modePair.first) << ","
+             << std::to_string(paramInputPair.first) << ","
+             << std::to_string(paramInputPair.second) << "\n";
+      }
     }
+
     save << "\n";
     save << "[continuousMappings]"
          << "\n";
-    for (auto &pair : state->sensorMapping.continuousMappings) {
-      save << std::to_string(pair.first) << "," << std::to_string(pair.second)
-           << "\n";
+    for (auto &modePair : state->sensorMapping.instrumentModeSpecificMappings) {
+      for (auto &pair : modePair.second.continuousMappings) {
+        save << std::to_string(modePair.first) << ","
+             << std::to_string(pair.first) << "," << std::to_string(pair.second)
+             << "\n";
+      }
     }
     save << "\n";
     save << "[soundSettings]"
@@ -103,10 +116,12 @@ public:
     save << state->synthesizerSettings.filterCutoff << ",";
     save << state->synthesizerSettings.filterQuality << ",";
     save << state->synthesizerSettings.attack << ",";
-    save << state->synthesizerSettings.release << "\n";
+    save << state->synthesizerSettings.release << ",";
+    save << state->synthesizerSettings.octave << "\n";
     save << "[scaleType]"
          << "\n";
-    save << static_cast<int>(state->sensorMapping.scaleType) << "\n";
+    save << static_cast<int>(state->sensorMapping.key) << ","
+         << static_cast<int>(state->sensorMapping.scaleType) << "\n";
 
     save << "\n";
     save.close();
@@ -192,11 +207,11 @@ public:
               seglist.push_back(segment);
             }
 
-            if (seglist.size() == 2) {
-              state->sensorMapping
-                  .momentaryMappings[static_cast<MomentaryParameterType>(
-                      std::stoi(seglist[0]))] =
-                  static_cast<MomentaryInputType>(std::stoi(seglist[1]));
+            if (seglist.size() == 3) {
+              state->sensorMapping.addMapping(
+                  static_cast<InstrumentMetaphorType>(std::stoi(seglist[0])),
+                  static_cast<MomentaryInputType>(std::stoi(seglist[2])),
+                  static_cast<MomentaryParameterType>(std::stoi(seglist[1])));
             }
           }
           break;
@@ -213,11 +228,11 @@ public:
               seglist.push_back(segment);
             }
 
-            if (seglist.size() == 2) {
-              state->sensorMapping
-                  .continuousMappings[static_cast<ContinuousParameterType>(
-                      std::stoi(seglist[0]))] =
-                  static_cast<ContinuousInputType>(std::stoi(seglist[1]));
+            if (seglist.size() == 3) {
+              state->sensorMapping.addMapping(
+                  static_cast<InstrumentMetaphorType>(std::stoi(seglist[0])),
+                  static_cast<ContinuousInputType>(std::stoi(seglist[2])),
+                  static_cast<ContinuousParameterType>(std::stoi(seglist[1])));
             }
           }
 
@@ -235,7 +250,7 @@ public:
               seglist.push_back(segment);
             }
 
-            if (seglist.size() == 7) {
+            if (seglist.size() == 8) {
               state->synthesizerSettings.synthType =
                   static_cast<SynthesizerType>(std::stoi(seglist[0]));
               state->synthesizerSettings.gain = std::stof(seglist[1]);
@@ -244,14 +259,26 @@ public:
               state->synthesizerSettings.filterQuality = std::stof(seglist[4]);
               state->synthesizerSettings.attack = std::stof(seglist[5]);
               state->synthesizerSettings.release = std::stof(seglist[6]);
+              state->synthesizerSettings.octave = std::stof(seglist[7]);
             }
           }
 
           break;
         }
         case FileHeading::SCALE_TYPE: {
-          state->sensorMapping.scaleType =
-              static_cast<ScaleType>(std::stoi(lineText));
+
+          std::stringstream lineStream(lineText);
+          std::string segment;
+          std::vector<std::string> seglist;
+
+          while (std::getline(lineStream, segment, ',')) {
+            seglist.push_back(segment);
+          }
+          if (seglist.size() == 2) {
+            state->sensorMapping.key = std::stoi(seglist[0]);
+            state->sensorMapping.scaleType =
+                static_cast<ScaleType>(std::stoi(seglist[1]));
+          }
           readState = ReadState::SEARCHING;
 
           break;
