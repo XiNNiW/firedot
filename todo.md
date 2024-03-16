@@ -12,15 +12,23 @@
 - [x] - sequencer stops when you press stop
 - [x] - make touch pad single touch
 - [x] - per mode mapping? problem: some mappings are discarded when switching modes
-- [~] - damp min velocity... stop triggering notes when its mostly at rest
+- [x] - damp min velocity... stop triggering notes when its mostly at rest
 - [x] - slider is not responding to sensor changes... was it the cached renders?
 - [x] - range on frequency slider is off... low notes go off the bottom... Frequency slider does not respond to touch
-- [~] - parameter names change when you change synth type
+- [x] - parameter names change when you change synth type
 - [x] - changing radio group selection makes it go (no need for select and cancel)
-- [ ] - touch pad should constrain to visible page
+- [x] - touch pad should constrain to visible page
 - [x] - only draw one touch point
 - [ ] - vertical sliders on sequencer
-- [ ] - sequencer page is a bit scrunched on small devices
+- [x] - sequencer page is a bit scrunched on small devices
+- [ ] - save 4 preset slots
+- [x] - filter cutoff should go lower
+- [~] - sequencer length + tempo sliders are too wide
+- [ ] - make slew a per synth per parameter thing
+- [ ] - sound parameters are stored per mode
+- [x] - no filter mappings by default
+- [~] - keyboard key does not map well to things other than frequency
+- [ ] -
 
 5 scales:
 maj pentatonic

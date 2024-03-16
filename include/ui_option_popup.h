@@ -81,7 +81,32 @@ struct OptionPopupUI {
 
   void close() { mode = CLOSED; }
 
-  bool doClick(const vec2f_t &mousePosition, int *selection) {
+  void handleMouseDown(const vec2f_t &mousePosition) {
+    if (mode == OPEN) {
+      int selected = 0;
+      for (int i = 0; i < options.size(); ++i) {
+        if (DoButtonClick(&options[i], mousePosition)) {
+
+          selected = i;
+          updateSelection(selected);
+        }
+      }
+    }
+  }
+  void handleMouseMove(const vec2f_t &mousePosition) {
+    if (mode == OPEN) {
+      int selected = 0;
+      for (int i = 0; i < options.size(); ++i) {
+        if (DoButtonClick(&options[i], mousePosition)) {
+
+          selected = i;
+          updateSelection(selected);
+        }
+      }
+    }
+  }
+
+  bool handleMouseUp(const vec2f_t &mousePosition, int *selection) {
     if (mode == OPEN) {
       bool selectionChanged = false;
       int selected = 0;
@@ -94,18 +119,6 @@ struct OptionPopupUI {
           return true;
         }
       }
-      if (selectionChanged)
-        updateSelection(selected);
-
-      //  if (DoButtonClick(&cancelButton, mousePosition)) {
-      //    close();
-      //    return false;
-      //  }
-      //  if (DoButtonClick(&selectButton, mousePosition)) {
-      //    close();
-      //    *selection = getCurrentSelection();
-      //    return true;
-      //  }
     }
     return false;
   }

@@ -25,16 +25,13 @@ SDL_PATH := ../SDL2
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../SDL2/include
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../SDL2_image/include $(LOCAL_PATH)/../SDL2_image
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../SDL2_ttf
-LOCAL_C_INCLUDES += $(LOCAL_PATH)/../boost
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../SPSCQueue/include
 $(info $$LOCAL_C_INCLUDES is [${LOCAL_C_INCLUDES}])
 # Add your application source files here...
 LOCAL_SRC_FILES := $(SDL_PATH)/src/main/android/SDL_android_main.c ../../../../main.cpp
 LOCAL_SHARED_LIBRARIES := SDL2 SDL2_ttf SDL2_image
-LOCAL_STATIC_LIBRARIES := algae libboost_filesystem
+LOCAL_STATIC_LIBRARIES := algae
 LOCAL_LDLIBS := -lGLESv1_CM -lGLESv2 -lOpenSLES -llog -landroid -ldl
-LOCAL_CFLAGS += -I$(LOCAL_PATH)/../boost
-LOCAL_LDLIBS += -L$(LOCAL_PATH)/../boost/stage/lib/ -lboost_filesystem
 
 #SUPPORT_HARFBUZZ := false
 APP_ALLOW_MISSING_DEPS := true

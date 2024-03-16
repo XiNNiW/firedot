@@ -9,34 +9,41 @@
 #include <string>
 #include <vector>
 enum class ScaleType {
-  LYDIAN,
   IONIAN_PENT,
-  IONIAN,
   MIXOLYDIAN_PENT,
-  MIXOLYDIAN,
   DORIAN_PENT,
-  DORIAN,
   AEOLIAN_PENT,
-  AEOLIAN,
   PHRYGIAN_PENT,
+  LYDIAN,
+  IONIAN,
+  MIXOLYDIAN,
+  DORIAN,
+  AEOLIAN,
   PHRYGIAN,
   LOCRIAN,
+  HARMONIC_MAJOR,
+  MELODIC_MINOR,
+  HARMONIC_MINOR,
   WHOLETONE,
   OCTATONIC_1,
   OCTATONIC_2,
   CHROMATIC,
   ScaleType__SIZE
 };
-static const size_t NUM_SCALE_TYPES = 16;
+static const size_t NUM_SCALE_TYPES = 19;
 static_assert(static_cast<size_t>(ScaleType::ScaleType__SIZE) ==
                   NUM_SCALE_TYPES,
               "there are 16 scales");
 static const ScaleType ScaleTypes[NUM_SCALE_TYPES] = {
-    ScaleType::LYDIAN,          ScaleType::IONIAN_PENT,  ScaleType::IONIAN,
-    ScaleType::MIXOLYDIAN_PENT, ScaleType::MIXOLYDIAN,   ScaleType::DORIAN_PENT,
-    ScaleType::DORIAN,          ScaleType::AEOLIAN_PENT, ScaleType::AEOLIAN,
-    ScaleType::PHRYGIAN_PENT,   ScaleType::PHRYGIAN,     ScaleType::LOCRIAN,
-    ScaleType::WHOLETONE,       ScaleType::OCTATONIC_1,  ScaleType::OCTATONIC_2,
+    ScaleType::IONIAN_PENT,    ScaleType::MIXOLYDIAN_PENT,
+    ScaleType::DORIAN_PENT,    ScaleType::AEOLIAN_PENT,
+    ScaleType::PHRYGIAN_PENT,  ScaleType::LYDIAN,
+    ScaleType::IONIAN,         ScaleType::MIXOLYDIAN,
+    ScaleType::DORIAN,         ScaleType::AEOLIAN,
+    ScaleType::PHRYGIAN,       ScaleType::LOCRIAN,
+    ScaleType::HARMONIC_MAJOR, ScaleType::MELODIC_MINOR,
+    ScaleType::HARMONIC_MINOR, ScaleType::WHOLETONE,
+    ScaleType::OCTATONIC_1,    ScaleType::OCTATONIC_2,
     ScaleType::CHROMATIC,
 };
 
@@ -45,52 +52,42 @@ static const char *getDisplayName(ScaleType scaleType) {
 
   case ScaleType::LYDIAN:
     return "lydian";
-    break;
   case ScaleType::IONIAN_PENT:
     return "major pentatonic";
-    break;
   case ScaleType::IONIAN:
     return "major";
-    break;
   case ScaleType::MIXOLYDIAN_PENT:
     return "mixolydian pentatonic";
-    break;
   case ScaleType::MIXOLYDIAN:
     return "mixolydian";
-    break;
   case ScaleType::DORIAN_PENT:
     return "dorian pent";
-    break;
   case ScaleType::DORIAN:
     return "dorian";
-    break;
   case ScaleType::AEOLIAN_PENT:
     return "minor pentatonic";
-    break;
   case ScaleType::AEOLIAN:
     return "minor";
-    break;
   case ScaleType::PHRYGIAN_PENT:
     return "phrygian pentatonic";
-    break;
   case ScaleType::PHRYGIAN:
     return "phrygian";
-    break;
-
   case ScaleType::LOCRIAN:
     return "locrian";
-    break;
   case ScaleType::WHOLETONE:
     return "wholetone";
-    break;
   case ScaleType::OCTATONIC_1:
     return "diminished whole-half";
-    break;
   case ScaleType::OCTATONIC_2:
     return "diminished half-whole";
-    break;
   case ScaleType::CHROMATIC:
     return "chromatic";
+  case ScaleType::HARMONIC_MAJOR:
+    return "harmonic major";
+  case ScaleType::MELODIC_MINOR:
+    return "melodic minor";
+  case ScaleType::HARMONIC_MINOR:
+    return "harmonic minor";
     break;
   case ScaleType::ScaleType__SIZE:
     break;
@@ -102,21 +99,92 @@ struct PitchCollection {
   static constexpr size_t SIZE = 12;
   float notes[SIZE] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 };
-static const PitchCollection Scales[NUM_SCALE_TYPES] = {
-    PitchCollection{.notes = {0, 0, 2, 2, 4, 6, 6, 7, 7, 9, 9, 11}},
-    PitchCollection{.notes = {0, 0, 2, 2, 4, 4, 4, 7, 7, 9, 9, 9}},
-    PitchCollection{.notes = {0, 0, 2, 2, 4, 5, 5, 7, 7, 9, 9, 11}},
-    PitchCollection{.notes = {0, 0, 2, 2, 4, 4, 4, 7, 7, 10, 10, 10}},
-    PitchCollection{.notes = {0, 0, 2, 2, 4, 5, 7, 7, 9, 9, 10, 10}},
-    PitchCollection{.notes = {0, 0, 0, 2, 2, 3, 3, 7, 7, 9, 9, 9}},
-    PitchCollection{.notes = {0, 0, 2, 3, 3, 5, 5, 7, 9, 9, 10, 10}},
-    PitchCollection{.notes = {0, 0, 0, 1, 1, 1, 3, 3, 7, 7, 10, 10}},
-    PitchCollection{.notes = {0, 0, 1, 1, 3, 3, 5, 5, 7, 7, 8, 10}},
-    PitchCollection{.notes = {0, 0, 1, 3, 3, 6, 6, 8, 8, 10, 10}},
-    PitchCollection{.notes = {0, 2, 4, 6, 8, 10}},
-    PitchCollection{.notes = {0, 2, 3, 5, 6, 8, 9, 11}},
-    PitchCollection{.notes = {0, 1, 3, 4, 6, 7, 9, 10}},
-    PitchCollection{.notes = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}}};
+
+static const PitchCollection &GetScale(ScaleType scaleType) {
+  static const PitchCollection lydian = {
+      .notes = {0, 0, 2, 2, 4, 6, 6, 7, 7, 9, 9, 11}};
+  static const PitchCollection majorPent = {
+      .notes = {0, 0, 2, 2, 4, 4, 4, 7, 7, 9, 9, 9}};
+  static const PitchCollection major = {
+      .notes = {0, 0, 2, 2, 4, 5, 5, 7, 7, 9, 9, 11}};
+  static const PitchCollection harmonicMajor = {
+      .notes = {0, 0, 2, 2, 4, 5, 5, 7, 7, 8, 8, 11}};
+  static const PitchCollection mixolydianPent = {
+      .notes = {0, 0, 2, 2, 5, 5, 5, 7, 7, 9, 9, 9}};
+  static const PitchCollection mixolydian = {
+      .notes = {0, 0, 2, 2, 4, 5, 7, 7, 9, 9, 10, 10}};
+  static const PitchCollection melodicMinor = {
+      .notes = {0, 0, 2, 2, 3, 5, 5, 7, 7, 9, 9, 11}};
+  static const PitchCollection harmonicMinor = {
+      .notes = {0, 0, 2, 2, 3, 5, 5, 7, 7, 8, 8, 11}};
+  static const PitchCollection dorianPent = {
+      .notes = {0, 0, 2, 2, 5, 5, 5, 7, 7, 10, 10, 10}};
+  static const PitchCollection dorian = {
+      .notes = {0, 0, 2, 2, 3, 5, 5, 7, 7, 9, 9, 10}};
+  static const PitchCollection minorPent = {
+      .notes = {0, 0, 3, 3, 3, 5, 7, 7, 10, 10, 10}};
+  static const PitchCollection minor = {
+      .notes = {0, 0, 2, 2, 3, 5, 5, 7, 7, 8, 8, 10}};
+  static const PitchCollection phrygianPent = {
+      .notes = {0, 0, 3, 3, 5, 5, 5, 8, 8, 10, 10, 10}};
+  static const PitchCollection phrygian = {
+      .notes = {0, 0, 1, 1, 3, 3, 5, 5, 7, 7, 8, 10}};
+  static const PitchCollection locrian = {
+      .notes = {0, 0, 1, 3, 3, 6, 6, 8, 8, 10, 10}};
+  static const PitchCollection wholetone = {
+      .notes = {0, 0, 2, 2, 4, 4, 6, 6, 8, 8, 10, 10}};
+  static const PitchCollection octatonic1 = {
+      .notes = {0, 0, 2, 3, 3, 5, 6, 8, 8, 9, 9, 11}};
+  static const PitchCollection octatonic2 = {
+      .notes = {0, 1, 1, 3, 4, 4, 6, 7, 7, 9, 10, 10}};
+  static const PitchCollection chromatic = {
+      .notes = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}};
+
+  switch (scaleType) {
+
+  case ScaleType::LYDIAN:
+    return lydian;
+  case ScaleType::IONIAN_PENT:
+    return majorPent;
+  case ScaleType::IONIAN:
+    return major;
+  case ScaleType::MIXOLYDIAN_PENT:
+    return mixolydianPent;
+  case ScaleType::MIXOLYDIAN:
+    return mixolydian;
+  case ScaleType::DORIAN_PENT:
+    return dorianPent;
+  case ScaleType::DORIAN:
+    return dorian;
+  case ScaleType::AEOLIAN_PENT:
+    return minorPent;
+  case ScaleType::AEOLIAN:
+    return minor;
+  case ScaleType::PHRYGIAN_PENT:
+    return phrygianPent;
+  case ScaleType::PHRYGIAN:
+    return phrygian;
+  case ScaleType::LOCRIAN:
+    return locrian;
+  case ScaleType::WHOLETONE:
+    return wholetone;
+  case ScaleType::OCTATONIC_1:
+    return octatonic1;
+  case ScaleType::OCTATONIC_2:
+    return octatonic2;
+  case ScaleType::CHROMATIC:
+    return chromatic;
+  case ScaleType::HARMONIC_MAJOR:
+    return harmonicMajor;
+  case ScaleType::MELODIC_MINOR:
+    return melodicMinor;
+  case ScaleType::HARMONIC_MINOR:
+    return harmonicMinor;
+  case ScaleType::ScaleType__SIZE:
+    break;
+  }
+  return chromatic;
+}
 
 inline float ForceToScale(float pitch, const PitchCollection &pitchCollection) {
   int noteIndex = pitch;

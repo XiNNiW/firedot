@@ -9,9 +9,11 @@ find_library(SDL2_image SDL2_image)
 find_library(SDL2_ttf SDL2_ttf)
 find_library(algae algae)
 find_library(SPSCQueue SPSCQueue)
-
-
 add_library(main SHARED)
+#add_library(algae STATIC IMPORTED)
+#set_target_properties(algae PROPERTIES IMPORTED_LOCATION algae/bin/libalgae.a)
+#set_target_properties(algae PROPERTIES INCLUDE_DIRECTORIES algae/src)
+
 
 file(GLOB SOURCES "../../../../src/*.cpp")
 

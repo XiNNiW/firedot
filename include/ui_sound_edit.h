@@ -25,7 +25,6 @@ struct SoundEditUI {
   OptionPopupUI mappingSelectionPopup;
   int fingerPositions[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 
-  Label *pageTitleLabel = new Label("choose your sound!");
   AxisAlignedBoundingBox pageTitleLabelShape;
   AxisAlignedBoundingBox bodyShape;
   ContinuousParameterType destination;
@@ -236,8 +235,10 @@ struct SoundEditUI {
   }
 
   inline void handleMouseMove(const vec2f_t &mousePosition) {
-    if (mappingSelectionPopup.isOpen())
+    if (mappingSelectionPopup.isOpen()) {
+      mappingSelectionPopup.handleMouseMove(mousePosition);
       return;
+    }
     DoRadioGroupHover(&synthSelectRadioGroup, mousePosition);
 
     for (auto &parameterType : ParameterTypes) {
@@ -269,18 +270,7 @@ struct SoundEditUI {
 
     if (mappingSelectionPopup.isOpen()) {
       int selection = 0;
-      if (mappingSelectionPopup.doClick(mousePosition, &selection)) {
-        auto options = getOptions();
-        if (selection < options.size()) {
-          saveState->sensorMapping.addMapping(
-              saveState->getInstrumentMetaphorType(), options[selection],
-              destination);
-        } else {
-          saveState->sensorMapping.removeMappingForParameterType(
-              saveState->getInstrumentMetaphorType(), destination);
-        }
-        updateMappingButtonLabels();
-      }
+      mappingSelectionPopup.handleMouseDown(mousePosition);
     } else {
 
       if (DoClickRadioGroup(&synthSelectRadioGroup, mousePosition)) {
@@ -315,8 +305,22 @@ struct SoundEditUI {
   }
 
   inline void handleMouseUp(const vec2f_t &mousePosition) {
-    if (mappingSelectionPopup.isOpen())
-      return;
+    if (mappingSelectionPopup.isOpen()) {
+      int selection = 0;
+      if (mappingSelectionPopup.handleMouseUp(mousePosition, &selection)) {
+        auto options = getOptions();
+        if (selection < options.size()) {
+          saveState->sensorMapping.addMapping(
+              saveState->getInstrumentMetaphorType(), options[selection],
+              destination);
+        } else {
+          saveState->sensorMapping.removeMappingForParameterType(
+              saveState->getInstrumentMetaphorType(), destination);
+        }
+        updateMappingButtonLabels();
+        return;
+      }
+    }
 
     for (auto &parameterType : ParameterTypes) {
       if (parameterSliders.find(parameterType) == parameterSliders.end()) {
@@ -330,9 +334,6 @@ struct SoundEditUI {
 
   void _draw(SDL_Renderer *renderer, const Style &style) {
     auto pageLabelRect = ConvertAxisAlignedBoxToSDL_Rect(pageTitleLabelShape);
-    pageTitleLabel->draw(
-        style.hoverColor, style.unavailableColor, pageLabelRect, renderer,
-        style, HorizontalAlignment::CENTER, VerticalAlignment::CENTER);
     synthSelectRadioGroup.selectedIndex = synth->getSynthType();
     DrawRadioGroup(&synthSelectRadioGroup, renderer, style);
     for (auto &parameterType : ParameterTypes) {

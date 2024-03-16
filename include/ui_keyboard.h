@@ -71,16 +71,16 @@ struct KeyboardUI {
                                           floor(i / keysPerRow) * keySize)};
       auto buttonHalfSize = vec2f_t{.x = static_cast<float>(keySize / 2),
                                     .y = static_cast<float>(keySize / 2)};
-      keyButtons[i] = Button{
-          .label = Label(
-              {.position = buttonPosition,
-               .halfSize = buttonHalfSize.scale(0.35)},
-              GetNoteName(
-                  saveState->sensorMapping.key +
-                  ForceToScale(i, Scales[static_cast<size_t>(
-                                      saveState->sensorMapping.scaleType)]))),
-          .shape = AxisAlignedBoundingBox{.position = buttonPosition,
-                                          .halfSize = buttonHalfSize}};
+      keyButtons[i] =
+          Button{.label = Label(
+                     {.position = buttonPosition,
+                      .halfSize = buttonHalfSize.scale(0.35)},
+                     GetNoteName(
+                         saveState->sensorMapping.key +
+                         ForceToScale(
+                             i, GetScale(saveState->sensorMapping.scaleType)))),
+                 .shape = AxisAlignedBoundingBox{.position = buttonPosition,
+                                                 .halfSize = buttonHalfSize}};
     }
     needsDraw = true;
   }

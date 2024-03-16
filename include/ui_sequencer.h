@@ -47,7 +47,7 @@ struct SequencerUI {
   SequencerUI(Sequencer *_sequencer) : sequencer(_sequencer) {}
 
   void buildLayout(const AxisAlignedBoundingBox &shape) {
-    auto pageMargin = 50;
+    auto pageMargin = shape.halfSize.y / 32;
     auto width = (shape.halfSize.x * 2);
     auto height = (shape.halfSize.y * 2);
     auto xOffset = shape.position.x - shape.halfSize.x;
@@ -58,6 +58,8 @@ struct SequencerUI {
                              (width - pageMargin) / numButtonsPerRow);
     auto buttonWidth = buttonHeight;
     auto sliderHeight = buttonHeight;
+    auto buttonMargin = shape.halfSize.x / 32.0;
+    auto editAreaWidth = buttonWidth * 4 - buttonMargin * 2;
 
     auto yPos = yOffset;
     for (int i = 0; i < Sequencer::MAX_STEPS; i++) {
@@ -69,8 +71,9 @@ struct SequencerUI {
                            .y = static_cast<float>(
                                buttonHeight * floor(i / numButtonsPerRow) +
                                buttonHeight / 2.0 + yPos)},
-              .halfSize = {.x = static_cast<float>(buttonWidth / 2.0 - 10),
-                           .y = static_cast<float>(buttonHeight / 2.0 - 10)}}};
+              .halfSize = {
+                  .x = static_cast<float>(buttonWidth / 2.0 - buttonMargin),
+                  .y = static_cast<float>(buttonHeight / 2.0 - buttonMargin)}}};
     }
     yPos += buttonHeight * floor(Sequencer::MAX_STEPS / numButtonsPerRow);
 
@@ -78,16 +81,14 @@ struct SequencerUI {
     auto elementHalfHeight = (remainingYSpace / 4.0) / 2.0;
 
     auto tempoButtonHalfWidth = shape.halfSize.x / 5.0;
-    auto buttonMargin = shape.halfSize.x / 32.0;
     auto tempoSliderShape = AxisAlignedBoundingBox{
         .position = {.x = static_cast<float>(shape.position.x -
                                              tempoButtonHalfWidth),
                      .y = static_cast<float>(yPos + elementHalfHeight +
-                                             pageMargin / 2.0 - 15)},
-        .halfSize = {.x = static_cast<float>(shape.halfSize.x -
-                                             pageMargin / 2.0 -
-                                             tempoButtonHalfWidth),
-                     .y = static_cast<float>(elementHalfHeight)}};
+                                             pageMargin - 15)},
+        .halfSize = {
+            .x = static_cast<float>(editAreaWidth / 2.0 - tempoButtonHalfWidth),
+            .y = static_cast<float>(elementHalfHeight)}};
     std::stringstream sstream;
     sstream << "tempo: " << sequencer->getTempo();
     tempoSlider = HSlider{
@@ -108,10 +109,9 @@ struct SequencerUI {
         .position = {.x = static_cast<float>(shape.position.x),
                      .y = static_cast<float>(tempoSliderShape.position.y +
                                              elementHalfHeight * 2 +
-                                             pageMargin / 2.0)},
-        .halfSize = {
-            .x = static_cast<float>(shape.halfSize.x - pageMargin / 2.0),
-            .y = static_cast<float>(elementHalfHeight)}};
+                                             pageMargin / 4.0)},
+        .halfSize = {.x = static_cast<float>(editAreaWidth / 2.0),
+                     .y = static_cast<float>(elementHalfHeight)}};
     seqLengthSlider = HSlider{.label = Label(seqLengthShape, "length"),
                               .shape = seqLengthShape};
     auto playButtonShape = AxisAlignedBoundingBox{

@@ -12,6 +12,7 @@
 struct Game {
   const float MIN_COLLISION_VELOCITY = 0.3;
   const float MAX_PARTICLE_SIZE = 100;
+  const float MIN_PARTICLE_SIZE = 10;
   Physics physics;
   std::vector<std::unique_ptr<GameObject>> gameObjects;
   InputMapping<float> *mapping = NULL;
@@ -22,6 +23,10 @@ struct Game {
 
   Game(InputMapping<float> *_mapping, Synthesizer<float> *_synth)
       : mapping(_mapping), synth(_synth) {}
+  inline const float computeNormalizedYCollisionPosition(float y) const {
+    return 1 - (y - (bounds.position.y - bounds.halfSize.y)) /
+                   (bounds.halfSize.y * 2.0);
+  }
 
   inline void update(float secondsSinceLastUpdate) {
     physics.update(secondsSinceLastUpdate, &gameObjects);
@@ -62,14 +67,17 @@ struct Game {
           if (collisionVelocity > MIN_COLLISION_VELOCITY) {
             mapping->emitEvent(synth, GAME,
                                ContinuousInputType::COLLISION_VELOCITY,
-                               collisionVelocity / 8.0);
+                               collisionVelocity / 4.0);
+            mapping->emitEvent(synth, GAME, ContinuousInputType::PARTICLE_SIZE,
+                               p1.collider.object.circle.radius / 100.0);
             mapping->emitEvent(
                 synth, GAME, ContinuousInputType::COLLISION_POSITION_X,
                 p1.collider.getPosition().x / float(bounds.halfSize.x * 2));
 
-            mapping->emitEvent(
-                synth, GAME, ContinuousInputType::COLLISION_POSITION_Y,
-                p1.collider.getPosition().y / float(bounds.halfSize.y * 2));
+            mapping->emitEvent(synth, GAME,
+                               ContinuousInputType::COLLISION_POSITION_Y,
+                               computeNormalizedYCollisionPosition(
+                                   p1.collider.getPosition().y));
             mapping->emitEvent(synth, GAME, MomentaryInputType::COLLISION,
                                true);
             activeGateTimes.push_back(0);
@@ -83,14 +91,18 @@ struct Game {
 
             mapping->emitEvent(synth, GAME,
                                ContinuousInputType::COLLISION_VELOCITY,
-                               collisionVelocity / 8.0);
+                               collisionVelocity / 4.0);
+            mapping->emitEvent(synth, GAME, ContinuousInputType::PARTICLE_SIZE,
+                               p1.collider.object.circle.radius / 100.0);
+
             mapping->emitEvent(
                 synth, GAME, ContinuousInputType::COLLISION_POSITION_X,
                 p1.collider.getPosition().x / float(bounds.halfSize.x * 2));
 
-            mapping->emitEvent(
-                synth, GAME, ContinuousInputType::COLLISION_POSITION_Y,
-                p1.collider.getPosition().y / float(bounds.halfSize.y * 2));
+            mapping->emitEvent(synth, GAME,
+                               ContinuousInputType::COLLISION_POSITION_Y,
+                               computeNormalizedYCollisionPosition(
+                                   p1.collider.getPosition().y));
             mapping->emitEvent(synth, GAME, MomentaryInputType::COLLISION,
                                true);
             activeGateTimes.push_back(0);
@@ -142,6 +154,7 @@ struct Game {
   inline void addParticle(const vec2f_t &pos, const vec2f_t &velocity,
                           float size) {
     size = fmin(size, MAX_PARTICLE_SIZE);
+    size = fmax(size, MIN_PARTICLE_SIZE);
     auto gameObject = new GameObject(
         Particle(velocity, CircleCollider{.position = pos, .radius = size}));
     gameObjects.push_back(std::unique_ptr<GameObject>(std::move(gameObject)));

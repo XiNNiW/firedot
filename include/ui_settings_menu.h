@@ -171,6 +171,7 @@ struct SettingsMenu {
     }
     if (DoButtonClick(&loadGameButton, mousePosition)) {
       SaveState::LoadGame("game name", synth, saveState);
+      buildLayout(shape);
       // filebrowser.open();
     }
     // }

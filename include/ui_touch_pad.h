@@ -38,17 +38,36 @@ struct TouchPadUI {
 
   };
 
-  inline void handleMouseMove(const vec2f_t &mousePosition) {
+  inline const float computeNormalizedYTouchPosition(float y) {
+    return 1 - (y - (shape.position.y - shape.halfSize.y)) /
+                   (shape.halfSize.y * 2.0);
+  }
+
+  inline void handleMouseMove(vec2f_t mousePosition) {
+    mousePosition.x =
+        fmin(fmax(mousePosition.x, shape.position.x - shape.halfSize.x),
+             shape.halfSize.x + shape.position.x);
+    mousePosition.y =
+        fmin(fmax(mousePosition.y, shape.position.y - shape.halfSize.y),
+             shape.halfSize.y + shape.position.y);
     fingerPosition = mousePosition;
     saveState->sensorMapping.emitEvent(
         synth, TOUCH_PAD, ContinuousInputType::TOUCH_X_POSITION,
         mousePosition.x / (shape.halfSize.x * 2.0));
     saveState->sensorMapping.emitEvent(
         synth, TOUCH_PAD, ContinuousInputType::TOUCH_Y_POSITION,
-        mousePosition.y / (shape.halfSize.y * 2.0));
+        computeNormalizedYTouchPosition(mousePosition.y));
   };
 
-  inline void handleMouseDown(const vec2f_t &mousePosition) {
+  inline void handleMouseDown(vec2f_t mousePosition) {
+    if (!shape.contains(mousePosition))
+      return;
+    mousePosition.x =
+        fmin(fmax(mousePosition.x, shape.position.x - shape.halfSize.x),
+             shape.halfSize.x + shape.position.x);
+    mousePosition.y =
+        fmin(fmax(mousePosition.y, shape.position.y - shape.halfSize.y),
+             shape.halfSize.y + shape.position.y);
     fingerPosition = mousePosition;
     fingerActivity = true;
     // send triggers
@@ -57,7 +76,7 @@ struct TouchPadUI {
         fingerPosition.x / (shape.halfSize.x * 2.0));
     saveState->sensorMapping.emitEvent(
         synth, TOUCH_PAD, ContinuousInputType::TOUCH_Y_POSITION,
-        fingerPosition.y / (shape.halfSize.y * 2.0));
+        computeNormalizedYTouchPosition(fingerPosition.y));
     saveState->sensorMapping.emitEvent(synth, TOUCH_PAD,
                                        MomentaryInputType::TOUCH_PAD_GATE, 1);
   };
@@ -69,7 +88,7 @@ struct TouchPadUI {
         fingerPosition.x / (shape.halfSize.x * 2.0));
     saveState->sensorMapping.emitEvent(
         synth, TOUCH_PAD, ContinuousInputType::TOUCH_Y_POSITION,
-        fingerPosition.y / (shape.halfSize.y * 2.0));
+        computeNormalizedYTouchPosition(fingerPosition.y));
     saveState->sensorMapping.emitEvent(synth, TOUCH_PAD,
                                        MomentaryInputType::TOUCH_PAD_GATE, 0);
   };

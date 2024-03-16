@@ -37,6 +37,8 @@ struct GameUI {
   };
 
   void handleMouseDown(const vec2f_t &mousePosition) {
+    if (!shape.contains(mousePosition))
+      return;
     mouseIsDown = true;
     this->mouseDownPosition = this->mousePosition = mousePosition;
   };

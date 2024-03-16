@@ -129,7 +129,7 @@ struct AbstractMonophonicSynthesizer {
 
   inline void setFilterCutoff(sample_t value) {
     static_cast<DerivedT *>(this)->voice.filterCutoff =
-        lerp<sample_t>(500, 19000, value);
+        lerp<sample_t>(90, 19000, value * value);
   }
 
   inline void setFilterQuality(sample_t value) {

@@ -26,49 +26,7 @@ public:
     return synthesizerSettings;
   }
   inline void setInstrumentMetaphor(InstrumentMetaphorType type) {
-    //  std::vector<MomentaryInputType> currentMomentaryTypes;
-    //  std::vector<ContinuousInputType> currentContinousTypes;
-    //  std::vector<ContinuousInputType> nextContinousTypes;
-    //  getMomentaryInputsForInstrumentType(instrumentMetaphor,
-    //                                      &currentMomentaryTypes);
-    //  getContinuousInputsForInstrumentType(instrumentMetaphor,
-    //                                       &currentContinousTypes);
-    //  getContinuousInputsForInstrumentType(type, &nextContinousTypes);
-    //  for (auto &currentContinousType : currentContinousTypes) {
-    //    bool found = false;
-    //    for (auto &nextContinousType : nextContinousTypes) {
-    //      if (nextContinousType == currentContinousType) {
-    //        found = true;
-    //        break;
-    //      }
-    //    }
-    //    if (!found) {
-
-    //      sensorMapping.removeMappingForInputType(currentContinousType);
-    //    }
-    //  }
-    //  for (auto &momentaryType : currentMomentaryTypes) {
-    //    sensorMapping.removeMappingForInputType(momentaryType);
-    //  }
     instrumentMetaphor = type;
-    //   switch (instrumentMetaphor) {
-    //   case KEYBOARD:
-    //     sensorMapping.addMapping(KEYBOARD_GATE, GATE);
-    //     sensorMapping.addMapping(KEYBOARD_KEY, FREQUENCY);
-    //     break;
-    //   case SEQUENCER:
-    //     sensorMapping.addMapping(SEQUENCER_GATE, GATE);
-    //     sensorMapping.addMapping(SEQUENCER_STEP_LEVEL, FREQUENCY);
-    //     break;
-    //   case TOUCH_PAD:
-    //     sensorMapping.addMapping(TOUCH_PAD_GATE, GATE);
-    //     break;
-    //   case GAME:
-    //     sensorMapping.addMapping(COLLISION, GATE);
-    //     break;
-    //   case InstrumentMetaphorType__SIZE:
-    //     break;
-    //   }
   }
 
   inline static bool SaveGame(const std::string &filename,
@@ -86,7 +44,7 @@ public:
     std::ofstream save("game_save");
     save << "[instrumentMetaphor]"
          << "\n";
-    save << std::to_string(state->instrumentMetaphor) << "\n";
+    save << std::to_string(state->instrumentMetaphor) << "\n\n";
     save << "[momentaryMappings]"
          << "\n";
     for (auto &modePair : state->sensorMapping.instrumentModeSpecificMappings) {
@@ -117,7 +75,7 @@ public:
     save << state->synthesizerSettings.filterQuality << ",";
     save << state->synthesizerSettings.attack << ",";
     save << state->synthesizerSettings.release << ",";
-    save << state->synthesizerSettings.octave << "\n";
+    save << state->synthesizerSettings.octave << "\n\n";
     save << "[scaleType]"
          << "\n";
     save << static_cast<int>(state->sensorMapping.key) << ","

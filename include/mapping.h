@@ -19,6 +19,7 @@ enum ContinuousInputType {
   COLLISION_VELOCITY,
   COLLISION_POSITION_X,
   COLLISION_POSITION_Y,
+  PARTICLE_SIZE,
   ContinuousInputType_SIZE
 };
 static const size_t NUM_CONTINUOUS_INPUT_TYPES = ContinuousInputType_SIZE;
@@ -35,14 +36,15 @@ static const ContinuousInputType
         COLLISION_VELOCITY,
         COLLISION_POSITION_X,
         COLLISION_POSITION_Y,
+        PARTICLE_SIZE,
 };
 
-static const size_t NUM_INSTRUMENT_INPUT_TYPES = 7;
+static const size_t NUM_INSTRUMENT_INPUT_TYPES = 8;
 static const ContinuousInputType
     InstrumentInputTypes[NUM_INSTRUMENT_INPUT_TYPES] = {
-        KEYBOARD_KEY,        SEQUENCER_STEP_LEVEL, TOUCH_X_POSITION,
-        TOUCH_Y_POSITION,    COLLISION_VELOCITY,   COLLISION_POSITION_X,
-        COLLISION_POSITION_Y};
+        KEYBOARD_KEY,         SEQUENCER_STEP_LEVEL, TOUCH_X_POSITION,
+        TOUCH_Y_POSITION,     COLLISION_VELOCITY,   COLLISION_POSITION_X,
+        COLLISION_POSITION_Y, PARTICLE_SIZE};
 
 static const size_t NUM_SENSOR_INPUT_TYPES = 3;
 static const ContinuousInputType SensorInputTypes[NUM_SENSOR_INPUT_TYPES] = {
@@ -73,6 +75,8 @@ static const char *getDisplayName(ContinuousInputType type) {
     return "collision pos x";
   case COLLISION_POSITION_Y:
     return "collision pos y";
+  case PARTICLE_SIZE:
+    return "particle size";
   case ContinuousInputType_SIZE:
     return "";
     break;
@@ -197,10 +201,11 @@ static const ContinuousInputType
     TouchPadContinuousInputs[NUM_TOUCHPAD_CONTINUOUS_INPUTS] = {
         TOUCH_X_POSITION, TOUCH_Y_POSITION};
 
-static const size_t NUM_GAME_CONTINUOUS_INPUTS = 3;
+static const size_t NUM_GAME_CONTINUOUS_INPUTS = 4;
 static const ContinuousInputType
     GameContinuousInputs[NUM_GAME_CONTINUOUS_INPUTS] = {
-        COLLISION_VELOCITY, COLLISION_POSITION_X, COLLISION_POSITION_Y};
+        COLLISION_VELOCITY, COLLISION_POSITION_X, COLLISION_POSITION_Y,
+        PARTICLE_SIZE};
 inline void
 getContinuousInputsForInstrumentType(InstrumentMetaphorType instrumentType,
                                      std::vector<ContinuousInputType> *list) {
@@ -271,9 +276,12 @@ template <typename sample_t> struct InputMapping {
         break;
       case TOUCH_PAD:
         addMapping(mode, TOUCH_PAD_GATE, GATE);
+        addMapping(mode, TOUCH_Y_POSITION, FREQUENCY);
+        addMapping(mode, TOUCH_X_POSITION, SOUND_SOURCE);
         break;
       case GAME:
         addMapping(mode, COLLISION, GATE);
+        addMapping(mode, COLLISION_VELOCITY, GAIN);
         break;
       case InstrumentMetaphorType__SIZE:
         break;
@@ -291,15 +299,14 @@ template <typename sample_t> struct InputMapping {
     for (auto &pair : continuousMappings) {
       auto sensorType = pair.second;
       auto parameterEventType = pair.first;
-
+      auto mappedValue = value;
       if (type == sensorType) {
         if (parameterEventType == FREQUENCY) {
-          value = mtof(key + 36 +
-                       ForceToScale(value * 24.0,
-                                    Scales[static_cast<size_t>(scaleType)]));
+          mappedValue =
+              mtof(key + 36 + ForceToScale(value * 24.0, GetScale(scaleType)));
         }
 
-        synth->pushParameterChangeEvent(parameterEventType, value);
+        synth->pushParameterChangeEvent(parameterEventType, mappedValue);
       }
     }
   }
@@ -314,17 +321,16 @@ template <typename sample_t> struct InputMapping {
     for (auto &pair : continuousMappings) {
       auto sensorType = pair.second;
       auto parameterEventType = pair.first;
-
+      auto mappedValue = value;
       if (type == sensorType) {
         if (parameterEventType == FREQUENCY) {
-          value =
-              mtof(key + 36 +
-                   ForceToScale(value, Scales[static_cast<size_t>(scaleType)]));
+          mappedValue =
+              mtof(key + 36 + ForceToScale(value, GetScale(scaleType)));
         } else {
-          value /= numSteps;
+          mappedValue /= numSteps;
         }
 
-        synth->pushParameterChangeEvent(parameterEventType, value);
+        synth->pushParameterChangeEvent(parameterEventType, mappedValue);
       }
     }
   }
