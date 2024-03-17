@@ -57,14 +57,14 @@ template <typename sample_t> struct SynthesizerEvent {
 template <typename sample_t> struct Synthesizer {
   const float MIN_FREQUENCY = mtof(24);
   const float MAX_FREQUENCY = mtof(40 + 6 * 5);
-  Parameter<sample_t> frequency = Parameter<sample_t>(440);
-  Parameter<sample_t> gain = Parameter<sample_t>(1);
-  Parameter<sample_t> filterCutoff = Parameter<sample_t>(1);
-  Parameter<sample_t> filterQuality = Parameter<sample_t>(0.3);
-  Parameter<sample_t> soundSource = Parameter<sample_t>(0);
-  Parameter<sample_t> attackTime = Parameter<sample_t>(0);
-  Parameter<sample_t> releaseTime = Parameter<sample_t>(1);
-  float octave = 0;
+  std::atomic<sample_t> frequency = 440;
+  std::atomic<sample_t> gain = 1;
+  std::atomic<sample_t> filterCutoff = 1;
+  std::atomic<sample_t> filterQuality = 0.3;
+  std::atomic<sample_t> soundSource = 0;
+  std::atomic<sample_t> attackTime = 0;
+  std::atomic<sample_t> releaseTime = 1;
+  std::atomic<sample_t> octave = 0;
 
   sample_t sampleRate = 48000;
   SampleBank<sample_t> *sampleBank = NULL;
@@ -92,13 +92,13 @@ template <typename sample_t> struct Synthesizer {
                         const SynthesizerSettings &synthesizerSettings)
       : sampleBank(bank), object(SubtractiveDrumSynth<sample_t>()),
         type(synthesizerSettings.synthType) {
-    gain.value = synthesizerSettings.gain;
+    gain = synthesizerSettings.gain;
     octave = synthesizerSettings.octave;
-    filterCutoff.value = synthesizerSettings.filterCutoff;
-    filterQuality.value = synthesizerSettings.filterQuality;
-    soundSource.value = synthesizerSettings.soundSource;
-    attackTime.value = synthesizerSettings.attack;
-    releaseTime.value = synthesizerSettings.release;
+    filterCutoff = synthesizerSettings.filterCutoff;
+    filterQuality = synthesizerSettings.filterQuality;
+    soundSource = synthesizerSettings.soundSource;
+    attackTime = synthesizerSettings.attack;
+    releaseTime = synthesizerSettings.release;
   }
 
   inline const void process(sample_t *block, const size_t &blockSize) {
@@ -114,71 +114,64 @@ template <typename sample_t> struct Synthesizer {
   }
 
   inline const sample_t computeNextSample() {
-    auto nextFrequency = frequency.next();
-    auto nextGain = gain.next();
-    auto nextFilterCutoff = filterCutoff.next();
-    auto nextFilterQuality = filterQuality.next();
-    auto nextSoundSource = soundSource.next();
-    auto nextAttackTime = attackTime.next();
-    auto nextReleaseTime = releaseTime.next();
     auto registerMultiplier = octave > (2.0 / 3.0)   ? 2.0
                               : octave > (1.0 / 3.0) ? 1.0
                                                      : 0.5;
-    nextFrequency *= registerMultiplier;
+    auto nextFrequency = frequency * registerMultiplier;
     switch (type) {
 
     case SUBTRACTIVE_DRUM_SYNTH: {
       object.subtractiveDrumSynth.setFrequency(nextFrequency);
-      object.subtractiveDrumSynth.setGain(nextGain);
-      object.subtractiveDrumSynth.setFilterCutoff(nextFilterCutoff);
-      object.subtractiveDrumSynth.setFilterQuality(nextFilterQuality);
-      object.subtractiveDrumSynth.setSoundSource(nextSoundSource);
-      object.subtractiveDrumSynth.setAttackTime(nextAttackTime);
-      object.subtractiveDrumSynth.setReleaseTime(nextReleaseTime);
+      object.subtractiveDrumSynth.setGain(gain);
+      object.subtractiveDrumSynth.setFilterCutoff(filterCutoff);
+      object.subtractiveDrumSynth.setFilterQuality(filterQuality);
+      object.subtractiveDrumSynth.setSoundSource(soundSource);
+      object.subtractiveDrumSynth.setAttackTime(attackTime);
+      object.subtractiveDrumSynth.setReleaseTime(releaseTime);
       return object.subtractiveDrumSynth.next();
       break;
     }
     case SUBTRACTIVE: {
       object.subtractive.setFrequency(nextFrequency);
-      object.subtractive.setGain(nextGain);
-      object.subtractive.setFilterCutoff(nextFilterCutoff);
-      object.subtractive.setFilterQuality(nextFilterQuality);
-      object.subtractive.setSoundSource(nextSoundSource);
-      object.subtractive.setAttackTime(nextAttackTime);
-      object.subtractive.setReleaseTime(nextReleaseTime);
+      object.subtractive.setGain(gain);
+      object.subtractive.setFilterCutoff(filterCutoff);
+      object.subtractive.setFilterQuality(filterQuality);
+      object.subtractive.setSoundSource(soundSource);
+      object.subtractive.setAttackTime(attackTime);
+      object.subtractive.setReleaseTime(releaseTime);
       return object.subtractive.next();
       break;
     }
     case PHYSICAL_MODEL: {
       object.physicalModel.setFrequency(nextFrequency);
-      object.physicalModel.setGain(nextGain);
-      object.physicalModel.setFilterCutoff(nextFilterCutoff);
-      object.physicalModel.setFilterQuality(nextFilterQuality);
-      object.physicalModel.setSoundSource(nextSoundSource);
-      object.physicalModel.setAttackTime(nextAttackTime);
-      object.physicalModel.setReleaseTime(nextReleaseTime);
+      object.physicalModel.setGain(gain);
+      object.physicalModel.setFilterCutoff(filterCutoff);
+      object.physicalModel.setFilterQuality(filterQuality);
+      object.physicalModel.setSoundSource(soundSource);
+      object.physicalModel.setAttackTime(attackTime);
+      object.physicalModel.setReleaseTime(releaseTime);
       return object.physicalModel.next();
       break;
     }
     case FREQUENCY_MODULATION: {
       object.fm.setFrequency(nextFrequency);
-      object.fm.setGain(nextGain);
-      object.fm.setFilterCutoff(nextFilterCutoff);
-      object.fm.setFilterQuality(nextFilterQuality);
-      object.fm.setSoundSource(nextSoundSource);
-      object.fm.setAttackTime(nextAttackTime);
-      object.fm.setReleaseTime(nextReleaseTime);
+      object.fm.setGain(gain);
+      object.fm.setFilterCutoff(filterCutoff);
+      object.fm.setFilterQuality(filterQuality);
+      object.fm.setSoundSource(soundSource);
+      object.fm.setAttackTime(attackTime);
+      object.fm.setReleaseTime(releaseTime);
       return object.fm.next();
       break;
     }
     case SAMPLER: {
       object.sampler.setFrequency(nextFrequency);
-      object.sampler.setGain(nextGain);
-      object.sampler.setFilterCutoff(nextFilterCutoff);
-      object.sampler.setFilterQuality(nextFilterQuality);
-      object.sampler.setSoundSource(nextSoundSource);
-      object.sampler.setAttackTime(nextAttackTime);
-      object.sampler.setReleaseTime(nextReleaseTime);
+      object.sampler.setGain(gain);
+      object.sampler.setFilterCutoff(filterCutoff);
+      object.sampler.setFilterQuality(filterQuality);
+      object.sampler.setSoundSource(soundSource);
+      object.sampler.setAttackTime(attackTime);
+      object.sampler.setReleaseTime(releaseTime);
       return object.sampler.next();
       break;
     }
@@ -246,31 +239,31 @@ template <typename sample_t> struct Synthesizer {
         auto value = event.data.paramChange.value;
         switch (event.data.paramChange.type) {
         case FREQUENCY: {
-          frequency.set(value, 100, sampleRate);
+          frequency = value;
           break;
         }
         case GAIN: {
-          gain.set(value, 100, sampleRate);
+          gain = value;
           break;
         }
         case SOUND_SOURCE: {
-          soundSource.set(value, 100, sampleRate);
+          soundSource = value;
           break;
         }
         case FILTER_CUTOFF: {
-          filterCutoff.set(value, 100, sampleRate);
+          filterCutoff = value;
           break;
         }
         case FILTER_QUALITY: {
-          filterQuality.set(value, 100, sampleRate);
+          filterQuality = value;
           break;
         }
         case ATTACK_TIME: {
-          attackTime.set(value, 100, sampleRate);
+          attackTime = value;
           break;
         }
         case RELEASE_TIME: {
-          releaseTime.set(value, 100, sampleRate);
+          releaseTime = value;
           break;
         }
         case REGISTER: {
@@ -331,49 +324,41 @@ template <typename sample_t> struct Synthesizer {
   inline SynthesizerType getSynthType() const { return type; }
 
   inline void setFrequency(sample_t value) {
-
     eventQueue.push(SynthesizerEvent<sample_t>(
         ParameterChangeEvent<sample_t>{.type = FREQUENCY, .value = value}));
   }
 
   inline void setSoundSource(sample_t value) {
-
     eventQueue.push(SynthesizerEvent<sample_t>(
         ParameterChangeEvent<sample_t>{.type = SOUND_SOURCE, .value = value}));
   }
 
   inline void setGain(sample_t value) {
-
     eventQueue.push(SynthesizerEvent<sample_t>(
         ParameterChangeEvent<sample_t>{.type = GAIN, .value = value}));
   }
 
   inline void setFilterCutoff(sample_t value) {
-
     eventQueue.push(SynthesizerEvent<sample_t>(
         ParameterChangeEvent<sample_t>{.type = FILTER_CUTOFF, .value = value}));
   }
 
   inline void setFilterQuality(sample_t value) {
-
     eventQueue.push(SynthesizerEvent<sample_t>(ParameterChangeEvent<sample_t>{
         .type = FILTER_QUALITY, .value = value}));
   }
 
   inline void setAttackTime(sample_t value) {
-
     eventQueue.push(SynthesizerEvent<sample_t>(
         ParameterChangeEvent<sample_t>{.type = ATTACK_TIME, .value = value}));
   }
 
   inline void setReleaseTime(sample_t value) {
-
     eventQueue.push(SynthesizerEvent<sample_t>(
         ParameterChangeEvent<sample_t>{.type = RELEASE_TIME, .value = value}));
   }
 
   inline void setRegister(sample_t value) {
-
     eventQueue.push(SynthesizerEvent<sample_t>(
         ParameterChangeEvent<sample_t>{.type = REGISTER, .value = value}));
   }
@@ -381,23 +366,23 @@ template <typename sample_t> struct Synthesizer {
   inline const sample_t
   getParameter(const ContinuousParameterType parameterType) const {
 
-    // TODO this also needs threading consideration
+    // TODO this also needs better threading consideration
     switch (parameterType) {
     case FREQUENCY:
-      return (frequency.smoothedValue - MIN_FREQUENCY) /
+      return (frequency - MIN_FREQUENCY) /
              MAX_FREQUENCY; // noteMap.getNormalizedValue(frequency.smoothedValue);
     case GAIN:
-      return gain.smoothedValue;
+      return gain;
     case SOUND_SOURCE:
-      return soundSource.smoothedValue;
+      return soundSource;
     case FILTER_CUTOFF:
-      return filterCutoff.smoothedValue;
+      return filterCutoff;
     case FILTER_QUALITY:
-      return filterQuality.smoothedValue;
+      return filterQuality;
     case ATTACK_TIME:
-      return attackTime.smoothedValue;
+      return attackTime;
     case RELEASE_TIME:
-      return releaseTime.smoothedValue;
+      return releaseTime;
       break;
     case REGISTER:
       return octave;

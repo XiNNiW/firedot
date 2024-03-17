@@ -20,7 +20,7 @@ using algae::dsp::oscillator::blep;
 using algae::dsp::oscillator::computePhaseIncrement;
 
 template <typename sample_t> struct SamplerVoice {
-  sample_t frequency;
+  Parameter<sample_t> frequency = Parameter<sample_t>(440);
   ASREnvelope<sample_t> env;
   Biquad<sample_t, sample_t> filter;
   // sample_t *buffer = NULL;
@@ -35,16 +35,15 @@ template <typename sample_t> struct SamplerVoice {
   sample_t soundSource = 0;
   sample_t attackTime = 10;
   sample_t releaseTime = 1000;
-  sample_t active = 0;
-  sample_t filterCutoff = 10000;
-  sample_t filterQuality = 0.01;
+  Parameter<sample_t> filterCutoff = Parameter<sample_t>(10000);
+  Parameter<sample_t> filterQuality = Parameter<sample_t>(0.01);
 
   SamplerVoice<sample_t>(SampleBank<sample_t> *bank) : sampleBank(bank) {
     init();
   }
 
   inline void init() {
-    filter.lowpass(filterCutoff, filterQuality, sampleRate);
+    filter.lowpass(filterCutoff.value, filterQuality.value, sampleRate);
     env.set(attackTime, releaseTime, sampleRate);
   }
 
@@ -65,7 +64,6 @@ template <typename sample_t> struct SamplerVoice {
   }
 
   inline void setGate(sample_t gate) {
-    SDL_Log("sound source is %f", soundSource);
     env.setGate(gate);
     if (gate) {
       for (size_t i = 0; i < sampleBank->size; ++i) {
@@ -76,16 +74,13 @@ template <typename sample_t> struct SamplerVoice {
 
   inline const sample_t next() {
 
-    auto nextFrequency = frequency;
+    auto nextFrequency = frequency.next();
     setFrequency(nextFrequency, sampleRate);
     env.set(attackTime, releaseTime, sampleRate);
 
     auto envelopeSample = env.next();
-    if (env.stage == ASREnvelope<sample_t>::Stage::OFF) {
-      active = false;
-    }
 
-    filter.lowpass(filterCutoff, filterQuality, sampleRate);
+    filter.lowpass(filterCutoff.next(), filterQuality.next(), sampleRate);
 
     sample_t sampleIndex =
         soundSource * static_cast<sample_t>(sampleBank->size - 1);
@@ -118,6 +113,7 @@ struct Sampler : AbstractMonophonicSynthesizer<sample_t, Sampler<sample_t>> {
     voice.setSampleRate(this->sampleRate);
   }
 
+  inline void setSoundSource(sample_t value) { voice.soundSource = value; }
   Sampler<sample_t>(SampleBank<sample_t> *bank) : voice(bank) {
     setSampleRate(this->sampleRate);
   }

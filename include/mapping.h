@@ -255,6 +255,7 @@ struct ModeSpecificMapping {
       std::map<ContinuousParameterType, ContinuousInputType>();
   std::map<MomentaryParameterType, MomentaryInputType> momentaryMappings =
       std::map<MomentaryParameterType, MomentaryInputType>();
+  SynthesizerSettings synthesizerSettings;
 };
 
 template <typename sample_t> struct InputMapping {

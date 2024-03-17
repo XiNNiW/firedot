@@ -109,7 +109,7 @@ struct AbstractMonophonicSynthesizer {
   sample_t sampleRate = 48000;
 
   inline const sample_t next() {
-    return (static_cast<DerivedT *>(this)->voice.next() * gain * 0.1);
+    return (static_cast<DerivedT *>(this)->voice.next() * gain * 0.5);
   }
 
   inline void process(sample_t *buffer, const size_t bufferSize) {
@@ -122,25 +122,26 @@ struct AbstractMonophonicSynthesizer {
     static_cast<DerivedT *>(this)->voice.setGate(gate);
   }
   inline void setFrequency(sample_t value) {
-    static_cast<DerivedT *>(this)->voice.frequency = value;
+    static_cast<DerivedT *>(this)->voice.frequency.set(value, 33, sampleRate);
   }
 
   inline void setGain(sample_t value) { gain = value; }
 
   inline void setFilterCutoff(sample_t value) {
-    static_cast<DerivedT *>(this)->voice.filterCutoff =
-        lerp<sample_t>(90, 19000, value * value);
+    static_cast<DerivedT *>(this)->voice.filterCutoff.set(
+        lerp<sample_t>(90, 19000, value * value), 33, sampleRate);
   }
 
   inline void setFilterQuality(sample_t value) {
     value = clamp<sample_t>(value, 0.01, 1);
     value *= 3;
-    static_cast<DerivedT *>(this)->voice.filterQuality = value;
+    static_cast<DerivedT *>(this)->voice.filterQuality.set(value, 33,
+                                                           sampleRate);
   }
 
   inline void setSoundSource(sample_t value) {
-    static_cast<DerivedT *>(this)->voice.soundSource =
-        clamp<sample_t>(value, 0, 1);
+    static_cast<DerivedT *>(this)->voice.soundSource.set(
+        clamp<sample_t>(value, 0, 1), 33, sampleRate);
   }
 
   inline void setAttackTime(sample_t value) {

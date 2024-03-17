@@ -5,6 +5,7 @@
 #include "synthesis_mixing.h"
 #include "synthesis_parameter.h"
 #include <algae.h>
+#include <math.h>
 
 using algae::dsp::_Filter;
 using algae::dsp::control::ADEnvelope;
@@ -221,12 +222,11 @@ template <typename sample_t> struct KarplusStringVoice {
       static_cast<size_t>((70.0 * 48000.0) / 1000.0);
 
   sample_t exciterMix = 0.5;
-  sample_t allpassFilterGain = -0.5;
-  sample_t frequency = 440;
-  sample_t feedback = 0.99;
-  sample_t b1Coefficient = 1.0;
-  sample_t h1 = 1.0;
-  sample_t gain = 1.0;
+  Parameter<sample_t> allpassFilterGain = Parameter<sample_t>(-0.5);
+  Parameter<sample_t> frequency = Parameter<sample_t>(440);
+  Parameter<sample_t> feedback = Parameter<sample_t>(0.99);
+  Parameter<sample_t> b1Coefficient = Parameter<sample_t>(1.0);
+  Parameter<sample_t> h1 = Parameter<sample_t>(1.0);
   sample_t attackTime = 1;
   sample_t releaseTime = 1000;
 
@@ -245,6 +245,7 @@ template <typename sample_t> struct KarplusStringVoice {
 
   KarplusStringVoice<sample_t>() { init(); }
   KarplusStringVoice<sample_t>(const sample_t sr) : sampleRate(sr) { init(); }
+
   void init() {
     env.set(attackTime, releaseTime, sampleRate);
     inputFilter.lowpass(19000, sampleRate);
@@ -254,17 +255,19 @@ template <typename sample_t> struct KarplusStringVoice {
   void setAllpassHarmonic(const sample_t ratio) { h1 = ratio; }
 
   void setSampleRate(sample_t sr) { sampleRate = sr; }
+
   void setGate(sample_t gate) {
     env.setGate(gate);
     exciterEnvelope.setGate(gate);
   }
 
   const inline sample_t next() {
+    auto nextFrequency = frequency.next();
+    const sample_t dtime = (sampleRate / nextFrequency);
+    const sample_t allpassDelayTimeSamples =
+        (sampleRate / (h1.next() * nextFrequency));
 
-    const sample_t dtime = (sampleRate / frequency);
-    const sample_t allpassDelayTimeSamples = (sampleRate / (h1 * frequency));
-
-    exciterTone.setFrequency(frequency, sampleRate);
+    exciterTone.setFrequency(nextFrequency, sampleRate);
     sample_t tone = exciterTone.next();
     sample_t noise = exciterNoise.next();
 
@@ -278,26 +281,25 @@ template <typename sample_t> struct KarplusStringVoice {
 
     exciter = inputFilter.next(exciter);
 
-    sample_t s1 = inputFilter.next(exciter);
+    sample_t s1 = exciter;
+    // sample_t s1 = inputFilter.next(exciter);
     delay.delayTimeSamples = dtime;
 
     sample_t s2 = delay.next(y1);
-    s2 *= feedback;
-    apf.g = allpassFilterGain;
+    s2 *= feedback.next();
+    apf.g = allpassFilterGain.next();
     apf.delayTimeSamples = allpassDelayTimeSamples;
     s2 = apf.next(s2);
-    lp.b1 = b1Coefficient;
+    lp.b1 = b1Coefficient.next();
     s2 = lp.next(s2);
 
     y1 = s1 + s2;
 
     env.set(attackTime, releaseTime, sampleRate);
     sample_t envelopeSample = env.next();
-    if (env.stage == ASREnvelope<sample_t>::Stage::OFF) {
-      active = false;
-    }
 
-    return y1 * gain * envelopeSample;
+    return algae::dsp::math::tanh_approx_pade(y1 * envelopeSample * 100) *
+           (1.0 / 3.0);
   }
 };
 
@@ -305,7 +307,7 @@ template <typename sample_t>
 struct KarplusStrongSynthesizer
     : AbstractMonophonicSynthesizer<sample_t,
                                     KarplusStrongSynthesizer<sample_t>> {
-  sample_t gain = 1;
+  Parameter<sample_t> gain = Parameter<sample_t>(1);
   KarplusStringVoice<sample_t> voice;
   sample_t sampleRate = 48000;
 
@@ -314,27 +316,18 @@ struct KarplusStrongSynthesizer
     sampleRate = sr;
     voice.setSampleRate(sampleRate);
   }
-  inline const sample_t next() {
-    sample_t out = 0;
-    return (voice.next() * gain);
-  }
 
-  inline void process(sample_t *buffer, const size_t bufferSize) {
-    for (size_t i = 0; i < bufferSize; ++i) {
-      buffer[i] = next();
-    }
-  }
+  inline void setSoundSource(sample_t value) { voice.soundSource = value; }
 
-  inline void setGain(sample_t value) { gain = value; }
   inline void setFilterCutoff(sample_t value) {
     value = clamp<sample_t>(value, 0, 1);
     value = lerp<sample_t>(0.125, 2, value);
-    voice.h1 = value;
+    voice.h1.set(value, 33, sampleRate);
   }
   inline void setFilterQuality(sample_t value) {
     value = clamp<sample_t>(value, 0, 1);
     value = lerp<sample_t>(-0.999, 0.999, value);
 
-    voice.allpassFilterGain = value;
+    voice.allpassFilterGain.set(value, 33, sampleRate);
   }
 };

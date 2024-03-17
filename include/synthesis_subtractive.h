@@ -149,15 +149,14 @@ template <typename sample_t> struct SubtractiveDrumSynthVoice {
   Biquad<sample_t, sample_t> hp1;
   MultiOscillator<sample_t> osc1;
   MultiOscillator<sample_t> osc2;
-  sample_t frequency = 440;
+  Parameter<sample_t> frequency = Parameter<sample_t>(440);
+  Parameter<sample_t> filterCutoff = Parameter<sample_t>(19000);
+  Parameter<sample_t> filterQuality = Parameter<sample_t>(0);
+  sample_t soundSource = 0;
   sample_t attackTime = 1;
   sample_t releaseTime = 1000;
-  sample_t soundSource = 0;
-  sample_t filterCutoff = 19000;
-  sample_t filterQuality = 0;
   sample_t detune = 15;
   sample_t pitchModulationDepth = 1000;
-  sample_t gain = 1;
   sample_t active = false;
   sample_t sampleRate = 48000;
   sample_t phi = 0;
@@ -174,20 +173,21 @@ template <typename sample_t> struct SubtractiveDrumSynthVoice {
   inline void setSampleRate(sample_t sampleRate) {
     this->sampleRate = sampleRate;
   }
+
   inline void setGate(sample_t gate) {
     env.setGate(gate);
     pitchEnv.setGate(gate);
     timbreEnv.setGate(gate);
   }
-  inline const sample_t next() {
 
+  inline const sample_t next() {
     auto soundSourceMappedToHalfCircle =
         SineTable<sample_t, 1024>::lookup(soundSource / 4.0);
     timbreEnv.set(lerp<sample_t>(10, 50, soundSource),
                   lerp<sample_t>(10, 75, soundSource), sampleRate);
     pitchEnv.set(0, lerp<sample_t>(15, 35, soundSource), sampleRate);
 
-    auto f = frequency;
+    auto f = frequency.next();
     auto pitchEnvSample = pitchEnv.next();
     f += pitchEnvSample * pitchModulationDepth;
     auto f1 = fmax(f - detune * soundSource, 0);
@@ -204,12 +204,14 @@ template <typename sample_t> struct SubtractiveDrumSynthVoice {
     lp1.lowpass(pitchEnvSample * pitchModulationDepth +
                     lerp<sample_t>(65, 10000, soundSource),
                 1 - pitchEnvSample, sampleRate);
-    lp2.lowpass(filterCutoff, 0.01, sampleRate);
+    auto nextFilterCutoff = filterCutoff.next();
+    auto nextFilterQuality = filterQuality.next();
+    lp2.lowpass(nextFilterCutoff, 0.01, sampleRate);
     auto bp1Freq = lerp<sample_t>(100, 10000, soundSource);
     auto bp2Freq = bp1Freq - detune;
     bp1Freq += detune;
-    bp1.bandpass(bp1Freq, filterQuality, sampleRate);
-    bp2.bandpass(bp2Freq, filterQuality, sampleRate);
+    bp1.bandpass(bp1Freq, nextFilterQuality, sampleRate);
+    bp2.bandpass(bp2Freq, nextFilterQuality, sampleRate);
     hp1.highpass(lerp<sample_t>(15, 80, soundSource), 0.1, sampleRate);
     auto out = bp1.next(oscillatorSample) + bp2.next(oscillatorSample);
     out *= soundSource;
@@ -228,7 +230,7 @@ template <typename sample_t> struct SubtractiveDrumSynthVoice {
       active = false;
     }
 
-    return clip(out * (envelopeSample + (pitchEnvSample * 4))) * gain;
+    return clip(out * (envelopeSample + (pitchEnvSample * 4)));
   }
 };
 
@@ -237,16 +239,17 @@ struct SubtractiveDrumSynth
     : AbstractMonophonicSynthesizer<sample_t, SubtractiveDrumSynth<sample_t>> {
 
   SubtractiveDrumSynthVoice<sample_t> voice;
+
+  inline void setSoundSource(sample_t value) { voice.soundSource = value; }
 };
 
 template <typename sample_t> struct SubtractiveVoice {
   sample_t sampleRate = 48000.0;
-  sample_t active = false;
-  sample_t frequency = 440;
-  sample_t gain = 1;
-  sample_t soundSource = 0;
-  sample_t filterCutoff = 19000;
-  sample_t filterQuality = 0.1;
+  Parameter<sample_t> active = Parameter<sample_t>(false);
+  Parameter<sample_t> frequency = Parameter<sample_t>(440);
+  Parameter<sample_t> soundSource = Parameter<sample_t>(0);
+  Parameter<sample_t> filterCutoff = Parameter<sample_t>(19000);
+  Parameter<sample_t> filterQuality = Parameter<sample_t>(0.1);
   sample_t attackTime = 10;
   sample_t releaseTime = 1000;
 
@@ -257,7 +260,7 @@ template <typename sample_t> struct SubtractiveVoice {
   SubtractiveVoice<sample_t>() { init(); }
 
   inline void init() {
-    filter.lowpass(filterCutoff, filterQuality, sampleRate);
+    filter.lowpass(filterCutoff.value, filterQuality.value, sampleRate);
     env.set(attackTime, releaseTime, sampleRate);
   }
 
@@ -269,16 +272,15 @@ template <typename sample_t> struct SubtractiveVoice {
   inline void setGate(sample_t gate) { env.setGate(gate); }
 
   inline const sample_t next() {
-    auto nextFrequency = frequency;
-    osc.setFrequency(nextFrequency, sampleRate);
-    osc.oscMix = soundSource;
+    osc.setFrequency(frequency.next(), sampleRate);
+    osc.oscMix = soundSource.next();
     auto out = osc.next();
     env.set(attackTime, releaseTime, sampleRate);
     auto envelopeSample = env.next();
     if (env.stage == ASREnvelope<sample_t>::Stage::OFF) {
       active = false;
     }
-    filter.lowpass(filterCutoff, filterQuality, sampleRate);
+    filter.lowpass(filterCutoff.next(), filterQuality.next(), sampleRate);
 
     out = filter.next(out);
     return out * envelopeSample;

@@ -196,19 +196,17 @@ template <typename sample_t> struct FM4OpVoice {
   sample_t activeTopology = 0;
   sample_t activeRatio = 0;
 
-  sample_t index = 0.1;
+  Parameter<sample_t> index = Parameter<sample_t>(0.1);
 
-  sample_t frequency = 440.0;
-  sample_t gain = 1.0;
+  Parameter<sample_t> frequency = Parameter<sample_t>(440.0);
   FMOperator<sample_t> op1;
   FMOperator<sample_t> op2;
   FMOperator<sample_t> op3;
   FMOperator<sample_t> op4;
-  sample_t active = false;
 
   inline const sample_t next() {
 
-    auto nextFrequency = frequency;
+    auto nextFrequency = frequency.next();
 
     int ratioIndex = floor(activeRatio);
 
@@ -220,23 +218,24 @@ template <typename sample_t> struct FM4OpVoice {
     int topologyIndex = floor(activeTopology);
     int nextTopologyIndex = (topologyIndex + 1) % NUM_ALGS;
     sample_t topologyMantissa = activeTopology - sample_t(topologyIndex);
+    auto nextIndex = index.next();
 
-    sample_t mod1 = index * (op1.last * topologies[topologyIndex][0][0] +
-                             op2.last * topologies[topologyIndex][0][1] +
-                             op3.last * topologies[topologyIndex][0][2] +
-                             op4.last * topologies[topologyIndex][0][3]);
-    sample_t mod2 = index * (op1.last * topologies[topologyIndex][1][0] +
-                             op2.last * topologies[topologyIndex][1][1] +
-                             op3.last * topologies[topologyIndex][1][2] +
-                             op4.last * topologies[topologyIndex][1][3]);
-    sample_t mod3 = index * (op1.last * topologies[topologyIndex][2][0] +
-                             op2.last * topologies[topologyIndex][2][1] +
-                             op3.last * topologies[topologyIndex][2][2] +
-                             op4.last * topologies[topologyIndex][2][3]);
-    sample_t mod4 = index * (op1.last * topologies[topologyIndex][3][0] +
-                             op2.last * topologies[topologyIndex][3][1] +
-                             op3.last * topologies[topologyIndex][3][2] +
-                             op4.last * topologies[topologyIndex][3][3]);
+    sample_t mod1 = nextIndex * (op1.last * topologies[topologyIndex][0][0] +
+                                 op2.last * topologies[topologyIndex][0][1] +
+                                 op3.last * topologies[topologyIndex][0][2] +
+                                 op4.last * topologies[topologyIndex][0][3]);
+    sample_t mod2 = nextIndex * (op1.last * topologies[topologyIndex][1][0] +
+                                 op2.last * topologies[topologyIndex][1][1] +
+                                 op3.last * topologies[topologyIndex][1][2] +
+                                 op4.last * topologies[topologyIndex][1][3]);
+    sample_t mod3 = nextIndex * (op1.last * topologies[topologyIndex][2][0] +
+                                 op2.last * topologies[topologyIndex][2][1] +
+                                 op3.last * topologies[topologyIndex][2][2] +
+                                 op4.last * topologies[topologyIndex][2][3]);
+    sample_t mod4 = nextIndex * (op1.last * topologies[topologyIndex][3][0] +
+                                 op2.last * topologies[topologyIndex][3][1] +
+                                 op3.last * topologies[topologyIndex][3][2] +
+                                 op4.last * topologies[topologyIndex][3][3]);
     sample_t out = op1.next(mod1) * lerp(gainSettings[topologyIndex][0],
                                          gainSettings[nextTopologyIndex][0],
                                          topologyMantissa) +
@@ -249,11 +248,7 @@ template <typename sample_t> struct FM4OpVoice {
                    op4.next(mod4) * lerp(gainSettings[topologyIndex][3],
                                          gainSettings[nextTopologyIndex][3],
                                          topologyMantissa);
-    out *= gain;
-    active = (op1.env.stage != ASREnvelope<sample_t>::OFF) ||
-             (op2.env.stage != ASREnvelope<sample_t>::OFF) ||
-             (op3.env.stage != ASREnvelope<sample_t>::OFF) ||
-             (op4.env.stage != ASREnvelope<sample_t>::OFF);
+
     return out;
   }
 
