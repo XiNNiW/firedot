@@ -9,6 +9,7 @@
 #include "synthesizer_settings.h"
 #include <algae.h>
 #include <atomic>
+#include <cmath>
 #include <cstddef>
 #include <cstdlib>
 #include <new>
@@ -68,19 +69,20 @@ template <typename sample_t> struct Synthesizer {
 
   sample_t sampleRate = 48000;
   SampleBank<sample_t> *sampleBank = NULL;
+  Arena *delayTimeArena = NULL;
+  KarplusStrongSynthesizer<sample_t> physicalModel;
 
   SynthesizerType type;
   union uSynthesizer {
     SubtractiveDrumSynth<sample_t> subtractiveDrumSynth;
     SubtractiveSynthesizer<sample_t> subtractive;
-    KarplusStrongSynthesizer<sample_t> physicalModel;
     FMSynthesizer<sample_t> fm;
     Sampler<sample_t> sampler;
     uSynthesizer(const SubtractiveDrumSynth<sample_t> &s)
         : subtractiveDrumSynth(s) {}
     uSynthesizer(const SubtractiveSynthesizer<sample_t> &s) : subtractive(s) {}
-    uSynthesizer(const KarplusStrongSynthesizer<sample_t> &s)
-        : physicalModel(s) {}
+    // uSynthesizer(const KarplusStrongSynthesizer<sample_t> &s)
+    //     : physicalModel(s) {}
     uSynthesizer(const FMSynthesizer<sample_t> &s) : fm(s) {}
     uSynthesizer(const Sampler<sample_t> &s) : sampler(s) {}
   } object;
@@ -88,10 +90,12 @@ template <typename sample_t> struct Synthesizer {
   rigtorp::SPSCQueue<SynthesizerEvent<sample_t>> eventQueue =
       rigtorp::SPSCQueue<SynthesizerEvent<sample_t>>(20);
 
-  Synthesizer<sample_t>(SampleBank<sample_t> *bank,
+  Synthesizer<sample_t>(SampleBank<sample_t> *bank, Arena *_delayTimeArena,
                         const SynthesizerSettings &synthesizerSettings)
-      : sampleBank(bank), object(SubtractiveDrumSynth<sample_t>()),
-        type(synthesizerSettings.synthType) {
+      : sampleBank(bank), delayTimeArena(_delayTimeArena),
+        object(SubtractiveDrumSynth<sample_t>()),
+        type(synthesizerSettings.synthType),
+        physicalModel(KarplusStrongSynthesizer<sample_t>(_delayTimeArena)) {
     gain = synthesizerSettings.gain;
     octave = synthesizerSettings.octave;
     filterCutoff = synthesizerSettings.filterCutoff;
@@ -114,9 +118,9 @@ template <typename sample_t> struct Synthesizer {
   }
 
   inline const sample_t computeNextSample() {
-    auto registerMultiplier = octave > (2.0 / 3.0)   ? 2.0
-                              : octave > (1.0 / 3.0) ? 1.0
-                                                     : 0.5;
+    static const sample_t octaveMultiples[6] = {0.25, 0.5, 1.0, 2.0, 4.0, 8.0};
+    auto registerMultiplier = octaveMultiples[int(
+        algae::dsp::math::clamp<sample_t>(octave * 6, 0.0, 5.0))];
     auto nextFrequency = frequency * registerMultiplier;
     switch (type) {
 
@@ -143,14 +147,14 @@ template <typename sample_t> struct Synthesizer {
       break;
     }
     case PHYSICAL_MODEL: {
-      object.physicalModel.setFrequency(nextFrequency);
-      object.physicalModel.setGain(gain);
-      object.physicalModel.setFilterCutoff(filterCutoff);
-      object.physicalModel.setFilterQuality(filterQuality);
-      object.physicalModel.setSoundSource(soundSource);
-      object.physicalModel.setAttackTime(attackTime);
-      object.physicalModel.setReleaseTime(releaseTime);
-      return object.physicalModel.next();
+      physicalModel.setFrequency(nextFrequency);
+      physicalModel.setGain(gain);
+      physicalModel.setFilterCutoff(filterCutoff);
+      physicalModel.setFilterQuality(filterQuality);
+      physicalModel.setSoundSource(soundSource);
+      physicalModel.setAttackTime(attackTime);
+      physicalModel.setReleaseTime(releaseTime);
+      return physicalModel.next();
       break;
     }
     case FREQUENCY_MODULATION: {
@@ -199,7 +203,9 @@ template <typename sample_t> struct Synthesizer {
         }
         case PHYSICAL_MODEL: {
           type = PHYSICAL_MODEL;
-          object.physicalModel = KarplusStrongSynthesizer<sample_t>();
+          //  delayTimeArena->clear();
+          //  physicalModel =
+          //      KarplusStrongSynthesizer<sample_t>(delayTimeArena);
           break;
         }
         case FREQUENCY_MODULATION: {
@@ -224,7 +230,7 @@ template <typename sample_t> struct Synthesizer {
           object.subtractive.setGate(event.data.gate.value);
           break;
         case PHYSICAL_MODEL:
-          object.physicalModel.setGate(event.data.gate.value);
+          physicalModel.setGate(event.data.gate.value);
           break;
         case FREQUENCY_MODULATION:
           object.fm.setGate(event.data.gate.value);
@@ -286,8 +292,8 @@ template <typename sample_t> struct Synthesizer {
           break;
         }
         case PHYSICAL_MODEL: {
-          object.physicalModel.bendNote(event.data.pitchBend.note,
-                                        event.data.pitchBend.destinationNote);
+          physicalModel.bendNote(event.data.pitchBend.note,
+                                 event.data.pitchBend.destinationNote);
           break;
         }
         case FREQUENCY_MODULATION: {
@@ -358,7 +364,7 @@ template <typename sample_t> struct Synthesizer {
         ParameterChangeEvent<sample_t>{.type = RELEASE_TIME, .value = value}));
   }
 
-  inline void setRegister(sample_t value) {
+  inline void setOctave(sample_t value) {
     eventQueue.push(SynthesizerEvent<sample_t>(
         ParameterChangeEvent<sample_t>{.type = REGISTER, .value = value}));
   }

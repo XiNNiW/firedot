@@ -34,120 +34,6 @@ using algae::dsp::oscillator::PolyBLEPTri;
 using algae::dsp::oscillator::SinOscillator;
 using algae::dsp::oscillator::WhiteNoise;
 
-template <typename sample_t> struct FMDrumOperator {
-  sample_t sampleRate = 48000;
-  SinOscillator<sample_t, sample_t, 1024> osc;
-  ClapEnvelope<sample_t> env;
-  sample_t freq = 440;
-  sample_t last = 0;
-
-  FMDrumOperator<sample_t>() { env.set(0, 1000, sampleRate); }
-
-  inline const sample_t next(sample_t pmod = 0) {
-    osc.setFrequency(freq, sampleRate);
-    auto envelopeSample = env.next();
-    envelopeSample *= envelopeSample;
-    envelopeSample *= envelopeSample;
-    last = envelopeSample * osc.next(pmod);
-    return last;
-  }
-
-  inline void setFrequency(sample_t f) { freq = f; }
-};
-
-template <typename sample_t> struct FMDrumVoice {
-  Parameter<sample_t> frequency;
-  WhiteNoise<sample_t> noise;
-  FMDrumOperator<sample_t> op1;
-  FMDrumOperator<sample_t> op2;
-  Biquad<sample_t, sample_t> hp;
-  ADEnvelope<sample_t> timbreEnv;
-  ADEnvelope<sample_t> pitchEnv;
-  ADEnvelope<sample_t> env;
-  sample_t active = false;
-  sample_t index = 0.0;
-  sample_t noiseModDepth = 0.1;
-  sample_t gain = 1;
-  sample_t soundSource = 0;
-  sample_t filterCutoff = 0;
-  sample_t filterQuality = 0;
-  sample_t attackTime = 0.1;
-  sample_t releaseTime = 300;
-  sample_t pitchModDepth = 1500;
-  sample_t sampleRate = 48000;
-  sample_t y1 = 0;
-
-  FMDrumVoice<sample_t>() {
-    pitchEnv.set(0, 30, sampleRate);
-    timbreEnv.set(0, 5, sampleRate);
-    op1.env.clapDensity = 0.1;
-    op2.env.clapDensity = 4;
-  }
-
-  inline void setGate(sample_t gate) {
-    env.setGate(gate);
-    op1.env.setGate(gate);
-    op2.env.setGate(gate);
-    pitchEnv.setGate(gate);
-    timbreEnv.setGate(gate);
-  }
-
-  inline const sample_t next() {
-    // soundSource = 1;
-    auto soundSourceSquared = soundSource * soundSource;
-    auto soundSourceMappedToHalfCircle =
-        SineTable<sample_t, 1024>::lookup(soundSource / 4.0);
-    env.set(attackTime, releaseTime, sampleRate);
-    timbreEnv.set(lerp<sample_t>(0, 15, soundSourceMappedToHalfCircle),
-                  lerp<sample_t>(15, 100, soundSourceMappedToHalfCircle),
-                  sampleRate);
-    pitchEnv.set(lerp<sample_t>(0, 30, soundSourceMappedToHalfCircle),
-                 lerp<sample_t>(15, 75, soundSource), sampleRate);
-    auto pitchEnvSample = pitchEnv.next();
-    pitchEnvSample *= pitchEnvSample;
-    pitchEnvSample *= pitchEnvSample;
-
-    auto f = frequency.next();
-    auto timbreEnvSample = timbreEnv.next();
-    auto nz = noise.next() * noiseModDepth * soundSource;
-    op1.setFrequency(f + (pitchModDepth * pitchEnvSample) + nz * 10000);
-    op2.setFrequency(f * (1 + soundSource * 5.333));
-    op1.env.set(attackTime + soundSource * 5, releaseTime, sampleRate);
-    op2.env.set(attackTime + soundSource * 100, releaseTime, sampleRate);
-
-    auto envSample = env.next();
-    envSample *= envSample;
-    envSample *= envSample;
-
-    if (env.stage == ADEnvelope<sample_t>::OFF) {
-      active = false;
-    }
-    auto modIndex = clip(timbreEnvSample * index) * 2;
-    //
-    auto operators =
-        op1.next(op2.next(y1 * soundSourceSquared * pitchEnvSample) * modIndex);
-    y1 = operators;
-    hp.highpass(lerp<sample_t>(15, 250, soundSource), 0.1, sampleRate);
-    return clip(hp.next(operators) * (envSample + pitchEnvSample * 2)) * gain;
-  }
-};
-
-// template <typename sample_t>
-// struct FMDrumSynth
-//     : AbstractPolyphonicSynthesizer<sample_t, FMDrumSynth<sample_t>> {
-//
-//
-//   inline void setFilterCutoff(sample_t value) {
-//     value = clamp<sample_t>(value, 0, 1);
-//     value *= value;
-//     value *= value;
-//     //  auto fb = lerp<sample_t>(0.0, 1.0, pow(1, value));
-//     for (auto &voice : this->voices) {
-//       voice.index = value;
-//     }
-//   }
-//  };
-
 template <typename sample_t> struct FMOperator {
   sample_t sampleRate = 48000;
   SinOscillator<sample_t, sample_t, 1024> osc;
@@ -249,7 +135,7 @@ template <typename sample_t> struct FM4OpVoice {
                                          gainSettings[nextTopologyIndex][3],
                                          topologyMantissa);
 
-    return out;
+    return tanh(out * 0.5) * 0.5;
   }
 
   inline void setGate(sample_t gate) {
@@ -264,13 +150,14 @@ template <typename sample_t>
 struct FMSynthesizer
     : AbstractMonophonicSynthesizer<sample_t, FMSynthesizer<sample_t>> {
   FM4OpVoice<sample_t> voice;
+  sample_t sampleRate = 48000;
   inline void setFilterCutoff(sample_t value) {
     value = clamp<sample_t>(value, 0, 1);
     value *= value;
     value *= value;
     //  auto fb = lerp<sample_t>(0.0, 1.0, pow(1, value));
 
-    voice.index = value;
+    voice.index.set(value * 2, 5, sampleRate);
   }
 
   inline void setFilterQuality(sample_t value) {

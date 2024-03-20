@@ -36,7 +36,6 @@ struct SoundEditUI {
   float topMargin = 50;
   float pageMargin = 50;
 
-  bool needsDraw = true;
   SDL_Texture *cachedRender = NULL;
 
   SoundEditUI(Synthesizer<float> *_synth, InputMapping<float> *_mapping,
@@ -104,6 +103,7 @@ struct SoundEditUI {
                      .y = static_cast<float>(height / 24.0 + yOffset)},
         .halfSize = {.x = bodyShape.halfSize.x,
                      .y = static_cast<float>(height / 24.0)}});
+    synthSelectRadioGroup.selectedIndex = synth->getSynthType();
 
     int sliderCounter = 0;
     auto initialSliderY = synthSelectRadioGroup.shape.position.y +
@@ -143,8 +143,6 @@ struct SoundEditUI {
                            .y = static_cast<float>(rowHeight / 2)}});
     }
     mappingSelectionPopup.close();
-
-    needsDraw = true;
   }
 
   inline void updateParameterLabels(SynthesizerType synthType) {
@@ -179,8 +177,6 @@ struct SoundEditUI {
         setParameter(parameterType, paramValue);
       }
     }
-
-    needsDraw = true;
   }
   void handleSynthSelectRadioButtonClick() {
     synth->setSynthType(SynthTypes[synthSelectRadioGroup.selectedIndex]);
@@ -217,8 +213,6 @@ struct SoundEditUI {
         setParameter(parameterType, paramValue);
       }
     }
-
-    needsDraw = true;
   }
 
   inline void handleFingerUp(const SDL_FingerID &fingerId,
@@ -230,8 +224,6 @@ struct SoundEditUI {
           .state = INACTIVE;
     }
     fingerPositions[fingerId] = -1;
-
-    needsDraw = true;
   }
 
   inline void handleMouseMove(const vec2f_t &mousePosition) {
@@ -252,8 +244,6 @@ struct SoundEditUI {
         setParameter(parameterType, paramValue);
       }
     }
-
-    needsDraw = true;
   }
 
   inline std::vector<ContinuousInputType> getOptions() {
@@ -301,7 +291,6 @@ struct SoundEditUI {
         }
       }
     }
-    needsDraw = true;
   }
 
   inline void handleMouseUp(const vec2f_t &mousePosition) {
@@ -329,7 +318,6 @@ struct SoundEditUI {
       parameterSliders[parameterType].state = INACTIVE;
     }
     synth->pushGateEvent(MomentaryParameterType::GATE, 0);
-    needsDraw = true;
   }
 
   void _draw(SDL_Renderer *renderer, const Style &style) {

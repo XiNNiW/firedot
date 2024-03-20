@@ -59,7 +59,7 @@ template <typename sample_t> struct MultiOscillator {
     phase = phase > 1 ? phase - 1 : phase;
 
     // mix output
-    return linearXFade4(triangleSample * 20, squareSample, sawSample,
+    return linearXFade4(triangleSample * 3, squareSample, sawSample,
                         noiseSample, oscMix);
   }
 };
@@ -230,7 +230,7 @@ template <typename sample_t> struct SubtractiveDrumSynthVoice {
       active = false;
     }
 
-    return clip(out * (envelopeSample + (pitchEnvSample * 4)));
+    return clip(out * (envelopeSample + (pitchEnvSample * 4))) * 0.5;
   }
 };
 

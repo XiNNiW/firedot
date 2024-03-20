@@ -14,7 +14,8 @@ public:
     return (position + sizeof(T)) < size;
   }
   template <typename T> bool canAllocArray(size_t length) const {
-    return (position + sizeof(T) * length) < size;
+    size_t desiredSize = (position + (sizeof(T) * length));
+    return desiredSize < size;
   }
   template <typename T> T *push() {
     size_t size = sizeof(T);

@@ -109,7 +109,7 @@ struct AbstractMonophonicSynthesizer {
   sample_t sampleRate = 48000;
 
   inline const sample_t next() {
-    return (static_cast<DerivedT *>(this)->voice.next() * gain * 0.5);
+    return (static_cast<DerivedT *>(this)->voice.next() * gain);
   }
 
   inline void process(sample_t *buffer, const size_t bufferSize) {

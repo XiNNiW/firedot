@@ -208,14 +208,7 @@ public:
     synth.setAttackTime(0.001);
     synth.setReleaseTime(1);
 
-    saveState.setInstrumentMetaphor(KEYBOARD);
-    //    saveState.sensorMapping.addMapping(TILT,
-    //                                       ContinuousParameterType::SOUND_SOURCE);
-    //
-    //    saveState.sensorMapping.addMapping(KEYBOARD_KEY,
-    //                                       ContinuousParameterType::FREQUENCY);
-    //    saveState.sensorMapping.addMapping(ACCELERATION,
-    //                                       ContinuousParameterType::FILTER_CUTOFF);
+    saveState.setInstrumentMetaphor(KEYBOARD, &synth);
 
     userInterface.buildLayout(
         {.position = {.x = static_cast<float>(width / 2.0),
@@ -514,6 +507,7 @@ private:
   // AudioSample *audioSample = NULL;
   const int arenaSizeSeconds = 60 * 4;
   Arena sampleArena = Arena(sizeof(float) * 48000 * arenaSizeSeconds);
+  Arena delayTimeArena = Arena(sizeof(float) * 48000 * arenaSizeSeconds);
   SampleBank<float> sampleBank = SampleBank<float>(&sampleArena);
 
   Style *style = NULL;
@@ -522,8 +516,8 @@ private:
 
   // Model objects
   SaveState saveState;
-  Synthesizer<float> synth =
-      Synthesizer<float>(&sampleBank, saveState.getSynthesizerSettings());
+  Synthesizer<float> synth = Synthesizer<float>(
+      &sampleBank, &delayTimeArena, saveState.getSynthesizerSettings());
 
   Sequencer sequencer = Sequencer(&synth, &saveState);
   Game game = Game(&saveState.sensorMapping, &synth);

@@ -3,12 +3,16 @@
 #include "collider.h"
 #include "metaphor.h"
 #include "save_state.h"
+#include "synthesis.h"
 #include "widget_radio_button.h"
 struct InstrumentMetaphorSelectorUI {
   AxisAlignedBoundingBox shape;
   RadioGroup metaphorOptions;
   SaveState *saveState = NULL;
-  InstrumentMetaphorSelectorUI(SaveState *_saveState) : saveState(_saveState) {}
+  Synthesizer<float> *synth = NULL;
+  InstrumentMetaphorSelectorUI(SaveState *_saveState,
+                               Synthesizer<float> *_synth)
+      : saveState(_saveState), synth(_synth) {}
 
   void buildLayout(const AxisAlignedBoundingBox &shape) {
     this->shape = shape;
@@ -41,7 +45,7 @@ struct InstrumentMetaphorSelectorUI {
   void handleMouseUp(vec2f_t mousePosition) {
     if (DoClickRadioGroup(&metaphorOptions, mousePosition)) {
       saveState->setInstrumentMetaphor(
-          InstrumentMetaphorTypes[metaphorOptions.selectedIndex]);
+          InstrumentMetaphorTypes[metaphorOptions.selectedIndex], synth);
     }
   }
 

@@ -42,7 +42,7 @@ static const char *getDisplayNameForSubtractiveDrumParameter(
     return "release time";
     break;
   case REGISTER:
-    return "register";
+    return "octave";
     break;
   case _SIZE_ContinuousParameterType:
     break;
@@ -68,7 +68,7 @@ getDisplayNameForSubtractiveParameter(ContinuousParameterType parameterType) {
     return "release time";
     break;
   case REGISTER:
-    return "register";
+    return "octave";
     break;
   case _SIZE_ContinuousParameterType:
     break;
@@ -83,18 +83,18 @@ getDisplayNameForPhysicalModelParameter(ContinuousParameterType parameterType) {
   case GAIN:
     return "gain";
   case SOUND_SOURCE:
-    return "exciter shape";
+    return "strike";
   case FILTER_CUTOFF:
-    return "harmonics";
+    return "brightness";
   case FILTER_QUALITY:
-    return "stiffness";
+    return "inharmonic";
   case ATTACK_TIME:
     return "attack time";
   case RELEASE_TIME:
     return "release time";
     break;
   case REGISTER:
-    return "register";
+    return "octave";
     break;
   case _SIZE_ContinuousParameterType:
     break;
@@ -120,7 +120,7 @@ static const char *getDisplayNameForFrequencyModulationParameter(
     return "release time";
     break;
   case REGISTER:
-    return "register";
+    return "octave";
     break;
   case _SIZE_ContinuousParameterType:
     break;
@@ -147,7 +147,7 @@ getDisplayNameForSamplerParameter(ContinuousParameterType parameterType) {
     return "release time";
     break;
   case REGISTER:
-    return "register";
+    return "octave";
     break;
   case _SIZE_ContinuousParameterType:
     break;

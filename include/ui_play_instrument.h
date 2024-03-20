@@ -7,7 +7,6 @@
 #include "save_state.h"
 #include "ui_abstract_cached_render_ui.h"
 #include "ui_game.h"
-#include "ui_instrument_metaphor_selection_popup.h"
 #include "ui_instrument_metaphor_selector.h"
 #include "ui_keyboard.h"
 #include "ui_navigation.h"
@@ -49,7 +48,7 @@ struct PlayInstrumentUI {
         soundEditUI(SoundEditUI(synth, &_saveState->sensorMapping, _saveState)),
         settingsMenu(SettingsMenu(_navigation, _saveState, synth)),
         saveState(_saveState), navigation(_navigation),
-        instrumentSelector(_saveState) {
+        instrumentSelector(_saveState, synth) {
     pageSelector = RadioGroup({"play", "edit sound", "edit sensors"}, page);
     pageSelector.options[PLAY].iconType = IconType::NOTES;
     pageSelector.options[EDIT_SOUND].iconType = IconType::SLIDERS;

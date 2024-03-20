@@ -25,7 +25,7 @@
 - [x] - filter cutoff should go lower
 - [~] - sequencer length + tempo sliders are too wide
 - [~] - make slew a per synth per parameter thing
-- [ ] - sound parameters are stored per mode
+- [~] - sound parameters are stored per mode
 - [x] - no filter mappings by default
 - [~] - keyboard key does not map well to things other than frequency
 - [~] - sounds have balanced volumes

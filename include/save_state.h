@@ -16,6 +16,62 @@ private:
   InstrumentMetaphorType instrumentMetaphor = KEYBOARD;
   SynthesizerSettings synthesizerSettings;
 
+  inline static void
+  copySynthSettingsToCurrentMapping(SaveState *saveState,
+                                    const Synthesizer<float> &synth) {
+
+    saveState->sensorMapping
+        .instrumentModeSpecificMappings[saveState->instrumentMetaphor]
+        .synthesizerSettings.synthType = synth.getSynthType();
+    saveState->sensorMapping
+        .instrumentModeSpecificMappings[saveState->instrumentMetaphor]
+        .synthesizerSettings.gain = synth.getParameter(GAIN);
+    saveState->sensorMapping
+        .instrumentModeSpecificMappings[saveState->instrumentMetaphor]
+        .synthesizerSettings.soundSource = synth.getParameter(SOUND_SOURCE);
+    saveState->sensorMapping
+        .instrumentModeSpecificMappings[saveState->instrumentMetaphor]
+        .synthesizerSettings.filterCutoff = synth.getParameter(FILTER_CUTOFF);
+    saveState->sensorMapping
+        .instrumentModeSpecificMappings[saveState->instrumentMetaphor]
+        .synthesizerSettings.filterQuality = synth.getParameter(FILTER_QUALITY);
+    saveState->sensorMapping
+        .instrumentModeSpecificMappings[saveState->instrumentMetaphor]
+        .synthesizerSettings.attack = synth.getParameter(ATTACK_TIME);
+    saveState->sensorMapping
+        .instrumentModeSpecificMappings[saveState->instrumentMetaphor]
+        .synthesizerSettings.release = synth.getParameter(RELEASE_TIME);
+  }
+
+  inline void
+  copyCurrentMappingSettingsToSynthesizer(Synthesizer<float> *synth) {
+
+    synth->setSynthType(
+        sensorMapping.instrumentModeSpecificMappings[instrumentMetaphor]
+            .synthesizerSettings.synthType);
+    synth->setGain(
+        sensorMapping.instrumentModeSpecificMappings[instrumentMetaphor]
+            .synthesizerSettings.gain);
+    synth->setSoundSource(
+        sensorMapping.instrumentModeSpecificMappings[instrumentMetaphor]
+            .synthesizerSettings.soundSource);
+    synth->setAttackTime(
+        sensorMapping.instrumentModeSpecificMappings[instrumentMetaphor]
+            .synthesizerSettings.attack);
+    synth->setReleaseTime(
+        sensorMapping.instrumentModeSpecificMappings[instrumentMetaphor]
+            .synthesizerSettings.release);
+    synth->setFilterCutoff(
+        sensorMapping.instrumentModeSpecificMappings[instrumentMetaphor]
+            .synthesizerSettings.filterCutoff);
+    synth->setFilterQuality(
+        sensorMapping.instrumentModeSpecificMappings[instrumentMetaphor]
+            .synthesizerSettings.filterQuality);
+    synth->setOctave(
+        sensorMapping.instrumentModeSpecificMappings[instrumentMetaphor]
+            .synthesizerSettings.octave);
+  }
+
 public:
   InputMapping<float> sensorMapping;
 
@@ -25,21 +81,18 @@ public:
   inline const SynthesizerSettings &getSynthesizerSettings() const {
     return synthesizerSettings;
   }
-  inline void setInstrumentMetaphor(InstrumentMetaphorType type) {
+  inline void setInstrumentMetaphor(InstrumentMetaphorType type,
+                                    Synthesizer<float> *synth) {
+    copySynthSettingsToCurrentMapping(this, *synth);
     instrumentMetaphor = type;
+    copyCurrentMappingSettingsToSynthesizer(synth);
   }
 
   inline static bool SaveGame(const std::string &filename,
                               const Synthesizer<float> &synth,
                               SaveState *state) {
-    state->synthesizerSettings.synthType = synth.getSynthType();
-    state->synthesizerSettings.gain = synth.getParameter(GAIN);
-    state->synthesizerSettings.soundSource = synth.getParameter(SOUND_SOURCE);
-    state->synthesizerSettings.filterCutoff = synth.getParameter(FILTER_CUTOFF);
-    state->synthesizerSettings.filterQuality =
-        synth.getParameter(FILTER_QUALITY);
-    state->synthesizerSettings.attack = synth.getParameter(ATTACK_TIME);
-    state->synthesizerSettings.release = synth.getParameter(RELEASE_TIME);
+
+    copySynthSettingsToCurrentMapping(state, synth);
     SDL_Log("save state!");
     std::ofstream save("game_save");
     save << "[instrumentMetaphor]"
@@ -68,14 +121,20 @@ public:
     save << "\n";
     save << "[soundSettings]"
          << "\n";
-    save << state->synthesizerSettings.synthType << ",";
-    save << state->synthesizerSettings.gain << ",";
-    save << state->synthesizerSettings.soundSource << ",";
-    save << state->synthesizerSettings.filterCutoff << ",";
-    save << state->synthesizerSettings.filterQuality << ",";
-    save << state->synthesizerSettings.attack << ",";
-    save << state->synthesizerSettings.release << ",";
-    save << state->synthesizerSettings.octave << "\n\n";
+    for (auto &modePair : state->sensorMapping.instrumentModeSpecificMappings) {
+
+      save << std::to_string(modePair.first) << ",";
+      save << modePair.second.synthesizerSettings.synthType << ",";
+      save << modePair.second.synthesizerSettings.gain << ",";
+      save << modePair.second.synthesizerSettings.soundSource << ",";
+      save << modePair.second.synthesizerSettings.filterCutoff << ",";
+      save << modePair.second.synthesizerSettings.filterQuality << ",";
+      save << modePair.second.synthesizerSettings.attack << ",";
+      save << modePair.second.synthesizerSettings.release << ",";
+      save << modePair.second.synthesizerSettings.octave << "\n";
+    }
+    save << "\n";
+
     save << "[scaleType]"
          << "\n";
     save << static_cast<int>(state->sensorMapping.key) << ","
@@ -209,15 +268,25 @@ public:
             }
 
             if (seglist.size() == 8) {
-              state->synthesizerSettings.synthType =
-                  static_cast<SynthesizerType>(std::stoi(seglist[0]));
-              state->synthesizerSettings.gain = std::stof(seglist[1]);
-              state->synthesizerSettings.soundSource = std::stof(seglist[2]);
-              state->synthesizerSettings.filterCutoff = std::stof(seglist[3]);
-              state->synthesizerSettings.filterQuality = std::stof(seglist[4]);
-              state->synthesizerSettings.attack = std::stof(seglist[5]);
-              state->synthesizerSettings.release = std::stof(seglist[6]);
-              state->synthesizerSettings.octave = std::stof(seglist[7]);
+              InstrumentMetaphorType mode =
+                  static_cast<InstrumentMetaphorType>(std::stoi(seglist[0]));
+              state->sensorMapping.instrumentModeSpecificMappings[mode]
+                  .synthesizerSettings.synthType =
+                  static_cast<SynthesizerType>(std::stoi(seglist[1]));
+              state->sensorMapping.instrumentModeSpecificMappings[mode]
+                  .synthesizerSettings.gain = std::stof(seglist[2]);
+              state->sensorMapping.instrumentModeSpecificMappings[mode]
+                  .synthesizerSettings.soundSource = std::stof(seglist[3]);
+              state->sensorMapping.instrumentModeSpecificMappings[mode]
+                  .synthesizerSettings.filterCutoff = std::stof(seglist[4]);
+              state->sensorMapping.instrumentModeSpecificMappings[mode]
+                  .synthesizerSettings.filterQuality = std::stof(seglist[5]);
+              state->sensorMapping.instrumentModeSpecificMappings[mode]
+                  .synthesizerSettings.attack = std::stof(seglist[6]);
+              state->sensorMapping.instrumentModeSpecificMappings[mode]
+                  .synthesizerSettings.release = std::stof(seglist[7]);
+              state->sensorMapping.instrumentModeSpecificMappings[mode]
+                  .synthesizerSettings.octave = std::stof(seglist[8]);
             }
           }
 

@@ -98,7 +98,7 @@ template <typename sample_t> struct SamplerVoice {
       phases[i] = phases[i] > 1 ? 1 : phases[i];
     }
 
-    return out;
+    return out * 0.5;
   }
 };
 
