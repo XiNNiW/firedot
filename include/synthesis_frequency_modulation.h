@@ -157,7 +157,7 @@ struct FMSynthesizer
     value *= value;
     //  auto fb = lerp<sample_t>(0.0, 1.0, pow(1, value));
 
-    voice.index.set(value * 2, 5, sampleRate);
+    voice.index.set(value * 1.1, 5, sampleRate);
   }
 
   inline void setFilterQuality(sample_t value) {

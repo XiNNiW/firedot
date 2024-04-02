@@ -105,11 +105,11 @@ using algae::dsp::math::lerp;
 template <typename sample_t, typename DerivedT>
 struct AbstractMonophonicSynthesizer {
 
-  sample_t gain = 1;
+  Parameter<sample_t> gain = Parameter<sample_t>(1);
   sample_t sampleRate = 48000;
 
   inline const sample_t next() {
-    return (static_cast<DerivedT *>(this)->voice.next() * gain);
+    return (static_cast<DerivedT *>(this)->voice.next() * gain.next());
   }
 
   inline void process(sample_t *buffer, const size_t bufferSize) {
@@ -122,10 +122,10 @@ struct AbstractMonophonicSynthesizer {
     static_cast<DerivedT *>(this)->voice.setGate(gate);
   }
   inline void setFrequency(sample_t value) {
-    static_cast<DerivedT *>(this)->voice.frequency.set(value, 33, sampleRate);
+    static_cast<DerivedT *>(this)->voice.frequency.set(value, 5, sampleRate);
   }
 
-  inline void setGain(sample_t value) { gain = value; }
+  inline void setGain(sample_t value) { gain.set(value, 33, sampleRate); }
 
   inline void setFilterCutoff(sample_t value) {
     static_cast<DerivedT *>(this)->voice.filterCutoff.set(

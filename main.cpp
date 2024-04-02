@@ -200,13 +200,13 @@ public:
                       "using mutex fallback!");
     }
 
-    synth.setSynthType(SUBTRACTIVE_DRUM_SYNTH);
-    synth.setGain(1);
-    synth.setFilterCutoff(1);
-    synth.setFilterQuality(0.5);
-    synth.setSoundSource(0.5);
-    synth.setAttackTime(0.001);
-    synth.setReleaseTime(1);
+    // synth.setSynthType(SUBTRACTIVE_DRUM_SYNTH);
+    // synth.setGain(1);
+    // synth.setFilterCutoff(1);
+    // synth.setFilterQuality(0.5);
+    // synth.setSoundSource(0.5);
+    // synth.setAttackTime(0.001);
+    // synth.setReleaseTime(1);
 
     saveState.setInstrumentMetaphor(KEYBOARD, &synth);
 
@@ -443,10 +443,12 @@ public:
                           .scale(1.0 / 9.8);
 
           auto accVector = vec2f_t{.x = acc3.x, .y = acc3.y};
+          lastTilt = lastTilt * 0.8 + accVector.length() * 0.2;
+          // lastTilt *= 0.5;
 
           saveState.sensorMapping.emitEvent(
               &synth, saveState.getInstrumentMetaphorType(),
-              ContinuousInputType::TILT, accVector.length());
+              ContinuousInputType::TILT, lastTilt);
 
           break;
         }
@@ -529,6 +531,7 @@ private:
   SDL_Color textColor = {20, 20, 20};
   SDL_Color textBackgroundColor = {0, 0, 0};
   double lastAccZ = 9.8;
+  double lastTilt = 0;
   vec2f_t mousePosition = vec2f_t{0, 0};
   vec2f_t mouseDownPosition = vec2f_t{0, 0};
   bool mouseIsDown = false;

@@ -15,7 +15,7 @@ private:
 
 public:
   constexpr static const float SECONDS_PER_MINUTE = 60.0;
-  constexpr static const float minBPM = 33;
+  constexpr static const float minBPM = 1;
   constexpr static const float maxBPM = 300;
   Synthesizer<float> *synth = NULL;
   SaveState *saveState = NULL;

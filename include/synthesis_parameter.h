@@ -12,16 +12,16 @@ enum ContinuousParameterType {
   FILTER_QUALITY,
   ATTACK_TIME,
   RELEASE_TIME,
-  REGISTER,
+  OCTAVE,
   _SIZE_ContinuousParameterType
 };
 
 static const size_t NUM_PARAMETER_TYPES = _SIZE_ContinuousParameterType;
-static_assert(REGISTER == NUM_PARAMETER_TYPES - 1,
+static_assert(OCTAVE == NUM_PARAMETER_TYPES - 1,
               "synth type table and enum must agree");
 static const ContinuousParameterType ParameterTypes[NUM_PARAMETER_TYPES] = {
     FREQUENCY,      GAIN,        SOUND_SOURCE, FILTER_CUTOFF,
-    FILTER_QUALITY, ATTACK_TIME, RELEASE_TIME, REGISTER};
+    FILTER_QUALITY, ATTACK_TIME, RELEASE_TIME, OCTAVE};
 
 static const char *getDisplayNameForSubtractiveDrumParameter(
     ContinuousParameterType parameterType) {
@@ -41,7 +41,7 @@ static const char *getDisplayNameForSubtractiveDrumParameter(
   case RELEASE_TIME:
     return "release time";
     break;
-  case REGISTER:
+  case OCTAVE:
     return "octave";
     break;
   case _SIZE_ContinuousParameterType:
@@ -67,7 +67,7 @@ getDisplayNameForSubtractiveParameter(ContinuousParameterType parameterType) {
   case RELEASE_TIME:
     return "release time";
     break;
-  case REGISTER:
+  case OCTAVE:
     return "octave";
     break;
   case _SIZE_ContinuousParameterType:
@@ -93,7 +93,7 @@ getDisplayNameForPhysicalModelParameter(ContinuousParameterType parameterType) {
   case RELEASE_TIME:
     return "release time";
     break;
-  case REGISTER:
+  case OCTAVE:
     return "octave";
     break;
   case _SIZE_ContinuousParameterType:
@@ -119,7 +119,7 @@ static const char *getDisplayNameForFrequencyModulationParameter(
   case RELEASE_TIME:
     return "release time";
     break;
-  case REGISTER:
+  case OCTAVE:
     return "octave";
     break;
   case _SIZE_ContinuousParameterType:
@@ -146,7 +146,7 @@ getDisplayNameForSamplerParameter(ContinuousParameterType parameterType) {
   case RELEASE_TIME:
     return "release time";
     break;
-  case REGISTER:
+  case OCTAVE:
     return "octave";
     break;
   case _SIZE_ContinuousParameterType:

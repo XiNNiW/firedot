@@ -4,6 +4,7 @@
 #include "pitch_collection.h"
 #include "synthesis.h"
 #include "synthesis_parameter.h"
+#include <algae.h>
 #include <cstddef>
 #include <map>
 #include <vector>
@@ -235,20 +236,6 @@ getContinuousInputsForInstrumentType(InstrumentMetaphorType instrumentType,
     break;
   }
 }
-// struct InputType {
-//   union uInputType {
-//     ContinuousInputType continuousInputType;
-//     MomentaryInputType momentaryInputType;
-//     uInputType(ContinuousInputType type) : continuousInputType(type) {}
-//     uInputType(MomentaryInputType type) : momentaryInputType(type) {}
-//   } object;
-//   enum Type { CONTINUOUS, MOMENTARY } type;
-//   InputType(ContinuousInputType continuousInputType)
-//       : object(continuousInputType), type(CONTINUOUS) {}
-//   InputType(MomentaryInputType momentaryInputType)
-//       : object(momentaryInputType), type(MOMENTARY) {}
-// };
-//  make this a map of parameter type to input type
 
 struct ModeSpecificMapping {
   std::map<ContinuousParameterType, ContinuousInputType> continuousMappings =
@@ -277,12 +264,19 @@ template <typename sample_t> struct InputMapping {
         break;
       case TOUCH_PAD:
         addMapping(mode, TOUCH_PAD_GATE, GATE);
+        // addMapping(mode, TOUCH_X_POSITION, SOUND_SOURCE);
+        // addMapping(mode, TOUCH_Y_POSITION, OCTAVE);
+        //   addMapping(mode, TILT, FREQUENCY);
+        //   addMapping(mode, TILT, GAIN);
+        //   addMapping(mode, TILT, FILTER_CUTOFF);
+
         addMapping(mode, TOUCH_Y_POSITION, FREQUENCY);
         addMapping(mode, TOUCH_X_POSITION, SOUND_SOURCE);
         break;
       case GAME:
         addMapping(mode, COLLISION, GATE);
         addMapping(mode, COLLISION_VELOCITY, GAIN);
+        addMapping(mode, PARTICLE_SIZE, FREQUENCY);
         break;
       case InstrumentMetaphorType__SIZE:
         break;
@@ -295,6 +289,8 @@ template <typename sample_t> struct InputMapping {
                         InstrumentMetaphorType instrumentMode,
                         ContinuousInputType type, sample_t value) {
 
+    value = algae::dsp::math::clamp<sample_t>(value, 0, 1);
+
     auto &continuousMappings =
         instrumentModeSpecificMappings[instrumentMode].continuousMappings;
     for (auto &pair : continuousMappings) {
@@ -304,7 +300,7 @@ template <typename sample_t> struct InputMapping {
       if (type == sensorType) {
         if (parameterEventType == FREQUENCY) {
           mappedValue =
-              mtof(key + 36 + ForceToScale(value * 24.0, GetScale(scaleType)));
+              mtof(key + 36 + ForceToScale(value * 36.0, GetScale(scaleType)));
         }
 
         synth->pushParameterChangeEvent(parameterEventType, mappedValue);

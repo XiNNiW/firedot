@@ -1,5 +1,7 @@
 #pragma once
 
+#include "SDL_audio.h"
+#include "SDL_filesystem.h"
 #include "mapping.h"
 #include "metaphor.h"
 #include "pitch_collection.h"
@@ -94,7 +96,10 @@ public:
 
     copySynthSettingsToCurrentMapping(state, synth);
     SDL_Log("save state!");
-    std::ofstream save("game_save");
+    std::stringstream saveFilePath;
+    saveFilePath << SDL_GetPrefPath("lichensound", "firedot");
+    saveFilePath << "/game_save";
+    std::ofstream save(saveFilePath.str());
     save << "[instrumentMetaphor]"
          << "\n";
     save << std::to_string(state->instrumentMetaphor) << "\n\n";
@@ -152,8 +157,10 @@ public:
   inline static bool LoadGame(const std::string &filename,
                               Synthesizer<float> *synth, SaveState *state) {
     SDL_Log("load state!");
-
-    std::ifstream load("game_save");
+    std::stringstream saveFilePath;
+    saveFilePath << SDL_GetPrefPath("lichensound", "firedot");
+    saveFilePath << "/game_save";
+    std::ifstream load(saveFilePath.str());
     enum class ReadState {
       SEARCHING,
       READING,
@@ -178,26 +185,41 @@ public:
       switch (readState) {
 
       case ReadState::SEARCHING: {
-
+        if (headingMap.count(lineText) == 0) {
+          SDL_Log("map did not contain %s", lineText.c_str());
+          break;
+        }
         switch (headingMap[lineText]) {
-        case FileHeading::INSTRUMENT_METAPHOR:
+        case FileHeading::INSTRUMENT_METAPHOR: {
           fileHeading = FileHeading::INSTRUMENT_METAPHOR;
           readState = ReadState::READING;
           break;
-        case FileHeading::MOMENTARY_MAPPING:
+        }
+        case FileHeading::MOMENTARY_MAPPING: {
           fileHeading = FileHeading::MOMENTARY_MAPPING;
           readState = ReadState::READING;
-        case FileHeading::CONTINUOUS_MAPPING:
+          break;
+        }
+        case FileHeading::CONTINUOUS_MAPPING: {
           fileHeading = FileHeading::CONTINUOUS_MAPPING;
           readState = ReadState::READING;
-        case FileHeading::SYNTH_SETTINGS:
+          break;
+        }
+        case FileHeading::SYNTH_SETTINGS: {
           fileHeading = FileHeading::SYNTH_SETTINGS;
           readState = ReadState::READING;
           break;
-        case FileHeading::SCALE_TYPE:
+        }
+        case FileHeading::SCALE_TYPE: {
           fileHeading = FileHeading::SCALE_TYPE;
           readState = ReadState::READING;
           break;
+        }
+        default: {
+          SDL_Log("%s", lineText.c_str());
+          readState = ReadState::SEARCHING;
+          break;
+        }
         }
 
         break;
@@ -206,13 +228,15 @@ public:
         switch (fileHeading) {
 
         case FileHeading::INSTRUMENT_METAPHOR: {
-
+          SDL_Log("loading instrument metaphor");
           state->instrumentMetaphor =
               static_cast<InstrumentMetaphorType>(std::stoi(lineText));
           readState = ReadState::SEARCHING;
           break;
         }
         case FileHeading::MOMENTARY_MAPPING: {
+
+          SDL_Log("loading momentaryMappings");
           if (lineText.size() == 0) {
             readState = ReadState::SEARCHING;
           } else {

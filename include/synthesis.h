@@ -272,7 +272,7 @@ template <typename sample_t> struct Synthesizer {
           releaseTime = value;
           break;
         }
-        case REGISTER: {
+        case OCTAVE: {
           octave = value;
           break;
         }
@@ -366,7 +366,7 @@ template <typename sample_t> struct Synthesizer {
 
   inline void setOctave(sample_t value) {
     eventQueue.push(SynthesizerEvent<sample_t>(
-        ParameterChangeEvent<sample_t>{.type = REGISTER, .value = value}));
+        ParameterChangeEvent<sample_t>{.type = OCTAVE, .value = value}));
   }
 
   inline const sample_t
@@ -390,7 +390,7 @@ template <typename sample_t> struct Synthesizer {
     case RELEASE_TIME:
       return releaseTime;
       break;
-    case REGISTER:
+    case OCTAVE:
       return octave;
     case _SIZE_ContinuousParameterType:
       break;
